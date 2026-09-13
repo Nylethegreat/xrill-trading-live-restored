@@ -93,9 +93,11 @@ export default function CandlestickGlow({
         ))}
       </g>
 
-      {/* candlesticks */}
-      <g filter={`url(#glow-${variant})`}>
-        {CANDLES.map((c) => {
+      {/* candlesticks — the whole series drifts a few px side to side, and
+          each bar breathes (opacity + scaleY) on its own staggered delay so
+          the pulse rolls down the line rather than blinking in unison */}
+      <g filter={`url(#glow-${variant})`} className="animate-candle-drift">
+        {CANDLES.map((c, i) => {
           const cx = 40 + c.x * step;
           const up = c.close < c.open; // svg y grows downward; "up" candle = close higher = smaller y
           const bodyTop = y(Math.min(c.open, c.close));
@@ -103,7 +105,15 @@ export default function CandlestickGlow({
           const fill = up ? `url(#glowUp-${variant})` : `url(#glowDown-${variant})`;
           if (cx > width + 40) return null;
           return (
-            <g key={c.x} opacity={0.85}>
+            <g
+              key={c.x}
+              className="animate-candle-pulse"
+              style={{
+                transformBox: "fill-box",
+                transformOrigin: "center",
+                animationDelay: `${i * 180}ms`,
+              }}
+            >
               <line x1={cx} y1={y(c.high)} x2={cx} y2={y(c.low)} stroke={fill} strokeWidth={wickW} strokeLinecap="round" />
               <rect
                 x={cx - strokeW / 2}

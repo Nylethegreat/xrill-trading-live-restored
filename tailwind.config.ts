@@ -20,11 +20,26 @@ const config: Config = {
           "0%": { transform: "translateX(0)" },
           "100%": { transform: "translateX(-50%)" },
         },
+        // Slow "breathing" glow for the background candlesticks — each bar
+        // is given a staggered animation-delay so the pulse cascades down
+        // the series instead of blinking in unison.
+        "candle-pulse": {
+          "0%, 100%": { opacity: "0.55", transform: "scaleY(1)" },
+          "50%": { opacity: "1", transform: "scaleY(1.05)" },
+        },
+        // Very slow, small-amplitude horizontal drift for the whole candle
+        // group — reads as "alive" without ever revealing an edge or loop seam.
+        "candle-drift": {
+          "0%, 100%": { transform: "translateX(0)" },
+          "50%": { transform: "translateX(-10px)" },
+        },
       },
       animation: {
         // EKG heartbeat line — the SVG polyline is duplicated end-to-end,
         // so a seamless -50% scroll loops it forever.
         "ekg-scroll": "ekg-scroll 2.4s linear infinite",
+        "candle-pulse": "candle-pulse 3.2s ease-in-out infinite",
+        "candle-drift": "candle-drift 18s ease-in-out infinite",
       },
     },
   },

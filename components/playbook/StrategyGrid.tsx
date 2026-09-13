@@ -69,6 +69,7 @@ export default function StrategyGrid() {
             <div className="mt-1.5">
               <Badge tone={CATEGORY_TONE[s.category]}>{s.category}</Badge>
             </div>
+            <p className="mt-2 text-xs leading-relaxed text-white/60">{s.definition}</p>
           </div>
         ))}
         {filtered.length === 0 && (

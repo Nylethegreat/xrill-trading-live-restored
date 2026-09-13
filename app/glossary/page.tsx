@@ -2,6 +2,8 @@
 
 import { useMemo, useState } from "react";
 import CandlestickGlow from "@/components/visuals/CandlestickGlow";
+import { STRATEGIES } from "@/lib/data/strategies";
+import { GREEKS } from "@/lib/data/greeks";
 
 type Term = {
   term: string;
@@ -167,6 +169,22 @@ const CATEGORIES: Category[] = [
         definition: "The first XRILL gate — a quick self-check on sleep, focus, emotional state, and discipline before you're even allowed to look at a setup.",
       },
     ],
+  },
+  {
+    name: "The Greeks",
+    terms: GREEKS.map((g) => ({
+      term: g.name,
+      short: `${g.symbol} · ${g.tagline}`,
+      definition: `${g.definition} ${g.takeaway}`,
+    })),
+  },
+  {
+    name: "Strategy Library",
+    terms: STRATEGIES.map((s) => ({
+      term: s.name,
+      short: `${s.category} · ${s.bias}`,
+      definition: s.definition,
+    })),
   },
 ];
 

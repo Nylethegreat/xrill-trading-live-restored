@@ -26,6 +26,15 @@ const SECTIONS = [
       "Shorter-dated contracts amplify both Gamma (bigger swings) and Theta (faster decay) — great for a fast-moving thesis, brutal if the move takes longer than expected. Swing-dated contracts (30–45 DTE) trade some of that acceleration for time to be right.",
     ],
   },
+  {
+    title: "Adjusting Option Selection for Higher Percentages",
+    tone: "primary",
+    points: [
+      "If you want the 100–200%+ returns, the structural mechanics have to match: shorter-dated or slightly OTM contracts carry the percentage leverage — a small move in the underlying can explode a contract like that by 200%+.",
+      "The trade-off is real — those same contracts blow up and hit a 40% stop much faster because there's less breathing room in the premium.",
+      "Prefer calmer swing structures instead? Accept that smaller, consistent 50–70% wins are the natural byproduct of trading safer structures — that's not a worse outcome, it's a different, more survivable one.",
+    ],
+  },
 ];
 
 const TONE_CLASSES: Record<string, string> = {
