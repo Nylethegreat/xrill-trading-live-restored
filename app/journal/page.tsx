@@ -3,6 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import { getSessionOutcomeRows } from "@/lib/data/xrill-analytics-data";
 import JournalClient from "@/components/journal/JournalClient";
 import CandlestickGlow from "@/components/visuals/CandlestickGlow";
+import WeeklyAuditCard from "@/components/WeeklyAuditCard";
 
 // Queries Supabase (via cookies()) on every request - force dynamic
 // rendering so `next build` doesn't waste time attempting (and timing
@@ -34,7 +35,13 @@ export default async function JournalPage() {
       <p className="relative mt-1 text-sm text-white/50">
         Every XRILL session, in order. Record the real outcome on any session that doesn't have one yet.
       </p>
+
       <div className="relative mt-6">
+        <WeeklyAuditCard />
+      </div>
+
+      <div className="relative mt-8">
+        <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-white/50">Session History</h2>
         <JournalClient rows={newestFirst} />
       </div>
     </div>
