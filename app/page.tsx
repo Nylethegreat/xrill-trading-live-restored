@@ -1,6 +1,7 @@
 import Link from "next/link";
 import Logo from "@/components/Logo";
 import CandlestickGlow from "@/components/visuals/CandlestickGlow";
+import WinsTicker from "@/components/visuals/WinsTicker";
 import { Section } from "@/components/Layout";
 import { MilestoneTrackerPreview } from "@/components/MilestoneTracker";
 import GatePipeline from "@/components/GatePipeline";
@@ -17,6 +18,9 @@ export default function HomePage() {
     <div className="relative overflow-hidden">
       <div className="pointer-events-none absolute inset-x-0 top-0 h-[480px] opacity-60">
         <CandlestickGlow variant="hero" className="h-full w-full" />
+      </div>
+      <div className="pointer-events-none absolute inset-y-0 right-0 hidden h-[480px] w-64 md:block">
+        <WinsTicker className="h-full w-full" />
       </div>
       <div className="pointer-events-none absolute inset-x-0 top-0 h-[480px] bg-gradient-to-b from-background/10 via-background/60 to-background" />
 

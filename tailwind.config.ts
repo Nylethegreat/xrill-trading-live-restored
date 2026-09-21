@@ -33,6 +33,13 @@ const config: Config = {
           "0%, 100%": { transform: "translateX(0)" },
           "50%": { transform: "translateX(-10px)" },
         },
+        // Wins ticker in the hero backdrop — content is duplicated
+        // end-to-end (see WinsTicker.tsx), so a seamless -50% vertical
+        // scroll loops it forever, same trick as ekg-scroll on the X axis.
+        "wins-scroll-y": {
+          "0%": { transform: "translateY(0)" },
+          "100%": { transform: "translateY(-50%)" },
+        },
       },
       animation: {
         // EKG heartbeat line — the SVG polyline is duplicated end-to-end,
@@ -40,6 +47,7 @@ const config: Config = {
         "ekg-scroll": "ekg-scroll 2.4s linear infinite",
         "candle-pulse": "candle-pulse 3.2s ease-in-out infinite",
         "candle-drift": "candle-drift 18s ease-in-out infinite",
+        "wins-scroll-y": "wins-scroll-y 26s linear infinite",
       },
     },
   },

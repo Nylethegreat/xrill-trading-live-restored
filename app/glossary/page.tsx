@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import CandlestickGlow from "@/components/visuals/CandlestickGlow";
 import { STRATEGIES } from "@/lib/data/strategies";
 import { GREEKS } from "@/lib/data/greeks";
+import { TRADING_STYLES } from "@/lib/data/trading-styles";
 
 type Term = {
   term: string;
@@ -176,6 +177,14 @@ const CATEGORIES: Category[] = [
       term: g.name,
       short: `${g.symbol} · ${g.tagline}`,
       definition: `${g.definition} ${g.takeaway}`,
+    })),
+  },
+  {
+    name: "Trading Styles by Holding Time",
+    terms: TRADING_STYLES.map((s) => ({
+      term: s.name,
+      short: s.holdingTime,
+      definition: s.definition,
     })),
   },
   {
