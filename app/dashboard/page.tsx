@@ -4,7 +4,7 @@ import { scoreGrade } from "@/lib/xrill";
 import Badge from "@/components/Badge";
 import CandlestickGlow from "@/components/visuals/CandlestickGlow";
 import PreTradeChecklist from "@/components/PreTradeChecklist";
-import MilestoneTracker, { levelInfo } from "@/components/MilestoneTracker";
+import MilestoneTracker from "@/components/MilestoneTracker";
 import NeonText from "@/components/visuals/NeonText";
 import SuperStar from "@/components/visuals/SuperStar";
 import RetroHud from "@/components/RetroHud";

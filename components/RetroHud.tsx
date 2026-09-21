@@ -1,4 +1,4 @@
-import { levelInfo } from "@/components/MilestoneTracker";
+import { levelInfo } from "@/lib/levelInfo";
 
 interface HudSession {
   trade_authorized: boolean | null;

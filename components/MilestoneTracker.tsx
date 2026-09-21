@@ -3,27 +3,8 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { updateBalance } from "@/app/dashboard/actions";
+import { levelInfo } from "@/lib/levelInfo";
 import { MILESTONES } from "@/lib/data/milestones";
-
-export function levelInfo(balance: number) {
-  const floor = MILESTONES[0];
-  const ceiling = MILESTONES[MILESTONES.length - 1];
-
-  let lowerIdx = 0;
-  for (let i = 0; i < MILESTONES.length - 1; i++) {
-    if (balance >= MILESTONES[i]) lowerIdx = i;
-  }
-  const lower = MILESTONES[lowerIdx];
-  const upper = MILESTONES[Math.min(lowerIdx + 1, MILESTONES.length - 1)];
-  // EXP-bar percent is balance-over-the-current-target (not the rung's own
-  // span) so it reads like an RPG bar: "$510 / $1,000 [51%]" rather than a
-  // percentage of the $500-$1,000 span.
-  const stagePercent = Math.min(1, Math.max(0, balance / upper)) * 100;
-  const lvl = lowerIdx + 1;
-  const maxed = balance >= ceiling;
-
-  return { floor, ceiling, lower, upper, stagePercent, lvl, maxed };
-}
 
 // Which (if any) milestone thresholds were newly crossed going from `from`
 // to `to` — drives the transient "LEVEL UP" flash on save.
