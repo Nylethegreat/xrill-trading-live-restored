@@ -5,7 +5,14 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { getStripe } from "@/lib/stripe";
 
-const SITE_URL = "https://xrill-trading-xrill-alert-system.vercel.app";
+// Was hardcoded to a stale preview-deployment URL
+// ("xrill-trading-xrill-alert-system.vercel.app") that stopped being the
+// real domain once xrill-trading.vercel.app became production -- every
+// checkout success/cancel redirect and signup confirmation email link was
+// silently pointing at the wrong host. Now shares the same env var (and
+// fallback) as the webhook's APP_BASE_URL, so there's one source of truth
+// for "what is our real URL" instead of two that can drift apart again.
+const SITE_URL = process.env.NEXT_PUBLIC_APP_URL ?? "https://xrill-trading.vercel.app";
 
 // Sign-in / sign-up used by the unauthenticated split view on /account.
 // These mirror app/login/actions.ts but redirect back to /account on
