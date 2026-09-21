@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
-import { saveAccountSettings, signInFromAccount, signUpFromAccount, createProCheckoutSession } from "./actions";
+import { saveAccountSettings, signInFromAccount, signUpFromAccount, createProCheckoutSession, createEliteCheckoutSession } from "./actions";
 import RealtimeAlertsFeed from "@/components/RealtimeAlertsFeed";
 
 // Queries Supabase (via cookies()) on every request - force dynamic
@@ -170,6 +170,8 @@ export default async function AccountPage({
                 className={`rounded-full border px-2.5 py-0.5 text-xs font-semibold uppercase tracking-wide ${
                   tier === "free"
                     ? "border-white/20 bg-white/10 text-white/60"
+                    : tier === "elite"
+                    ? "border-secondary/40 bg-secondary/15 text-secondary"
                     : "border-accent/40 bg-accent/15 text-accent"
                 }`}
               >
@@ -178,25 +180,78 @@ export default async function AccountPage({
             </p>
           </div>
           {tier === "free" && (
-            <form action={createProCheckoutSession}>
-              <button className="rounded bg-gradient-to-r from-primary to-secondary px-4 py-2 text-sm font-medium text-white hover:opacity-90">
-                Upgrade to Pro
+            <div className="flex gap-2">
+              <form action={createProCheckoutSession}>
+                <button className="rounded bg-gradient-to-r from-primary to-secondary px-4 py-2 text-sm font-medium text-white hover:opacity-90">
+                  Upgrade to Pro
+                </button>
+              </form>
+              <form action={createEliteCheckoutSession}>
+                <button className="rounded border border-secondary/50 px-4 py-2 text-sm font-medium text-secondary hover:bg-secondary/10">
+                  Go Elite
+                </button>
+              </form>
+            </div>
+          )}
+          {tier === "pro" && (
+            <form action={createEliteCheckoutSession}>
+              <button className="rounded border border-secondary/50 px-4 py-2 text-sm font-medium text-secondary hover:bg-secondary/10">
+                Upgrade to Elite
               </button>
             </form>
           )}
         </div>
         {tier === "free" && (
           <p className="mt-2 text-xs text-white/40">
-            Pro unlocks the full Real-Time Alert Engine, Discord Sync, and Double-Up Ladder tracking. Checkout is
-            hosted by Stripe — your card details never touch this site.
+            Pro unlocks persistent trade history, automated pre-trade checklist scoring, and analytics. Elite adds
+            the real-time signals feed and automatic Discord role sync on top. Checkout is hosted by Stripe — your
+            card details never touch this site.
           </p>
+        )}
+        {tier === "pro" && (
+          <p className="mt-2 text-xs text-white/40">
+            Elite adds the real-time signals feed and automatic Discord role sync on top of everything Pro already
+            gives you.
+          </p>
+        )}
+        {tier === "elite" && (
+          <div className="mt-3">
+            <a
+              href="/api/discord/connect"
+              className="inline-block rounded bg-[#5865F2] px-4 py-2 text-sm font-medium text-white hover:opacity-90"
+            >
+              Connect Discord
+            </a>
+            <p className="mt-2 text-xs text-white/40">
+              Links your Discord account and grants the Elite role automatically. Join the XRILL Discord server first
+              if you haven't already.
+            </p>
+          </div>
         )}
       </div>
 
       <div className="mt-8">
         <h2 className="text-sm font-semibold uppercase tracking-wide text-white/50">Live Alerts</h2>
         <div className="mt-3">
-          <RealtimeAlertsFeed variant="feed" />
+          {tier === "elite" ? (
+            <RealtimeAlertsFeed variant="feed" />
+          ) : (
+            <div className="rounded border border-white/10 bg-surface p-4 text-sm text-white/50">
+              <p>
+                The real-time signals feed is an Elite perk.{" "}
+                {tier === "pro" ? (
+                  <>Your Pro plan already includes the full Journal and Analytics — track your own trades there.</>
+                ) : (
+                  <>Free and Pro members can still run the 8-Gate Wizard manually for every trade.</>
+                )}
+              </p>
+              <form action={createEliteCheckoutSession} className="mt-3">
+                <button className="rounded border border-secondary/50 px-3 py-1.5 text-xs font-medium text-secondary hover:bg-secondary/10">
+                  Unlock with Elite
+                </button>
+              </form>
+            </div>
+          )}
         </div>
       </div>
 

@@ -44,14 +44,13 @@ function AlertCard({ alert }: { alert: TradeAlertRow }) {
 
 /**
  * Live view of public.trade_alerts, driven by Supabase Realtime
- * (postgres_changes INSERT). Requires the table to be added to the
- * supabase_realtime publication and the viewer to be signed in — RLS on
- * trade_alerts only lets authenticated users select rows.
+ * (postgres_changes INSERT). Elite-tier perk -- requires the viewer to be
+ * signed in AND profiles.tier === 'elite' (checked client-side on mount);
+ * everyone else sees nothing rendered, silently.
  *
  * variant="toast" (default): a fixed bottom-right stack of popups that
  * appear only for alerts dispatched WHILE this is mounted, then
- * auto-dismiss after ~10s. Mount it once in the root layout so any
- * signed-in member sees it site-wide.
+ * auto-dismiss after ~10s. Mounted once in the root layout for every page.
  *
  * variant="feed": an inline list seeded with the most recent active
  * alerts and kept live thereafter — embed on a page like /account.
@@ -75,6 +74,13 @@ export default function RealtimeAlertsFeed({
         data: { user },
       } = await supabase.auth.getUser();
       if (!user || cancelled) return;
+
+      // The signals feed (both the site-wide toast in the root layout and
+      // the inline "feed" variant) is an Elite-only perk -- check tier here
+      // rather than relying on whoever mounts this component to gate it,
+      // since the toast variant is mounted unconditionally in app/layout.tsx.
+      const { data: profile } = await supabase.from("profiles").select("tier").eq("user_id", user.id).maybeSingle();
+      if (cancelled || profile?.tier !== "elite") return;
 
       if (variant === "feed") {
         const { data } = await supabase

@@ -88,16 +88,27 @@ export async function saveAccountSettings(formData: FormData) {
 // to 'pro' once checkout.session.completed fires -- this action only ever
 // starts the session.
 export async function createProCheckoutSession() {
+  return startTierCheckout("pro", process.env.STRIPE_PRO_PRICE_ID);
+}
+
+// Same flow, for the Elite tier (Pro features + real-time signals + Discord
+// role sync). A separate Stripe Price, not a separate Product -- the
+// webhook tells the two apart via the `tier` value stashed in session
+// metadata below, not by inspecting which price was purchased.
+export async function createEliteCheckoutSession() {
+  return startTierCheckout("elite", process.env.STRIPE_ELITE_PRICE_ID);
+}
+
+async function startTierCheckout(tier: "pro" | "elite", priceId: string | undefined) {
   const supabase = createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
 
-  if (!user) redirect("/account?error=Sign in to upgrade to Pro.");
+  if (!user) redirect(`/account?error=Sign in to upgrade to ${tier === "pro" ? "Pro" : "Elite"}.`);
 
-  const priceId = process.env.STRIPE_PRO_PRICE_ID;
   if (!priceId) {
-    redirect("/account?error=Pro checkout isn't configured yet.");
+    redirect(`/account?error=${tier === "pro" ? "Pro" : "Elite"} checkout isn't configured yet.`);
   }
 
   // Reuse the Stripe customer we already have on file for this user (set by
@@ -122,10 +133,12 @@ export async function createProCheckoutSession() {
         customer: profile?.stripe_customer_id ?? undefined,
         customer_email: profile?.stripe_customer_id ? undefined : user.email,
         line_items: [{ price: priceId, quantity: 1 }],
-        success_url: `${SITE_URL}/account?message=Welcome to Pro! Your upgrade is confirmed.`,
+        success_url: `${SITE_URL}/account?message=${
+          tier === "pro" ? "Welcome to Pro! Your upgrade is confirmed." : "Welcome to Elite! Your upgrade is confirmed."
+        }`,
         cancel_url: `${SITE_URL}/account?error=Checkout canceled.`,
-        metadata: { supabase_user_id: user.id },
-        subscription_data: { metadata: { supabase_user_id: user.id } },
+        metadata: { supabase_user_id: user.id, tier },
+        subscription_data: { metadata: { supabase_user_id: user.id, tier } },
       });
       return { ok: true, url: session.url };
     } catch (err) {
