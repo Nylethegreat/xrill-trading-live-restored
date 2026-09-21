@@ -26,6 +26,7 @@ export default async function NavBar() {
         </Link>
         <div className="flex items-center gap-4 text-sm text-white/70">
           <Link href="/about" className="hover:text-white">About</Link>
+          <Link href="/pricing" className="hover:text-white">Pricing</Link>
           <Link href="/glossary" className="hover:text-white">Glossary</Link>
           {user ? (
             <>
