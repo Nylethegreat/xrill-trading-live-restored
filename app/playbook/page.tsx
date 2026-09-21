@@ -1,5 +1,6 @@
 import Badge from "@/components/Badge";
 import CompoundScalingRoadmap from "@/components/playbook/CompoundScalingRoadmap";
+import SuperStar from "@/components/visuals/SuperStar";
 
 const STAGES = [
   { stage: 1, start: 250, alloc: 150, idle: 100, strategy: "1 Single OTM Contract (30–45 DTE, 0.35Δ)", end: 500 },
@@ -54,7 +55,8 @@ function money(v: number) {
 
 export default function PlaybookPage() {
   return (
-    <div className="mx-auto max-w-5xl px-4 py-10">
+    <div className="relative mx-auto max-w-5xl px-4 py-10">
+      <SuperStar />
       <h1 className="font-mono text-xl font-bold tracking-widest text-white">
         XRILL PROGRESSIVE COMPOUND SYSTEM
       </h1>

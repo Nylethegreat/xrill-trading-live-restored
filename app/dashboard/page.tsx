@@ -4,7 +4,10 @@ import { scoreGrade } from "@/lib/xrill";
 import Badge from "@/components/Badge";
 import CandlestickGlow from "@/components/visuals/CandlestickGlow";
 import PreTradeChecklist from "@/components/PreTradeChecklist";
-import MilestoneTracker from "@/components/MilestoneTracker";
+import MilestoneTracker, { levelInfo } from "@/components/MilestoneTracker";
+import NeonText from "@/components/visuals/NeonText";
+import SuperStar from "@/components/visuals/SuperStar";
+import RetroHud from "@/components/RetroHud";
 
 // Queries Supabase (via cookies()) on every request - force dynamic
 // rendering so `next build` doesn't waste time attempting (and timing
@@ -49,7 +52,13 @@ export default async function DashboardPage() {
       <div className="pointer-events-none absolute inset-x-0 -top-4 h-40 opacity-40">
         <CandlestickGlow variant="banner" className="h-full w-full" />
       </div>
-      <h1 className="relative font-mono text-xl font-bold tracking-widest text-accent">XRILL STATUS</h1>
+      <SuperStar />
+      <div className="relative flex items-center justify-between gap-3">
+        <NeonText as="h1" className="font-mono text-xl font-bold tracking-widest text-accent">
+          XRILL STATUS
+        </NeonText>
+        <RetroHud balance={balance} sessions={allSessions} />
+      </div>
 
       <div className="mt-3 rounded border border-white/10 bg-white/5 p-4">
         {!last ? (

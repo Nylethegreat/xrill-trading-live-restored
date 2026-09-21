@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { updateBalance } from "@/app/dashboard/actions";
 import { MILESTONES } from "@/lib/data/milestones";
 
-function levelInfo(balance: number) {
+export function levelInfo(balance: number) {
   const floor = MILESTONES[0];
   const ceiling = MILESTONES[MILESTONES.length - 1];
 
@@ -47,9 +47,11 @@ function ExpBar({ balance, compact = false }: { balance: number; compact?: boole
         )}
       </div>
 
-      {/* Recessed EXP track */}
+      {/* Recessed EXP track — wrapped in a pulsing gold glow (animate-exp-glow,
+          tailwind.config.ts) purely for retention/reward feel. The
+          stagePercent math driving the fill width above is untouched. */}
       <div
-        className={`relative mt-1 w-full overflow-hidden rounded-sm border-2 border-black/60 bg-black/70 shadow-[inset_0_2px_4px_rgba(0,0,0,0.8)] ${
+        className={`relative mt-1 w-full overflow-hidden rounded-sm border-2 border-black/60 bg-black/70 shadow-[inset_0_2px_4px_rgba(0,0,0,0.8)] motion-safe:animate-exp-glow ${
           compact ? "h-3" : "h-4"
         }`}
       >
