@@ -5,6 +5,7 @@ import { buildTradingProfile, type PerformanceArea } from "@/lib/intelligence";
 import CoachCheckIn from "@/components/intelligence/CoachCheckIn";
 import WeeklyAuditCard from "@/components/WeeklyAuditCard";
 import Link from "next/link";
+import PulseBrain from "@/components/visuals/PulseBrain";
 
 // Queries Supabase (via cookies()) on every request - force dynamic
 // rendering so `next build` doesn't waste time attempting (and timing
@@ -28,12 +29,16 @@ export default async function IntelligencePage() {
   const profile = buildTradingProfile(sessions ?? []);
 
   return (
-    <div className="mx-auto max-w-3xl px-4 py-10">
-      <h1 className="font-mono text-xl font-bold tracking-widest text-white">🧠 XRILL INTELLIGENCE</h1>
-      <p className="mt-1 text-sm text-white/50">
-        Your mindset check-in, plus what your recorded sessions say about your process.
-      </p>
-
+    <div className="relative mx-auto max-w-3xl px-4 py-10">
+      <div className="flex items-start justify-between gap-4">
+        <div>
+          <h1 className="font-mono text-xl font-bold tracking-widest text-white">🧠 XRILL INTELLIGENCE</h1>
+          <p className="mt-1 text-sm text-white/50">
+            Your mindset check-in, plus what your recorded sessions say about your process.
+          </p>
+        </div>
+        <PulseBrain className="hidden h-24 w-24 flex-none sm:block" />
+      </div>
       <Section title="🤖 XRILL Coach" subtitle="Pre-session mindset check-in">
         <CoachCheckIn />
       </Section>

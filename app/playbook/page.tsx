@@ -1,6 +1,12 @@
 import Badge from "@/components/Badge";
 import CompoundScalingRoadmap from "@/components/playbook/CompoundScalingRoadmap";
 import SuperStar from "@/components/visuals/SuperStar";
+import StarUnlocks from "@/components/playbook/StarUnlocks";
+import { createClient } from "@/lib/supabase/server";
+
+// Queries Supabase for the real balance behind the Star Unlocks section --
+// force dynamic so `next build` doesn't attempt to prerender this.
+export const dynamic = "force-dynamic";
 
 const STAGES = [
   { stage: 1, start: 250, alloc: 150, idle: 100, strategy: "1 Single OTM Contract (30–45 DTE, 0.35Δ)", end: 500 },
@@ -53,7 +59,16 @@ function money(v: number) {
   return `$${v.toLocaleString()}`;
 }
 
-export default function PlaybookPage() {
+export default async function PlaybookPage() {
+  const supabase = createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  const { data: account } = user
+    ? await supabase.from("accounts").select("balance").eq("user_id", user.id).maybeSingle()
+    : { data: null };
+  const balance = account?.balance ?? 0;
+
   return (
     <div className="relative mx-auto max-w-5xl px-4 py-10">
       <SuperStar />
@@ -63,6 +78,12 @@ export default function PlaybookPage() {
       <p className="mt-1 text-sm text-white/50">
         Asymmetric 7.5:1 Alpha Framework • Capital Multiplication & Reset Matrix
       </p>
+
+      <div className="mt-6">
+        <Section title="⭐ Star Unlocks" subtitle="Real balance milestones — no shortcuts, just growth">
+          <StarUnlocks balance={balance} />
+        </Section>
+      </div>
 
       <div className="mt-4 rounded border border-primary/30 bg-primary/10 p-4">
         <div className="flex items-center gap-2">

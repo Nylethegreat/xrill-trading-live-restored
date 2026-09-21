@@ -98,6 +98,25 @@ export default function AboutPage() {
           </div>
         </Section>
 
+        <Section title="🔥 What 'Streak' Means" subtitle="The number next to LVL on your dashboard">
+          <div className="space-y-1.5 text-sm">
+            {[
+              ["0 streak", "Your last session was blocked — no shame, that's the system working."],
+              ["1–2 streak", "You're on a roll. Keep the same discipline that got you here."],
+              ["3+ streak", "Streaking — this is when the HUD starts to glow. Don't force a trade just to protect it."],
+            ].map(([label, desc]) => (
+              <div key={label} className="flex gap-3 rounded border border-white/10 bg-surface p-2.5">
+                <span className="w-24 flex-none font-mono text-xs text-accent">{label}</span>
+                <span className="text-white/60">{desc}</span>
+              </div>
+            ))}
+          </div>
+          <p className="mt-2 text-xs text-white/40">
+            Streak = consecutive most-recent sessions that were authorized (cleared all 8 gates), counting back
+            from today. One blocked session resets it to 0 — it isn't a win/loss P&L streak.
+          </p>
+        </Section>
+
         <Section title="📊 Performance Transparency" subtitle="What gets measured, not a highlight reel">
           <div className="space-y-3 text-sm leading-relaxed text-white/80">
             <p>
