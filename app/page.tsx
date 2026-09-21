@@ -19,8 +19,14 @@ export default function HomePage() {
       <div className="pointer-events-none absolute inset-x-0 top-0 h-[480px] opacity-60">
         <CandlestickGlow variant="hero" className="h-full w-full" />
       </div>
-      <div className="pointer-events-none absolute inset-y-0 right-0 hidden h-[480px] w-64 md:block">
-        <WinsTicker className="h-full w-full" />
+      <div className="absolute inset-y-0 right-0 hidden h-[480px] w-80 flex-col md:flex">
+        <WinsTicker className="min-h-0 flex-1" />
+        <a
+          href="#ledger"
+          className="pointer-events-auto relative z-10 mb-4 mr-3 self-end text-[10px] text-white/30 underline hover:text-white/50"
+        >
+          wins shown only — full disclosed ledger ↓
+        </a>
       </div>
       <div className="pointer-events-none absolute inset-x-0 top-0 h-[480px] bg-gradient-to-b from-background/10 via-background/60 to-background" />
 
@@ -61,6 +67,7 @@ export default function HomePage() {
         </Section>
 
         <Section title="📒 Public Trade Ledger" subtitle="Every closed alert, live from the database — no login required">
+          <div id="ledger" />
           <PublicTradeLedger />
         </Section>
       </div>
