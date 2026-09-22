@@ -11,13 +11,13 @@ export default function GatePipeline() {
     <div className="rounded-xl border border-white/10 bg-surface p-5">
       {/* Horizontal rail of gate stations */}
       <div className="relative overflow-x-auto pb-2">
-        <div className="flex min-w-[560px] items-center justify-between gap-1 px-1 sm:min-w-0">
+        <div className="flex min-w-[560px] items-start justify-between gap-1 px-1 sm:min-w-0">
           {GATES.map((g, i) => {
             const isActive = i === active;
             const isPast = i < active;
             const cleared = isPast || isActive;
             return (
-              <div key={g.n} className="flex flex-1 items-center">
+              <div key={g.n} className="flex flex-1 items-start">
                 <button
                   type="button"
                   onClick={() => setActive(i)}
@@ -62,9 +62,10 @@ export default function GatePipeline() {
                 </button>
                 {i < GATES.length - 1 && (
                   <div
-                    className={`relative mx-1 h-[3px] flex-1 overflow-hidden rounded-full ${
+                    className={`relative mx-1 mt-4 h-[3px] flex-1 flex-none overflow-hidden rounded-full ${
                       isPast ? "bg-accent shadow-[0_0_8px_2px_rgba(34,197,94,0.7)]" : "bg-white/10"
                     }`}
+                    style={{ width: "100%" }}
                   >
                     {/* Laser scanline sweeping along cleared segments only */}
                     {isPast && (

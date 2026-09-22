@@ -3,7 +3,6 @@ import { createClient } from "@/lib/supabase/server";
 import { Section, Grid, Stat } from "@/components/Layout";
 import { buildTradingProfile, type PerformanceArea } from "@/lib/intelligence";
 import CoachCheckIn from "@/components/intelligence/CoachCheckIn";
-import WeeklyAuditCard from "@/components/WeeklyAuditCard";
 import Link from "next/link";
 import PulseBrain from "@/components/visuals/PulseBrain";
 
@@ -41,10 +40,6 @@ export default async function IntelligencePage() {
       </div>
       <Section title="🤖 XRILL Coach" subtitle="Pre-session mindset check-in">
         <CoachCheckIn />
-      </Section>
-
-      <Section title="📝 Weekly Performance Audit" subtitle="The Right / Wrong breakdown, updated weekly">
-        <WeeklyAuditCard />
       </Section>
 
       {!profile ? (

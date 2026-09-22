@@ -29,7 +29,7 @@ const TIERS: TierCopy[] = [
   {
     id: "pro",
     name: "Pro",
-    price: "$19.99",
+    price: "$29.99",
     tagline: "Personal accountability — your discipline, tracked.",
     highlight: "Most Popular",
     features: [
@@ -43,7 +43,7 @@ const TIERS: TierCopy[] = [
   {
     id: "elite",
     name: "Elite",
-    price: "$79.99",
+    price: "$49.99",
     tagline: "Pro, plus the real-time signals feed and Discord.",
     features: [
       "Everything in Pro",

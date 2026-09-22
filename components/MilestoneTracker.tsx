@@ -164,7 +164,7 @@ export default function MilestoneTracker({ initialBalance }: { initialBalance: n
 
       <div className="mt-4">
         <ExpBar balance={balance} />
-        <div className="mt-3 flex justify-between">
+        <div className="mt-3 flex items-start justify-between">
           {MILESTONES.map((m) => {
             const reached = balance >= m;
             return (
