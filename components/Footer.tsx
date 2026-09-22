@@ -2,7 +2,6 @@ import Link from "next/link";
 
 export default function Footer() {
   return (
-<<<<<<< ours
     <footer className="relative mt-16 overflow-hidden border-t border-white/10 bg-background/60 px-4 py-6 text-xs leading-relaxed text-white/40">
       {/* Liquid lava footer -- reverted from an orange trial back to green
           per feedback, now with more layered detail: three blob layers at
@@ -43,10 +42,6 @@ export default function Footer() {
       </div>
 
       <div className="relative z-10 mx-auto max-w-5xl space-y-3">
-=======
-    <footer className="mt-16 border-t border-white/10 bg-background/60 px-4 py-6 text-xs leading-relaxed text-white/40">
-      <div className="mx-auto max-w-5xl space-y-3">
->>>>>>> theirs
         <p>
           <strong className="text-white/60">Educational content only — not investment advice.</strong> XRILL is a
           trade-planning and journaling tool. Nothing on this site — including any trade alert, XRILL score, or
@@ -72,8 +67,4 @@ export default function Footer() {
       </div>
     </footer>
   );
-<<<<<<< ours
 }
-=======
-}).
->>>>>>> theirs
