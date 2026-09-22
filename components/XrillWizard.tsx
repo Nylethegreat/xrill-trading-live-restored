@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import TorpedoGauge from "@/components/session/TorpedoGauge";
 import {
   scoreDailyCheckIn,
   scoreTradeGate,
@@ -158,7 +159,9 @@ export default function XrillWizard({
   } | null>(null);
 
   if (step === "daily") {
-    const allAnswered = Object.values(daily).every((v) => v !== null);
+    const dailyValues = Object.values(daily);
+    const answeredCount = dailyValues.filter((v) => v !== null).length;
+    const allAnswered = dailyValues.every((v) => v !== null);
     return (
       <Shell title="Step 1/6 — Daily Check-In" step="daily">
         <YesNo label="Did you sleep well?" value={daily.sleep} onChange={(v) => setDaily({ ...daily, sleep: v })} />
@@ -169,6 +172,7 @@ export default function XrillWizard({
           value={daily.disciplined}
           onChange={(v) => setDaily({ ...daily, disciplined: v })}
         />
+        <TorpedoGauge answered={answeredCount} total={dailyValues.length} />
         <NextButton
           disabled={!allAnswered}
           onClick={() => {

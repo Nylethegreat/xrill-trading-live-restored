@@ -2,21 +2,39 @@ import Link from "next/link";
 
 export default function Footer() {
   return (
+<<<<<<< ours
     <footer className="relative mt-16 overflow-hidden border-t border-white/10 bg-background/60 px-4 py-6 text-xs leading-relaxed text-white/40">
-      {/* Lava footer — two blurred radial blobs tiled end-to-end, drifting
-          via animate-liquid-drift (-50% loop, same trick as the wins
-          ticker / ekg scroll), with a slow opacity flicker layered on top
-          for an "ember" feel. Purely decorative, sits behind the text
-          (z-0), low opacity so the disclaimer stays fully readable. */}
-      <div aria-hidden="true" className="pointer-events-none absolute inset-x-0 bottom-0 z-0 h-10 overflow-hidden opacity-35 motion-safe:animate-candle-pulse">
+      {/* Liquid lava footer -- reverted from an orange trial back to green
+          per feedback, now with more layered detail: three blob layers at
+          different sizes/speeds/opacities drifting past each other
+          (animate-liquid-drift, -50% loop) plus a slow overall brightness
+          breathe (animate-candle-pulse) for a "lava lamp" feel. The orange
+          version lives in git history (patch 0010) if we ever want it
+          back -- `git log -p -- components/Footer.tsx`. Purely decorative,
+          z-0/low-opacity so the disclaimer stays fully readable. */}
+      <div aria-hidden="true" className="pointer-events-none absolute inset-x-0 bottom-0 z-0 h-12 overflow-hidden opacity-35 motion-safe:animate-candle-pulse">
         <div className="motion-safe:animate-liquid-drift flex h-full w-[200%]">
           {[0, 1].map((i) => (
             <div key={i} className="flex h-full w-1/2 items-end">
               <div
-                className="h-7 w-full blur-xl"
+                className="h-8 w-full blur-xl"
                 style={{
                   background:
-                    "repeating-radial-gradient(circle at 10% 80%, rgba(249,115,22,0.95) 0px, transparent 60px), repeating-radial-gradient(circle at 35% 60%, rgba(234,88,12,0.8) 0px, transparent 70px), repeating-radial-gradient(circle at 65% 85%, rgba(250,204,21,0.85) 0px, transparent 55px), repeating-radial-gradient(circle at 90% 65%, rgba(220,38,38,0.7) 0px, transparent 65px)",
+                    "repeating-radial-gradient(circle at 8% 85%, rgba(34,197,94,0.95) 0px, transparent 55px), repeating-radial-gradient(circle at 30% 55%, rgba(74,222,128,0.75) 0px, transparent 75px), repeating-radial-gradient(circle at 55% 80%, rgba(16,185,129,0.85) 0px, transparent 60px), repeating-radial-gradient(circle at 78% 60%, rgba(134,239,172,0.6) 0px, transparent 70px), repeating-radial-gradient(circle at 95% 82%, rgba(21,128,61,0.8) 0px, transparent 50px)",
+                }}
+              />
+            </div>
+          ))}
+        </div>
+        {/* second, slower/smaller layer offset in time for depth */}
+        <div className="absolute inset-0 motion-safe:animate-liquid-drift-slow flex h-full w-[200%] opacity-70">
+          {[0, 1].map((i) => (
+            <div key={i} className="flex h-full w-1/2 items-end">
+              <div
+                className="h-4 w-full blur-md"
+                style={{
+                  background:
+                    "repeating-radial-gradient(circle at 20% 90%, rgba(187,247,208,0.7) 0px, transparent 40px), repeating-radial-gradient(circle at 60% 88%, rgba(74,222,128,0.6) 0px, transparent 45px)",
                 }}
               />
             </div>
@@ -25,6 +43,10 @@ export default function Footer() {
       </div>
 
       <div className="relative z-10 mx-auto max-w-5xl space-y-3">
+=======
+    <footer className="mt-16 border-t border-white/10 bg-background/60 px-4 py-6 text-xs leading-relaxed text-white/40">
+      <div className="mx-auto max-w-5xl space-y-3">
+>>>>>>> theirs
         <p>
           <strong className="text-white/60">Educational content only — not investment advice.</strong> XRILL is a
           trade-planning and journaling tool. Nothing on this site — including any trade alert, XRILL score, or
@@ -50,4 +72,8 @@ export default function Footer() {
       </div>
     </footer>
   );
+<<<<<<< ours
 }
+=======
+}).
+>>>>>>> theirs

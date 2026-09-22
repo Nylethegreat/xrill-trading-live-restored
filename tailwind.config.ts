@@ -73,6 +73,10 @@ const config: Config = {
           "0%": { transform: "translateX(0)" },
           "100%": { transform: "translateX(-50%)" },
         },
+        "liquid-drift-slow": {
+          "0%": { transform: "translateX(-50%)" },
+          "100%": { transform: "translateX(0)" },
+        },
       },
       animation: {
         // EKG heartbeat line — the SVG polyline is duplicated end-to-end,
@@ -86,6 +90,7 @@ const config: Config = {
         "star-drift": "star-drift 14s ease-in-out infinite",
         "star-spin": "star-spin 6s linear infinite",
         "liquid-drift": "liquid-drift 12s linear infinite",
+        "liquid-drift-slow": "liquid-drift-slow 20s linear infinite",
       },
     },
   },

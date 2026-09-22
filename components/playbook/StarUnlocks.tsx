@@ -48,12 +48,13 @@ function StarIcon({ tier, unlocked }: { tier: "purple" | "rainbow" | "prismatic"
       </defs>
       <path
         d="M12 1.5 L14.7 8.8 L22.5 9.3 L16.3 14.1 L18.4 21.8 L12 17.4 L5.6 21.8 L7.7 14.1 L1.5 9.3 L9.3 8.8 Z"
-        fill={unlocked ? `url(#${gradientId})` : "#2a2a35"}
-        stroke={unlocked ? "#fff" : "#4a4a55"}
+        fill={`url(#${gradientId})`}
+        stroke={unlocked ? "#fff" : "#8a8a95"}
         strokeWidth="0.6"
+        opacity={unlocked ? 1 : 0.35}
       />
-      <ellipse cx="9.5" cy="12" rx="1" ry="1.6" fill={unlocked ? "#111" : "#1a1a22"} />
-      <ellipse cx="14.5" cy="12" rx="1" ry="1.6" fill={unlocked ? "#111" : "#1a1a22"} />
+      <ellipse cx="9.5" cy="12" rx="1" ry="1.6" fill="#111" opacity={unlocked ? 1 : 0.5} />
+      <ellipse cx="14.5" cy="12" rx="1" ry="1.6" fill="#111" opacity={unlocked ? 1 : 0.5} />
     </svg>
   );
 }
@@ -73,7 +74,7 @@ export default function StarUnlocks({ balance }: { balance: number }) {
               unlocked ? "border-white/20 bg-white/5" : "border-white/10 bg-black/20"
             }`}
           >
-            <div className={unlocked ? "drop-shadow-[0_0_10px_rgba(255,255,255,0.5)]" : "opacity-50"}>
+            <div className={unlocked ? "drop-shadow-[0_0_10px_rgba(255,255,255,0.5)]" : ""}>
               <StarIcon tier={iconKind(i)} unlocked={unlocked} />
             </div>
             <p className={`text-sm font-semibold ${unlocked ? "text-white" : "text-white/40"}`}>{tier.label}</p>

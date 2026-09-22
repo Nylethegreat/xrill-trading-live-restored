@@ -2,6 +2,7 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { saveAccountSettings, signInFromAccount, signUpFromAccount, createProCheckoutSession, createEliteCheckoutSession } from "./actions";
 import RealtimeAlertsFeed from "@/components/RealtimeAlertsFeed";
+import LightningBolt from "@/components/visuals/LightningBolt";
 
 // Queries Supabase (via cookies()) on every request - force dynamic
 // rendering so `next build` doesn't waste time attempting (and timing
@@ -147,8 +148,9 @@ export default async function AccountPage({
   const maxRisk = balance * (riskPercent / 100);
 
   return (
-    <div className="mx-auto max-w-md px-4 py-12">
-      <h1 className="text-2xl font-semibold">Account Settings</h1>
+    <div className="relative mx-auto max-w-md overflow-hidden px-4 py-12">
+      <LightningBolt className="right-[-40px] top-0 h-[420px] w-[180px] opacity-40" />
+      <h1 className="relative text-2xl font-semibold">Account Settings</h1>
 
       {searchParams.message && (
         <p className="mt-4 rounded bg-emerald-500/10 px-3 py-2 text-sm text-emerald-300">
@@ -297,28 +299,43 @@ export default async function AccountPage({
             className="mt-1 w-full rounded border border-white/20 bg-transparent px-3 py-2 outline-none focus:border-accent"
           />
         </div>
-        <div>
-          <label className="block text-sm text-white/70">Risk per trade (%)</label>
-          <input
-            name="risk_percent"
-            type="number"
-            step="0.01"
-            defaultValue={riskPercent}
-            required
-            className="mt-1 w-full rounded border border-white/20 bg-transparent px-3 py-2 outline-none focus:border-accent"
-          />
-        </div>
-        <div>
-          <label className="block text-sm text-white/70">Daily loss limit ($)</label>
-          <input
-            name="daily_loss_limit"
-            type="number"
-            step="0.01"
-            defaultValue={dailyLossLimit}
-            required
-            className="mt-1 w-full rounded border border-white/20 bg-transparent px-3 py-2 outline-none focus:border-accent"
-          />
-        </div>
+        {tier === "free" ? (
+          <div className="rounded border border-white/10 bg-white/5 p-3">
+            <p className="text-sm text-white/60">
+              <span className="text-accent">Pro+</span> unlocks editable risk-per-trade and a daily loss limit —
+              your max trade risk recalculates live as you adjust either one.
+            </p>
+            {/* Hidden inputs preserve the existing values so Free tier
+                doesn't accidentally null them out on save. */}
+            <input type="hidden" name="risk_percent" value={riskPercent} />
+            <input type="hidden" name="daily_loss_limit" value={dailyLossLimit} />
+          </div>
+        ) : (
+          <>
+            <div>
+              <label className="block text-sm text-white/70">Risk per trade (%)</label>
+              <input
+                name="risk_percent"
+                type="number"
+                step="0.01"
+                defaultValue={riskPercent}
+                required
+                className="mt-1 w-full rounded border border-white/20 bg-transparent px-3 py-2 outline-none focus:border-accent"
+              />
+            </div>
+            <div>
+              <label className="block text-sm text-white/70">Daily loss limit ($)</label>
+              <input
+                name="daily_loss_limit"
+                type="number"
+                step="0.01"
+                defaultValue={dailyLossLimit}
+                required
+                className="mt-1 w-full rounded border border-white/20 bg-transparent px-3 py-2 outline-none focus:border-accent"
+              />
+            </div>
+          </>
+        )}
 
         <p className="text-sm text-white/50">
           Maximum trade risk at current settings: <span className="text-white">${maxRisk.toLocaleString()}</span>
