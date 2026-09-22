@@ -8,6 +8,7 @@ import MilestoneTracker from "@/components/MilestoneTracker";
 import NeonText from "@/components/visuals/NeonText";
 import SuperStar from "@/components/visuals/SuperStar";
 import RetroHud from "@/components/RetroHud";
+import OpenPositionCard from "@/components/OpenPositionCard";
 
 // Queries Supabase (via cookies()) on every request - force dynamic
 // rendering so `next build` doesn't waste time attempting (and timing
@@ -23,13 +24,14 @@ export default async function DashboardPage() {
   const supabase = createClient();
   const { data: { user } } = await supabase.auth.getUser();
 
-  const [{ data: account }, { data: sessions }] = await Promise.all([
+  const [{ data: account }, { data: sessions }, { data: outcomes }] = await Promise.all([
     supabase.from("accounts").select("balance, risk_percent, daily_loss_limit").eq("user_id", user!.id).maybeSingle(),
     supabase
       .from("xrill_sessions")
       .select("*")
       .eq("user_id", user!.id)
       .order("created_at", { ascending: false }),
+    supabase.from("xrill_outcomes").select("session_id").eq("user_id", user!.id),
   ]);
 
   const balance = account?.balance ?? 50000;
@@ -39,6 +41,13 @@ export default async function DashboardPage() {
   const allSessions = sessions ?? [];
   const last = allSessions[0] ?? null;
   const recent = allSessions.slice(0, 5);
+
+  // "Open position" = the most recent authorized session that doesn't
+  // have a matching xrill_outcomes row yet -- a real, derived fact
+  // (nothing fabricated), not a separately-tracked "is this trade still
+  // open" flag anywhere in the schema.
+  const outcomeSessionIds = new Set((outcomes ?? []).map((o) => o.session_id));
+  const openPosition = allSessions.find((s) => s.trade_authorized && !outcomeSessionIds.has(s.id)) ?? null;
 
   const total = allSessions.length;
   const authorized = allSessions.filter((s) => s.trade_authorized).length;
@@ -69,6 +78,8 @@ export default async function DashboardPage() {
           </p>
         )}
       </div>
+
+      {openPosition && <OpenPositionCard session={openPosition} />}
 
       <div className="relative mt-4">
         <PreTradeChecklist />

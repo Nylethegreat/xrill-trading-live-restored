@@ -3,7 +3,15 @@
 // magnetic-torpedo-level style gauge (matching the spirit-level bubbles
 // added to the homepage's GatePipeline). Never touches scoring/
 // authorization logic -- it's fed a count, not the answers themselves.
-export default function TorpedoGauge({ answered, total }: { answered: number; total: number }) {
+export default function TorpedoGauge({
+  answered,
+  total,
+  nextLabel = "cleared for Gate 2",
+}: {
+  answered: number;
+  total: number;
+  nextLabel?: string;
+}) {
   const pct = total > 0 ? (answered / total) * 100 : 0;
   const full = answered >= total;
 
@@ -39,7 +47,7 @@ export default function TorpedoGauge({ answered, total }: { answered: number; to
         />
       </div>
       <p className={`mt-1 text-center text-[11px] font-mono ${full ? "text-accent" : "text-white/40"}`}>
-        {full ? "⚡ LEVEL — cleared for Gate 2" : `${answered}/${total} answered`}
+        {full ? `⚡ LEVEL — ${nextLabel}` : `${answered}/${total} answered`}
       </p>
     </div>
   );

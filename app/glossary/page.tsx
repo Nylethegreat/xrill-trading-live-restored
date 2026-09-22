@@ -172,6 +172,31 @@ const CATEGORIES: Category[] = [
     ],
   },
   {
+    name: "Progress & Levels",
+    terms: [
+      {
+        term: "LVL (Level)",
+        definition:
+          "Which rung of the Double-Up Ladder your account balance is currently on ($250 → $500 → $1,000 → $2,000 → $5,000, 5 levels total). This is what the EXP bar on your Dashboard tracks, and it's separate from the two entries below.",
+      },
+      {
+        term: "Streak",
+        definition:
+          "Consecutive most-recent sessions that were authorized (cleared all 8 gates), counting back from today. One blocked session resets it to 0 — see the About page for the full 0 / 1-2 / 3+ breakdown.",
+      },
+      {
+        term: "Twelve-Stage Compounding Roadmap",
+        definition:
+          "The Playbook's real position-sizing framework, from a $250 start cap all the way to $1,000,000 across 12 stages — much larger in scope than the 5-level Double-Up Ladder, and what actually governs allocation as the account grows.",
+      },
+      {
+        term: "Star Unlocks",
+        definition:
+          "Three cosmetic badges on the Playbook page (Purple $100k, Rainbow $250k, Prismatic $1M) tied to real account balance milestones — a separate reward layer from both LVL and the Twelve-Stage roadmap, not a required step in either.",
+      },
+    ],
+  },
+  {
     name: "The Greeks",
     terms: GREEKS.map((g) => ({
       term: g.name,

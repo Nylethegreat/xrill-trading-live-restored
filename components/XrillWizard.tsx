@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import TorpedoGauge from "@/components/session/TorpedoGauge";
 import AllocationWall from "@/components/session/AllocationWall";
+import SuperStar from "@/components/visuals/SuperStar";
 import {
   scoreDailyCheckIn,
   scoreTradeGate,
@@ -191,7 +192,9 @@ export default function XrillWizard({
   }
 
   if (step === "gate") {
-    const allAnswered = Object.values(gate).every((v) => v !== null);
+    const gateValues = Object.values(gate);
+    const gateAnsweredCount = gateValues.filter((v) => v !== null).length;
+    const allAnswered = gateValues.every((v) => v !== null);
     return (
       <Shell title="Step 2/6 — Trade Gate" step="gate" accountBalance={accountBalance}>
         <YesNo label="Is the market open?" value={gate.marketOpen} onChange={(v) => setGate({ ...gate, marketOpen: v })} />
@@ -208,6 +211,7 @@ export default function XrillWizard({
           value={gate.mentallyAllowed}
           onChange={(v) => setGate({ ...gate, mentallyAllowed: v })}
         />
+        <TorpedoGauge answered={gateAnsweredCount} total={gateValues.length} nextLabel="cleared for Setup Score" />
         <NextButton
           disabled={!allAnswered}
           onClick={() => {
@@ -493,7 +497,9 @@ export default function XrillWizard({
   }
 
   if (step === "execution") {
-    const allAnswered = Object.values(execution).every((v) => v !== null);
+    const executionValues = Object.values(execution);
+    const executionAnsweredCount = executionValues.filter((v) => v !== null).length;
+    const allAnswered = executionValues.every((v) => v !== null);
     return (
       <Shell title="Step 6/6 — Execution Check" step="execution" accountBalance={accountBalance}>
         <YesNo
@@ -506,6 +512,7 @@ export default function XrillWizard({
         <YesNo label="Is your stop loss already placed?" value={execution.stopReady} onChange={(v) => setExecution({ ...execution, stopReady: v })} />
         <YesNo label="Within your daily loss limit?" value={execution.riskLimit} onChange={(v) => setExecution({ ...execution, riskLimit: v })} />
         <YesNo label="Trading the plan, not emotions?" value={execution.emotional} onChange={(v) => setExecution({ ...execution, emotional: v })} />
+        <TorpedoGauge answered={executionAnsweredCount} total={executionValues.length} nextLabel="cleared for Trade Score" />
 
         {submitError && <p className="mt-3 text-sm text-blocked">{submitError}</p>}
 
@@ -575,6 +582,7 @@ export default function XrillWizard({
   if (step === "result" && result) {
     return (
       <Shell title={result.authorized ? "🟢 Trade Authorized" : "🟣 Trade Blocked"} accountBalance={accountBalance}>
+        {result.authorized && <SuperStar className="right-2 top-0 h-10 w-10" />}
         <Row label="XRILL Score" value={`${result.tradeScore}/100`} />
         {!result.authorized && result.rejectionReason && (
           <Row label="Rejection reasons" value={result.rejectionReason} highlight="bad" />
@@ -612,7 +620,7 @@ function Shell({
     <div className="mx-auto max-w-5xl px-4 py-10">
       {step && <StepTracker current={step} />}
       <div className="mt-6 grid gap-6 lg:grid-cols-[1fr_260px]">
-        <div className="max-w-2xl">
+        <div className="relative max-w-2xl">
           <h1 className="mb-6 text-xl font-semibold">{title}</h1>
           {children}
         </div>

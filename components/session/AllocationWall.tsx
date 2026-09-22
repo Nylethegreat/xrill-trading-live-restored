@@ -8,12 +8,19 @@
 // this is how much of the account is allowed to be deployed across ALL
 // open positions at once. Both are real, both matter, they're just
 // different rules.
+import LightningBolt from "@/components/visuals/LightningBolt";
+
 export default function AllocationWall({ balance }: { balance: number }) {
   const tradeAllocation = balance * 0.6;
   const idleCash = balance * 0.4;
 
   return (
-    <div className="rounded-lg border border-white/10 bg-surface p-4">
+    <div className="relative overflow-hidden rounded-lg border border-white/10 bg-surface p-4">
+      <LightningBolt
+        className="right-1 top-0 h-full w-10 opacity-25"
+        color="#60a5fa"
+        glow="rgba(96,165,250,0.85)"
+      />
       <h3 className="text-xs font-semibold uppercase tracking-wide text-white/50">Capital Allocation</h3>
       <p className="mt-1 text-[11px] text-white/40">60% deployable / 40% idle, per the compounding playbook</p>
 
