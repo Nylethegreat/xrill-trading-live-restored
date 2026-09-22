@@ -225,8 +225,8 @@ export default async function AccountPage({
               Connect Discord
             </a>
             <p className="mt-2 text-xs text-white/40">
-              Links your Discord account and grants the Elite role automatically. Join the XRILL Discord server first
-              if you haven't already.
+              Links your Discord account, adds you to the XRILL server automatically, and grants the Elite role —
+              no invite link needed.
             </p>
           </div>
         )}

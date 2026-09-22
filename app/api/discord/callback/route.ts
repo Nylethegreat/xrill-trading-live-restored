@@ -1,6 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { createClient } from "@/lib/supabase/server";
-import { exchangeDiscordCode, setEliteDiscordRole } from "@/lib/discord";
+import { exchangeDiscordCode, addGuildMember, setEliteDiscordRole } from "@/lib/discord";
 
 export async function GET(request: NextRequest) {
   const { searchParams, origin } = new URL(request.url);
@@ -34,16 +34,29 @@ export async function GET(request: NextRequest) {
     return NextResponse.redirect(`${origin}/account?error=${encodeURIComponent(error.message)}`);
   }
 
-  // Only Elite members actually get the role granted. Linking Discord as a
-  // Free/Pro member still saves discord_user_id (useful once they upgrade
-  // later) but doesn't touch server roles.
+  // Only Elite members get auto-joined to the Discord server and get the
+  // role. Linking Discord as a Free/Pro member still saves
+  // discord_user_id (useful once they upgrade later) but doesn't touch
+  // the server at all.
   if (profile?.tier === "elite") {
-    const granted = await setEliteDiscordRole(discordUser.id, true);
-    if (!granted) {
+    const eliteRoleId = process.env.DISCORD_ELITE_ROLE_ID;
+    const joinResult = await addGuildMember(discordUser.accessToken, discordUser.id, eliteRoleId);
+
+    // addGuildMember attaches the role only when actually adding someone
+    // new -- Discord ignores the `roles` field for a PUT against an
+    // existing member. So whenever they weren't brand-new (or the join
+    // call itself failed for some other reason), fall back to granting
+    // the role directly.
+    const roleGranted = joinResult === "joined" ? true : await setEliteDiscordRole(discordUser.id, true);
+
+    if (joinResult === "failed" && !roleGranted) {
       return NextResponse.redirect(
-        `${origin}/account?message=Discord linked as @${discordUser.username}, but the Elite role couldn't be granted automatically -- make sure you've joined the XRILL Discord server first, then try Connect Discord again.`
+        `${origin}/account?message=Discord linked as @${discordUser.username}, but couldn't add you to the server automatically -- join the XRILL Discord via invite link, then try Connect Discord again.`
       );
     }
+
+    const welcomeNote = joinResult === "joined" ? " You've been added to the server automatically." : "";
+    return NextResponse.redirect(`${origin}/account?message=Discord linked as @${discordUser.username}.${welcomeNote}`);
   }
 
   return NextResponse.redirect(`${origin}/account?message=Discord linked as @${discordUser.username}.`);
