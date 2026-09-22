@@ -5,7 +5,7 @@
 // what the system actually enforces trade-by-trade; this one is a
 // pedagogical "power of compounding" illustration. Keep both, but never
 // blur them together in copy.
-export const SCALING_PRINCIPAL = 200;
+export const SCALING_PRINCIPAL = 250;
 export const SCALING_TARGET = 100_000;
 export const SCALING_MULTIPLE = SCALING_TARGET / SCALING_PRINCIPAL; // 500
 

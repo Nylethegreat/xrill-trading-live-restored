@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import TorpedoGauge from "@/components/session/TorpedoGauge";
+import AllocationWall from "@/components/session/AllocationWall";
 import {
   scoreDailyCheckIn,
   scoreTradeGate,
@@ -163,7 +164,7 @@ export default function XrillWizard({
     const answeredCount = dailyValues.filter((v) => v !== null).length;
     const allAnswered = dailyValues.every((v) => v !== null);
     return (
-      <Shell title="Step 1/6 — Daily Check-In" step="daily">
+      <Shell title="Step 1/6 — Daily Check-In" step="daily" accountBalance={accountBalance}>
         <YesNo label="Did you sleep well?" value={daily.sleep} onChange={(v) => setDaily({ ...daily, sleep: v })} />
         <YesNo label="Are you focused today?" value={daily.focused} onChange={(v) => setDaily({ ...daily, focused: v })} />
         <YesNo label="Are you emotionally stable?" value={daily.emotional} onChange={(v) => setDaily({ ...daily, emotional: v })} />
@@ -192,7 +193,7 @@ export default function XrillWizard({
   if (step === "gate") {
     const allAnswered = Object.values(gate).every((v) => v !== null);
     return (
-      <Shell title="Step 2/6 — Trade Gate" step="gate">
+      <Shell title="Step 2/6 — Trade Gate" step="gate" accountBalance={accountBalance}>
         <YesNo label="Is the market open?" value={gate.marketOpen} onChange={(v) => setGate({ ...gate, marketOpen: v })} />
         <YesNo label="Inside your allowed trading hours?" value={gate.tradingHours} onChange={(v) => setGate({ ...gate, tradingHours: v })} />
         <YesNo
@@ -233,7 +234,7 @@ export default function XrillWizard({
     const badge = total >= 25 ? { text: "A+ SETUP", tone: "good" as const } : total >= 20 ? { text: "GOOD SETUP", tone: "good" as const } : { text: "BLOCKED", tone: "blocked" as const };
 
     return (
-      <Shell title="Step 3/6 — Setup Score" step="setup">
+      <Shell title="Step 3/6 — Setup Score" step="setup" accountBalance={accountBalance}>
         <p className="mb-3 text-xs text-white/50">
           Five plain-language checks, 5 points each. You need 20/25 to continue — a system that authorizes
           everything isn't disciplined, it's just permissive.
@@ -308,7 +309,7 @@ export default function XrillWizard({
     const exceedsMax = maxContracts !== null && contracts > maxContracts;
 
     return (
-      <Shell title="Step 4/6 — Trade Plan" step="plan">
+      <Shell title="Step 4/6 — Trade Plan" step="plan" accountBalance={accountBalance}>
         <div className="space-y-3">
           <Field label="Ticker">
             <input
@@ -454,7 +455,7 @@ export default function XrillWizard({
     const risk = evaluateRisk(planResult.tradeRisk!, contracts, accountBalance, riskPercent);
 
     return (
-      <Shell title="Step 5/6 — Risk Manager" step="risk">
+      <Shell title="Step 5/6 — Risk Manager" step="risk" accountBalance={accountBalance}>
         <p className="mb-2 text-xs text-white/50">
           1 options contract <Hint text="Standard equity/ETF options contracts control 100 shares of the underlying — that's why risk is always premium × 100 × contracts." /> controls 100 shares — every dollar amount below already accounts for that.
         </p>
@@ -494,7 +495,7 @@ export default function XrillWizard({
   if (step === "execution") {
     const allAnswered = Object.values(execution).every((v) => v !== null);
     return (
-      <Shell title="Step 6/6 — Execution Check" step="execution">
+      <Shell title="Step 6/6 — Execution Check" step="execution" accountBalance={accountBalance}>
         <YesNo
           label="Did you wait for confirmation?"
           hint="Wait for the candle to close before acting — chasing a spike mid-candle is how you buy the top of the move instead of the start of it."
@@ -559,7 +560,7 @@ export default function XrillWizard({
 
   if (step === "blocked") {
     return (
-      <Shell title="🟣 Session Blocked">
+      <Shell title="🟣 Session Blocked" accountBalance={accountBalance}>
         <p className="text-white/80">{blockedReason}</p>
         <button
           onClick={() => router.push("/dashboard")}
@@ -573,7 +574,7 @@ export default function XrillWizard({
 
   if (step === "result" && result) {
     return (
-      <Shell title={result.authorized ? "🟢 Trade Authorized" : "🟣 Trade Blocked"}>
+      <Shell title={result.authorized ? "🟢 Trade Authorized" : "🟣 Trade Blocked"} accountBalance={accountBalance}>
         <Row label="XRILL Score" value={`${result.tradeScore}/100`} />
         {!result.authorized && result.rejectionReason && (
           <Row label="Rejection reasons" value={result.rejectionReason} highlight="bad" />
@@ -596,12 +597,31 @@ export default function XrillWizard({
   return null;
 }
 
-function Shell({ title, step, children }: { title: string; step?: string; children: React.ReactNode }) {
+function Shell({
+  title,
+  step,
+  accountBalance,
+  children,
+}: {
+  title: string;
+  step?: string;
+  accountBalance?: number;
+  children: React.ReactNode;
+}) {
   return (
-    <div className="mx-auto max-w-2xl px-4 py-10">
+    <div className="mx-auto max-w-5xl px-4 py-10">
       {step && <StepTracker current={step} />}
-      <h1 className="mb-6 text-xl font-semibold">{title}</h1>
-      {children}
+      <div className="mt-6 grid gap-6 lg:grid-cols-[1fr_260px]">
+        <div className="max-w-2xl">
+          <h1 className="mb-6 text-xl font-semibold">{title}</h1>
+          {children}
+        </div>
+        {typeof accountBalance === "number" && (
+          <div className="lg:sticky lg:top-6 lg:self-start">
+            <AllocationWall balance={accountBalance} />
+          </div>
+        )}
+      </div>
     </div>
   );
 }

@@ -30,7 +30,7 @@ export default function CompoundScalingRoadmap() {
           constant weekly return rate <span className="font-mono text-white">r</span>:
         </p>
         <p className="mt-2 rounded bg-black/30 px-3 py-2 text-center font-mono text-lg text-accent">
-          n&nbsp;=&nbsp;ln(500)&nbsp;/&nbsp;ln(r)
+          n&nbsp;=&nbsp;ln({SCALING_MULTIPLE})&nbsp;/&nbsp;ln(r)
         </p>
         <p className="mt-2 text-xs text-white/50">
           Because a week can't be partially completed, the actual crossing week always lands a little above
@@ -113,7 +113,7 @@ export default function CompoundScalingRoadmap() {
           <span className="w-16 flex-none text-right font-mono text-sm text-white">{customRate}%</span>
         </div>
         <p className="mt-3 text-sm text-white/70">
-          At <span className="font-mono text-white">{customRate}%</span> weekly, $200 crosses $100,000 in{" "}
+          At <span className="font-mono text-white">{customRate}%</span> weekly, ${SCALING_PRINCIPAL} crosses $100,000 in{" "}
           <span className="font-mono font-semibold text-accent">{customWeeks} weeks</span>, ending around{" "}
           <span className="font-mono font-semibold text-accent">{money(customFinal)}</span>.
         </p>

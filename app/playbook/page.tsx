@@ -2,6 +2,7 @@ import Badge from "@/components/Badge";
 import CompoundScalingRoadmap from "@/components/playbook/CompoundScalingRoadmap";
 import SuperStar from "@/components/visuals/SuperStar";
 import StarUnlocks from "@/components/playbook/StarUnlocks";
+import { SCALING_PRINCIPAL, WEEKLY_RATE_PLANS } from "@/lib/data/scaling";
 import { createClient } from "@/lib/supabase/server";
 
 // Queries Supabase for the real balance behind the Star Unlocks section --
@@ -106,7 +107,9 @@ export default async function PlaybookPage() {
       </div>
 
       <Section
-        title="🚀 Compound Scaling Roadmap ($200 → $100K in 9–16 Weeks)"
+        title={`🚀 Compound Scaling Roadmap ($${SCALING_PRINCIPAL} → $100K in ${Math.min(
+          ...WEEKLY_RATE_PLANS.map((p) => p.weeks)
+        )}–${Math.max(...WEEKLY_RATE_PLANS.map((p) => p.weeks))} Weeks)`}
         subtitle="A simplified weekly-return illustration of compounding — separate from the position-sizing roadmap below, which is what the system actually enforces"
       >
         <CompoundScalingRoadmap />
