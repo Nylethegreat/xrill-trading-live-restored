@@ -125,9 +125,24 @@ function OutcomeForm({ sessionId, onSaved }: { sessionId: number; onSaved: () =>
           }
           onSaved();
         }}
-        className="mt-3 rounded bg-accent px-3 py-1.5 text-sm font-medium text-black hover:opacity-90 disabled:opacity-40"
+        className={`mt-3 w-full rounded-lg px-4 py-3 text-base font-bold tracking-wide text-white transition-all disabled:opacity-40 ${
+          // Glows blue for a profitable outcome, red for a loss, based on
+          // the real P/L the user just typed in -- not decided ahead of
+          // time. Neutral grey while pl is empty/zero/not-yet-typed.
+          !pl || parseFloat(pl) === 0 || Number.isNaN(parseFloat(pl))
+            ? "bg-white/10 text-white/70 hover:bg-white/20"
+            : parseFloat(pl) > 0
+              ? "bg-blue-500 shadow-[0_0_20px_6px_rgba(59,130,246,0.6)] hover:bg-blue-400"
+              : "bg-red-600 shadow-[0_0_20px_6px_rgba(239,68,68,0.55)] hover:bg-red-500"
+        }`}
       >
-        {submitting ? "Saving..." : "Save Outcome"}
+        {submitting
+          ? "Saving..."
+          : pl && parseFloat(pl) > 0
+            ? "💰 Log the Win"
+            : pl && parseFloat(pl) < 0
+              ? "📉 Log the Loss"
+              : "Save Outcome"}
       </button>
     </div>
   );

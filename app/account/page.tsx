@@ -299,43 +299,28 @@ export default async function AccountPage({
             className="mt-1 w-full rounded border border-white/20 bg-transparent px-3 py-2 outline-none focus:border-accent"
           />
         </div>
-        {tier === "free" ? (
-          <div className="rounded border border-white/10 bg-white/5 p-3">
-            <p className="text-sm text-white/60">
-              <span className="text-accent">Pro+</span> unlocks editable risk-per-trade and a daily loss limit —
-              your max trade risk recalculates live as you adjust either one.
-            </p>
-            {/* Hidden inputs preserve the existing values so Free tier
-                doesn't accidentally null them out on save. */}
-            <input type="hidden" name="risk_percent" value={riskPercent} />
-            <input type="hidden" name="daily_loss_limit" value={dailyLossLimit} />
-          </div>
-        ) : (
-          <>
-            <div>
-              <label className="block text-sm text-white/70">Risk per trade (%)</label>
-              <input
-                name="risk_percent"
-                type="number"
-                step="0.01"
-                defaultValue={riskPercent}
-                required
-                className="mt-1 w-full rounded border border-white/20 bg-transparent px-3 py-2 outline-none focus:border-accent"
-              />
-            </div>
-            <div>
-              <label className="block text-sm text-white/70">Daily loss limit ($)</label>
-              <input
-                name="daily_loss_limit"
-                type="number"
-                step="0.01"
-                defaultValue={dailyLossLimit}
-                required
-                className="mt-1 w-full rounded border border-white/20 bg-transparent px-3 py-2 outline-none focus:border-accent"
-              />
-            </div>
-          </>
-        )}
+        <div>
+          <label className="block text-sm text-white/70">Risk per trade (%)</label>
+          <input
+            name="risk_percent"
+            type="number"
+            step="0.01"
+            defaultValue={riskPercent}
+            required
+            className="mt-1 w-full rounded border border-white/20 bg-transparent px-3 py-2 outline-none focus:border-accent"
+          />
+        </div>
+        <div>
+          <label className="block text-sm text-white/70">Daily loss limit ($)</label>
+          <input
+            name="daily_loss_limit"
+            type="number"
+            step="0.01"
+            defaultValue={dailyLossLimit}
+            required
+            className="mt-1 w-full rounded border border-white/20 bg-transparent px-3 py-2 outline-none focus:border-accent"
+          />
+        </div>
 
         <p className="text-sm text-white/50">
           Maximum trade risk at current settings: <span className="text-white">${maxRisk.toLocaleString()}</span>
