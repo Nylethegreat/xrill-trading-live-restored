@@ -2,6 +2,7 @@ import Badge from "@/components/Badge";
 import CompoundScalingRoadmap from "@/components/playbook/CompoundScalingRoadmap";
 import SuperStar from "@/components/visuals/SuperStar";
 import StarUnlocks from "@/components/playbook/StarUnlocks";
+import BouncingStarsToggle from "@/components/visuals/BouncingStarsToggle";
 import { SCALING_PRINCIPAL, WEEKLY_RATE_PLANS } from "@/lib/data/scaling";
 import { createClient } from "@/lib/supabase/server";
 
@@ -79,6 +80,7 @@ export default async function PlaybookPage() {
       <p className="mt-1 text-sm text-white/50">
         Asymmetric 7.5:1 Alpha Framework • Capital Multiplication & Reset Matrix
       </p>
+      <BouncingStarsToggle />
 
       <div className="mt-6">
         <Section title="⭐ Star Unlocks" subtitle="Real balance milestones — no shortcuts, just growth">
@@ -116,7 +118,31 @@ export default async function PlaybookPage() {
       </Section>
 
       <Section title="Twelve-Stage Progressive Compounding Roadmap">
-        <div className="overflow-x-auto rounded border border-white/10">
+        {/* Mobile: every field stacked as a card, so nothing requires
+            horizontal micro-scrolling on a phone. Desktop/tablet keeps
+            the table -- same data, just laid out differently per
+            breakpoint (sm: 640px). */}
+        <div className="space-y-2 sm:hidden">
+          {STAGES.map((s) => (
+            <div key={s.stage} className="rounded border border-white/10 bg-surface p-3 text-sm">
+              <div className="flex items-center justify-between">
+                <span className="font-mono text-xs text-white/40">STAGE {s.stage}</span>
+                <span className="font-mono text-xs text-accent">{money(s.start)} → {money(s.end)}</span>
+              </div>
+              <div className="mt-2 grid grid-cols-2 gap-y-1 text-xs">
+                <span className="text-white/40">Trade Alloc (60%)</span>
+                <span className="text-right text-white">{money(s.alloc)}</span>
+                <span className="text-white/40">Cash Idle (40%)</span>
+                <span className="text-right text-white">{money(s.idle)}</span>
+              </div>
+              <p className="mt-2 border-t border-white/10 pt-2 text-xs leading-relaxed text-white/70">
+                {s.strategy}
+              </p>
+            </div>
+          ))}
+        </div>
+
+        <div className="hidden overflow-x-auto rounded border border-white/10 sm:block">
           <table className="w-full text-left text-sm">
             <thead className="bg-surface text-white/50">
               <tr>

@@ -17,7 +17,15 @@ export interface TickerRow {
 // duplicated end-to-end by the caller; once scrollTop passes the first
 // copy's height, we silently jump back by that same height, so the loop
 // never visibly resets.
-export default function WinsTickerScroller({ rows, singleSetHeight }: { rows: TickerRow[]; singleSetHeight: number }) {
+export default function WinsTickerScroller({
+  rows,
+  singleSetHeight,
+  format = "percent",
+}: {
+  rows: TickerRow[];
+  singleSetHeight: number;
+  format?: "percent" | "dollar";
+}) {
   const containerRef = useRef<HTMLDivElement>(null);
   const pausedRef = useRef(false);
 
@@ -61,7 +69,7 @@ export default function WinsTickerScroller({ rows, singleSetHeight }: { rows: Ti
             {w.ticker} <span className="text-white/25">{w.setup}</span>
           </span>
           <span className="font-bold text-accent [text-shadow:0_0_8px_rgba(34,197,94,0.65)]">
-            +{w.gainPct}%
+            {format === "dollar" ? `+$${w.gainPct.toLocaleString()}` : `+${w.gainPct}%`}
           </span>
         </div>
       ))}

@@ -9,6 +9,7 @@ import NeonText from "@/components/visuals/NeonText";
 import SuperStar from "@/components/visuals/SuperStar";
 import RetroHud from "@/components/RetroHud";
 import OpenPositionCard from "@/components/OpenPositionCard";
+import MyWinsTicker from "@/components/MyWinsTicker";
 
 // Queries Supabase (via cookies()) on every request - force dynamic
 // rendering so `next build` doesn't waste time attempting (and timing
@@ -84,6 +85,8 @@ export default async function DashboardPage() {
       <div className="relative mt-4">
         <PreTradeChecklist />
       </div>
+
+      <MyWinsTicker userId={user!.id} className="mt-4 h-40" />
 
       <Section title="Account">
         <Grid>
