@@ -48,7 +48,10 @@ export default function AllocationWall({ balance }: { balance: number }) {
 
       <p className="mt-3 border-t border-white/10 pt-2 text-[11px] leading-relaxed text-white/40">
         The 40% buffer stays untouched no matter how this session goes — it's what keeps a losing streak from
-        impairing the account. This is separate from your 2–5% per-trade risk setting on Account Settings.
+        impairing the account. This is separate from your 2–5% per-trade risk setting on Account Settings.{" "}
+        <a href="/playbook/exits" className="underline hover:text-white/60">
+          Full breakdown of all three risk rules →
+        </a>
       </p>
     </div>
   );

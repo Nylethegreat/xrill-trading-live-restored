@@ -30,7 +30,9 @@ export default async function JournalPage() {
       <div className="pointer-events-none absolute inset-x-0 -top-4 h-40 opacity-40">
         <CandlestickGlow variant="banner" className="h-full w-full" />
       </div>
-      <h1 className="relative font-mono text-xl font-bold tracking-widest text-white">📓 XRILL JOURNAL</h1>
+      <h1 className="relative font-mono text-xl font-bold tracking-widest text-white">
+        📓 XRILL JOURNAL <span aria-hidden="true">😊</span>
+      </h1>
       <p className="relative mt-1 text-sm text-white/50">
         Every XRILL session, in order. Record the real outcome on any session that doesn't have one yet.
       </p>

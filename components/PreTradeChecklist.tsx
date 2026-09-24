@@ -7,7 +7,7 @@ const ITEMS = [
   { key: "risk", label: "Max risk is 2–5% of account or less" },
   { key: "stop", label: "Hard stop is already set" },
   { key: "setup", label: "Setup criteria confirmed" },
-  { key: "revenge", label: "Zero revenge trading — this isn't chasing a loss" },
+  { key: "revenge", label: "Zero revenge trading, zero averaging down — this isn't chasing a loss" },
 ] as const;
 
 // A quick gut-check gate in front of the full XRILL session wizard. It's
@@ -50,6 +50,10 @@ export default function PreTradeChecklist() {
           );
         })}
       </div>
+
+      <p className="mt-3 text-center text-[11px] font-bold uppercase tracking-wide text-blocked">
+        Zero Averaging Down. Zero Revenge Trading. Accept the stop and walk away.
+      </p>
 
       {allChecked ? (
         <Link

@@ -621,7 +621,14 @@ function Shell({
       {step && <StepTracker current={step} />}
       <div className="mt-6 grid gap-6 lg:grid-cols-[1fr_260px]">
         <div className="relative max-w-2xl">
-          <h1 className="mb-6 text-xl font-semibold">{title}</h1>
+          <h1 className="mb-6 flex items-center gap-2 text-xl font-semibold">
+            {step === "daily" && (
+              <span aria-hidden="true" className="inline-block motion-safe:animate-bounce text-2xl">
+                🚀
+              </span>
+            )}
+            {title}
+          </h1>
           {children}
         </div>
         {typeof accountBalance === "number" && (

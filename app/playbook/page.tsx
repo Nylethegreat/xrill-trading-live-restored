@@ -49,14 +49,6 @@ const EXECUTION_RULES = [
   "Max Position Limits: Max 2 different tickers simultaneously to prevent cognitive dilution.",
 ];
 
-const MINDSET_RULES = [
-  "No-Phone Execution: Zero trading apps on mobile. Desktop execution only to prevent boredom gambling.",
-  "Detachment from Missed Trades: Missing a runner means your scan logic was 100% correct. Execute the same logic next time without chasing.",
-  '"Wait for Fruit" Rule: Give swing contracts 2 to 3 weeks to work. Do not micro-manage intraday chop.',
-  "Mid-Day Reset: Step away for a 34-min walk at 11:00 AM EST on winning streaks to ground yourself.",
-  "Sweep Weekly Profits: Once above $16K, systematically wire 60% of net profits to a secondary bank account.",
-];
-
 function money(v: number) {
   return `$${v.toLocaleString()}`;
 }
@@ -195,33 +187,27 @@ export default async function PlaybookPage() {
         </div>
       </Section>
 
-      <Section title='Non-Negotiable Operating Protocol ("The Shield")'>
-        <div className="grid gap-4 sm:grid-cols-2">
-          <div>
-            <h3 className="mb-2 text-sm font-semibold text-primary">Execution Discipline & Setup Criteria</h3>
-            <ul className="space-y-2 text-sm text-white/70">
-              {EXECUTION_RULES.map((r, i) => (
-                <li key={i} className="border-l-2 border-primary/40 pl-3">{r}</li>
-              ))}
-            </ul>
-          </div>
-          <div>
-            <h3 className="mb-2 text-sm font-semibold text-secondary">Mindset, Habits & Capital Safety</h3>
-            <ul className="space-y-2 text-sm text-white/70">
-              {MINDSET_RULES.map((r, i) => (
-                <li key={i} className="border-l-2 border-secondary/40 pl-3">{r}</li>
-              ))}
-            </ul>
-          </div>
-        </div>
-
-        <div className="mt-4 rounded border border-caution/30 bg-caution/10 p-4 text-sm text-white/80">
-          <span className="font-semibold text-caution">Psychological Risk Anchor:</span> At a 30%
-          system win rate with 7.5:1 reward-to-risk (EV = +62%), variance dictates you may
-          encounter multiple consecutive losses. Preserving 40% idle buying power ensures a
-          losing streak never impairs account survival. Stick to the sheet formulas.
-        </div>
+      <Section title='Non-Negotiable Operating Protocol ("The Shield")' subtitle="Structural execution rules — read right before clicking order entry.">
+        <ul className="space-y-2 text-sm text-white/70">
+          {EXECUTION_RULES.map((r, i) => (
+            <li key={i} className="border-l-2 border-primary/40 pl-3">{r}</li>
+          ))}
+        </ul>
       </Section>
+
+      <div className="mt-10 rounded-xl border-2 border-blocked/40 bg-blocked/10 p-5">
+        <p className="text-center text-sm font-bold uppercase tracking-wide text-blocked sm:text-base">
+          Zero Averaging Down. Zero Revenge Trading. Accept the stop and walk away.
+        </p>
+        <p className="mt-3 text-center text-xs leading-relaxed text-white/60">
+          All mindset rules, the two-loss morning hard-stop, and the full breakdown of the 2–5% risk-per-trade
+          vs. 60/40 capital allocation vs. -40% structural stop live together on the{" "}
+          <a href="/playbook/exits" className="underline hover:text-white/80">
+            Exits & Psychology page
+          </a>
+          .
+        </p>
+      </div>
     </div>
   );
 }
