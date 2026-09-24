@@ -135,8 +135,13 @@ export default function ExitsPlaybookPage() {
             <h3 className="mb-2 text-sm font-semibold text-caution">Capital Safety — Know Your Three Risk Rules</h3>
             <ul className="space-y-2.5 text-sm leading-relaxed text-white/70">
               <li className="border-l-2 border-caution/40 pl-3">
-                <strong>2–5% per-trade risk</strong> (Pre-Trade Checklist / Account Settings) — how much of the
-                whole account you're willing to lose on this one trade.
+                <strong>2–22% per-trade risk, scaled to your pace tier</strong> (Pre-Trade Checklist / Account
+                Settings) — how much of the whole account you're willing to lose on this one trade. Conservative
+                2–5%, Moderate 8–12%, Aggressive Sprint 15–22% — see the{" "}
+                <a href="/playbook#risk-tiering" className="underline hover:text-white">
+                  Dynamic Risk Tiering Matrix
+                </a>
+                .
               </li>
               <li className="border-l-2 border-caution/40 pl-3">
                 <strong>60% deployable / 40% idle buffer</strong> (the Allocation Wall shown in every Start

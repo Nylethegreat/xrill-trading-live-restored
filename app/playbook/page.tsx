@@ -1,5 +1,6 @@
 import Badge from "@/components/Badge";
 import CompoundScalingRoadmap from "@/components/playbook/CompoundScalingRoadmap";
+import ExecutionCompoundingExamples from "@/components/playbook/ExecutionCompoundingExamples";
 import SuperStar from "@/components/visuals/SuperStar";
 import StarUnlocks from "@/components/playbook/StarUnlocks";
 import BouncingStarsToggle from "@/components/visuals/BouncingStarsToggle";
@@ -74,7 +75,16 @@ export default async function PlaybookPage() {
       </p>
       <BouncingStarsToggle />
 
-      <div className="mt-6">
+      <div id="risk-tiering" className="mt-6 scroll-mt-6">
+        <Section
+          title="🎯 Playbook Execution & Compounding Examples"
+          subtitle="The Dynamic Risk Tiering Matrix — max risk per trade scales with the weekly pace you're actually chasing."
+        >
+          <ExecutionCompoundingExamples />
+        </Section>
+      </div>
+
+      <div className="mt-10">
         <Section title="⭐ Star Unlocks" subtitle="Real balance milestones — no shortcuts, just growth">
           <StarUnlocks balance={balance} />
         </Section>

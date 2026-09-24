@@ -7,7 +7,9 @@
 // that's how much of the account you're willing to lose on one trade;
 // this is how much of the account is allowed to be deployed across ALL
 // open positions at once. Both are real, both matter, they're just
-// different rules.
+// different rules. The 2-5% figure is only the Conservative-tier ceiling
+// -- see lib/data/riskTiers.ts / the Dynamic Risk Tiering Matrix on
+// /playbook for the full 2-22% range scaled to pace.
 import LightningBolt from "@/components/visuals/LightningBolt";
 
 export default function AllocationWall({ balance }: { balance: number }) {
@@ -48,9 +50,10 @@ export default function AllocationWall({ balance }: { balance: number }) {
 
       <p className="mt-3 border-t border-white/10 pt-2 text-[11px] leading-relaxed text-white/40">
         The 40% buffer stays untouched no matter how this session goes — it's what keeps a losing streak from
-        impairing the account. This is separate from your 2–5% per-trade risk setting on Account Settings.{" "}
-        <a href="/playbook/exits" className="underline hover:text-white/60">
-          Full breakdown of all three risk rules →
+        impairing the account. This is separate from your per-trade risk setting on Account Settings (2–22%,
+        scaled to your pace tier).{" "}
+        <a href="/playbook#risk-tiering" className="underline hover:text-white/60">
+          See the Risk Tiering Matrix →
         </a>
       </p>
     </div>
