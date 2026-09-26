@@ -376,8 +376,15 @@ export default async function AccountPage({
             Daily Loss Limit — a fraction of that, e.g. ~$15–22
           </p>
           <p className="mt-2 text-[11px] text-white/40">
-            The number you save above is a personal ceiling you're committing to — XRILL doesn't currently auto-lock
-            your terminal when you hit it, so it only works if you actually walk away once you cross it.
+            This is enforced: once today's journaled net P/L hits the Daily Loss Limit above,{" "}
+            <a href="/session" className="underline hover:text-white/70">
+              Start Session
+            </a>{" "}
+            locks for the rest of the trading day (resets at midnight Eastern). See the live meter on your{" "}
+            <a href="/dashboard" className="underline hover:text-white/70">
+              Dashboard
+            </a>
+            .
           </p>
         </div>
 

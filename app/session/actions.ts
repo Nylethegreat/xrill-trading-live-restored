@@ -1,6 +1,7 @@
 "use server";
 
 import { createClient } from "@/lib/supabase/server";
+import { getDailyLossStatus, getTradingDateET } from "@/lib/data/dailyLossLock";
 import {
   scoreDailyCheckIn,
   scoreTradeGate,
@@ -64,6 +65,17 @@ export async function submitXrillSession(
   const supabase = createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return { success: false, error: "Not signed in." };
+
+  // Hard lock, checked first and server-side no matter what the client UI
+  // shows -- if today's journaled net P/L has already hit the account's
+  // daily loss limit, no new session gets evaluated at all, full stop.
+  const dailyLoss = await getDailyLossStatus(user.id);
+  if (dailyLoss.locked) {
+    return {
+      success: false,
+      error: `Daily loss limit hit ($${Math.abs(dailyLoss.netPnl).toLocaleString()} of $${dailyLoss.limit.toLocaleString()}) — terminal is locked until tomorrow.`,
+    };
+  }
 
   const daily = scoreDailyCheckIn(input.daily);
   if (!daily.passed) return { success: false, error: "Daily Check-In failed — session not logged." };
@@ -135,7 +147,7 @@ export async function submitXrillSession(
       trade_score: tradeScoreResult.score,
       trade_authorized: auth.authorized,
       rejection_reason: auth.rejectionReason,
-      session_date: new Date().toISOString().slice(0, 10),
+      session_date: getTradingDateET(),
     })
     .select("id")
     .single();
