@@ -11,6 +11,7 @@ import RetroHud from "@/components/RetroHud";
 import OpenPositionCard from "@/components/OpenPositionCard";
 import MyWinsTicker from "@/components/MyWinsTicker";
 import PowerUpChecklist from "@/components/visuals/PowerUpChecklist";
+import RedDayCard from "@/components/visuals/RedDayCard";
 
 // Queries Supabase (via cookies()) on every request - force dynamic
 // rendering so `next build` doesn't waste time attempting (and timing
@@ -97,8 +98,9 @@ export default async function DashboardPage() {
         </Grid>
       </Section>
 
-      <div className="mt-8">
+      <div className="mt-8 space-y-3">
         <PowerUpChecklist />
+        <RedDayCard />
       </div>
 
       <Section title="Double-Up Ladder" subtitle="$250 → $500 → $1,000 → $2,000 → $5,000">
