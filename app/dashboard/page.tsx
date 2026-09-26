@@ -10,6 +10,7 @@ import SuperStar from "@/components/visuals/SuperStar";
 import RetroHud from "@/components/RetroHud";
 import OpenPositionCard from "@/components/OpenPositionCard";
 import MyWinsTicker from "@/components/MyWinsTicker";
+import PowerUpChecklist from "@/components/visuals/PowerUpChecklist";
 
 // Queries Supabase (via cookies()) on every request - force dynamic
 // rendering so `next build` doesn't waste time attempting (and timing
@@ -95,6 +96,10 @@ export default async function DashboardPage() {
           <Stat label="Maximum Trade Risk" value={money(maxRisk)} />
         </Grid>
       </Section>
+
+      <div className="mt-8">
+        <PowerUpChecklist />
+      </div>
 
       <Section title="Double-Up Ladder" subtitle="$250 → $500 → $1,000 → $2,000 → $5,000">
         <MilestoneTracker initialBalance={balance} />

@@ -3,6 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import { getSessionOutcomeRows } from "@/lib/data/xrill-analytics-data";
 import JournalClient from "@/components/journal/JournalClient";
 import CandlestickGlow from "@/components/visuals/CandlestickGlow";
+import HoloBookFlip from "@/components/visuals/HoloBookFlip";
 
 // Queries Supabase (via cookies()) on every request - force dynamic
 // rendering so `next build` doesn't waste time attempting (and timing
@@ -29,6 +30,9 @@ export default async function JournalPage() {
     <div className="relative mx-auto max-w-3xl px-4 py-10">
       <div className="pointer-events-none absolute inset-x-0 -top-4 h-40 opacity-40">
         <CandlestickGlow variant="banner" className="h-full w-full" />
+      </div>
+      <div className="pointer-events-none absolute -left-36 top-16 hidden opacity-90 xl:block">
+        <HoloBookFlip />
       </div>
       <h1 className="relative font-mono text-xl font-bold tracking-widest text-white">
         📓 XRILL JOURNAL <span aria-hidden="true">😊</span>

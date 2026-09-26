@@ -77,6 +77,41 @@ const config: Config = {
           "0%": { transform: "translateX(-50%)" },
           "100%": { transform: "translateX(0)" },
         },
+        // Purple orbs (Analytics backdrop): each orb drifts on its own
+        // slow, wide, slightly-elliptical loop and breathes in opacity —
+        // staggered animation-delay per orb keeps them from ever moving
+        // in unison.
+        "orb-float": {
+          "0%, 100%": { transform: "translate(0, 0) scale(1)", opacity: "0.35" },
+          "33%": { transform: "translate(24px, -30px) scale(1.08)", opacity: "0.7" },
+          "66%": { transform: "translate(-18px, 16px) scale(0.94)", opacity: "0.5" },
+        },
+        // Intelligence page backdrop: a synapse flashing as a signal
+        // passes through it. Staggered per-node so the network reads as
+        // "firing" rather than blinking together.
+        "neuron-flash": {
+          "0%, 100%": { opacity: "0.15", transform: "scale(0.85)" },
+          "50%": { opacity: "1", transform: "scale(1.3)" },
+        },
+        // The impulse itself travelling down an axon — a dashed stroke
+        // whose offset scrolls the gap along the path, so a bright dash
+        // appears to run from cell body to synapse.
+        "neuron-impulse": {
+          "0%": { strokeDashoffset: "240" },
+          "100%": { strokeDashoffset: "0" },
+        },
+        // Journal page: a book whose top page slowly lifts and turns,
+        // then the next page settles under it — a continuous, gentle
+        // page-turn loop. Runs on a 3D-perspective parent.
+        "book-page-turn": {
+          "0%, 8%": { transform: "rotateY(0deg)", opacity: "1" },
+          "45%, 55%": { transform: "rotateY(-165deg)", opacity: "0.85" },
+          "92%, 100%": { transform: "rotateY(-180deg)", opacity: "0" },
+        },
+        "holo-sheen": {
+          "0%, 100%": { backgroundPosition: "0% 0%" },
+          "50%": { backgroundPosition: "100% 100%" },
+        },
       },
       animation: {
         // EKG heartbeat line — the SVG polyline is duplicated end-to-end,
@@ -91,6 +126,11 @@ const config: Config = {
         "star-spin": "star-spin 6s linear infinite",
         "liquid-drift": "liquid-drift 12s linear infinite",
         "liquid-drift-slow": "liquid-drift-slow 20s linear infinite",
+        "orb-float": "orb-float 22s ease-in-out infinite",
+        "neuron-flash": "neuron-flash 2.6s ease-in-out infinite",
+        "neuron-impulse": "neuron-impulse 2.2s linear infinite",
+        "book-page-turn": "book-page-turn 9s ease-in-out infinite",
+        "holo-sheen": "holo-sheen 5s ease-in-out infinite",
       },
     },
   },
