@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { getStripe } from "@/lib/stripe";
+import { isBackgroundTheme } from "@/lib/data/backgroundThemes";
 
 // Was hardcoded to a stale preview-deployment URL
 // ("xrill-trading-xrill-alert-system.vercel.app") that stopped being the
@@ -86,6 +87,33 @@ export async function saveAccountSettings(formData: FormData) {
   revalidatePath("/account");
   revalidatePath("/dashboard");
   redirect("/account?message=Settings saved");
+}
+
+// One-click background swatch picker -- each swatch is its own tiny form
+// (BackgroundThemePicker) that posts straight here. The DB column has its
+// own CHECK constraint as the real backstop, but validating the value here
+// too means a bad/forged value redirects with a clean error instead of
+// surfacing a raw Postgres constraint violation to the user.
+export async function saveBackgroundTheme(formData: FormData) {
+  const supabase = createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) redirect("/login?next=/account");
+
+  const value = String(formData.get("background_theme") || "");
+  if (!isBackgroundTheme(value)) {
+    redirect("/account?error=Unknown background option.");
+  }
+
+  const { error } = await supabase
+    .from("profiles")
+    .upsert({ user_id: user.id, background_theme: value });
+
+  if (error) {
+    redirect(`/account?error=${encodeURIComponent(error.message)}`);
+  }
+
+  revalidatePath("/account");
+  redirect("/account");
 }
 
 // Starts a Stripe Checkout session for the Pro tier and redirects the user

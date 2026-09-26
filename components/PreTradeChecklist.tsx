@@ -13,6 +13,17 @@ import { RISK_TIERS, type RiskTier } from "@/lib/data/riskTiers";
 // driven by the same Dynamic Risk Tiering Matrix on the Playbook page
 // (/playbook#risk-tiering) — pick your pace tier here and the ceiling
 // updates to match, instead of pretending everyone trades the same way.
+//
+// The picker's active-tier color used to always be green regardless of
+// which tier was selected, while the Playbook's own version of this same
+// picker colors each tier by its `tone` (blue/magenta/yellow). Matching
+// that here so "Conservative" reads the same color everywhere it appears.
+const TONE_BORDER: Record<RiskTier["tone"], string> = {
+  primary: "border-primary bg-primary/15 text-primary",
+  secondary: "border-secondary bg-secondary/15 text-secondary",
+  caution: "border-caution bg-caution/15 text-caution",
+};
+
 export default function PreTradeChecklist() {
   const [checked, setChecked] = useState<Record<string, boolean>>({});
   const [tierKey, setTierKey] = useState<RiskTier["key"]>("conservative");
@@ -45,9 +56,7 @@ export default function PreTradeChecklist() {
               type="button"
               onClick={() => setTierKey(t.key)}
               className={`flex-1 rounded border px-2 py-1.5 text-[11px] font-medium transition-colors ${
-                tierKey === t.key
-                  ? "border-accent bg-accent/15 text-accent"
-                  : "border-white/10 text-white/50 hover:border-white/25"
+                tierKey === t.key ? TONE_BORDER[t.tone] : "border-white/10 text-white/50 hover:border-white/25"
               }`}
             >
               {t.shortLabel}

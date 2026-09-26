@@ -4,6 +4,7 @@ import ExecutionCompoundingExamples from "@/components/playbook/ExecutionCompoun
 import SuperStar from "@/components/visuals/SuperStar";
 import StarUnlocks from "@/components/playbook/StarUnlocks";
 import BouncingStarsToggle from "@/components/visuals/BouncingStarsToggle";
+import WhizzingBanner from "@/components/visuals/WhizzingBanner";
 import { SCALING_PRINCIPAL, WEEKLY_RATE_PLANS } from "@/lib/data/scaling";
 import { createClient } from "@/lib/supabase/server";
 
@@ -73,6 +74,9 @@ export default async function PlaybookPage() {
       <p className="mt-1 text-sm text-white/50">
         Asymmetric 7.5:1 Alpha Framework • Capital Multiplication & Reset Matrix
       </p>
+      <div className="relative -mx-4 -mt-2 h-32 overflow-hidden sm:h-40">
+        <WhizzingBanner className="h-full w-full" />
+      </div>
       <BouncingStarsToggle />
 
       <div id="risk-tiering" className="mt-6 scroll-mt-6">

@@ -3,6 +3,17 @@ import { createClient } from "@/lib/supabase/server";
 import { saveAccountSettings, signInFromAccount, signUpFromAccount, createProCheckoutSession, createEliteCheckoutSession } from "./actions";
 import RealtimeAlertsFeed from "@/components/RealtimeAlertsFeed";
 import LightningBolt from "@/components/visuals/LightningBolt";
+import BackgroundThemePicker from "@/components/account/BackgroundThemePicker";
+import MossyForestTexture from "@/components/visuals/textures/MossyForestTexture";
+import RockWallTexture from "@/components/visuals/textures/RockWallTexture";
+import DarkNeoTexture from "@/components/visuals/textures/DarkNeoTexture";
+import { isBackgroundTheme, type BackgroundTheme } from "@/lib/data/backgroundThemes";
+
+const BACKGROUND_COMPONENT: Record<BackgroundTheme, React.ComponentType<{ className?: string }>> = {
+  mossy_forest: MossyForestTexture,
+  rock_wall: RockWallTexture,
+  dark_neo: DarkNeoTexture,
+};
 
 // Queries Supabase (via cookies()) on every request - force dynamic
 // rendering so `next build` doesn't waste time attempting (and timing
@@ -137,7 +148,7 @@ export default async function AccountPage({
 
   const { data: profile } = await supabase
     .from("profiles")
-    .select("display_name, discord_user_id, tier")
+    .select("display_name, discord_user_id, tier, background_theme")
     .eq("user_id", user.id)
     .maybeSingle();
 
@@ -146,9 +157,13 @@ export default async function AccountPage({
   const riskPercent = account?.risk_percent ?? 1;
   const dailyLossLimit = account?.daily_loss_limit ?? 1000;
   const maxRisk = balance * (riskPercent / 100);
+  const backgroundTheme: BackgroundTheme =
+    profile?.background_theme && isBackgroundTheme(profile.background_theme) ? profile.background_theme : "mossy_forest";
+  const BackgroundComponent = BACKGROUND_COMPONENT[backgroundTheme];
 
   return (
     <div className="relative mx-auto max-w-md overflow-hidden px-4 py-12">
+      <BackgroundComponent className="opacity-60" />
       <LightningBolt className="right-[-40px] top-0 h-[420px] w-[180px] opacity-40" />
       <h1 className="relative text-2xl font-semibold">Account Settings</h1>
 
@@ -257,7 +272,11 @@ export default async function AccountPage({
         </div>
       </div>
 
-      <form action={saveAccountSettings} className="mt-8 space-y-4">
+      <div className="relative mt-8">
+        <BackgroundThemePicker current={backgroundTheme} />
+      </div>
+
+      <form action={saveAccountSettings} className="relative mt-8 space-y-4">
         <div>
           <label className="block text-sm text-white/70">Display name (shown on leaderboard)</label>
           <input
