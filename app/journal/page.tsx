@@ -1,7 +1,10 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { getSessionOutcomeRows } from "@/lib/data/xrill-analytics-data";
+import { getCodexDays } from "@/lib/data/journalCodex";
 import JournalClient from "@/components/journal/JournalClient";
+import CodexClient from "@/components/journal/CodexClient";
+import PsychAnchor from "@/components/journal/PsychAnchor";
 import CandlestickGlow from "@/components/visuals/CandlestickGlow";
 import HoloBookFlip from "@/components/visuals/HoloBookFlip";
 
@@ -23,7 +26,7 @@ export default async function JournalPage() {
   } = await supabase.auth.getUser();
   if (!user) redirect("/login");
 
-  const rows = await getSessionOutcomeRows(user.id);
+  const [rows, codexDays] = await Promise.all([getSessionOutcomeRows(user.id), getCodexDays(user.id)]);
   const newestFirst = [...rows].reverse();
 
   return (
@@ -40,6 +43,22 @@ export default async function JournalPage() {
       <p className="relative mt-1 text-sm text-white/50">
         Every XRILL session, in order. Record the real outcome on any session that doesn't have one yet.
       </p>
+
+      <div className="relative mt-8">
+        <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-white/50">📖 Codex</h2>
+        <p className="mb-3 text-xs text-white/40">
+          A running, dated log of where your head's at — separate from trade sessions. The{" "}
+          <a href="/dashboard" className="underline hover:text-white/70">
+            Red Day card on your dashboard
+          </a>{" "}
+          links straight here.
+        </p>
+        <CodexClient days={codexDays} />
+      </div>
+
+      <div className="relative mt-8">
+        <PsychAnchor />
+      </div>
 
       <div className="relative mt-8">
         <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-white/50">Session History</h2>

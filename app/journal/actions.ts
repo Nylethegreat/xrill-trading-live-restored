@@ -24,6 +24,40 @@ export interface SaveOutcomeResult {
   error?: string;
 }
 
+// The Codex -- a few standing prompts ("How's your day going?", etc.)
+// separate from trade-session journaling. Every answer is its own row,
+// grouped by entry_date on the read side (getCodexEntries in
+// lib/data/xrill-analytics-data.ts) -- answering the same prompt again on
+// the same day adds another entry under that date rather than overwriting
+// the first one, same as the user asked for ("it just keeps going under
+// there").
+export interface SaveCodexEntryInput {
+  prompt: string;
+  answer: string;
+}
+
+export async function saveCodexEntry(input: SaveCodexEntryInput): Promise<SaveOutcomeResult> {
+  const supabase = createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return { success: false, error: "Not signed in." };
+
+  const answer = input.answer.trim();
+  if (!answer) return { success: false, error: "Write something first." };
+
+  const { error } = await supabase.from("journal_codex_entries").insert({
+    user_id: user.id,
+    prompt: input.prompt,
+    answer,
+  });
+
+  if (error) return { success: false, error: error.message };
+
+  revalidatePath("/journal");
+  return { success: true };
+}
+
 export async function saveTradeOutcome(input: SaveOutcomeInput): Promise<SaveOutcomeResult> {
   const supabase = createClient();
   const {

@@ -342,8 +342,44 @@ export default async function AccountPage({
         </div>
 
         <p className="text-sm text-white/50">
-          Maximum trade risk at current settings: <span className="text-white">${maxRisk.toLocaleString()}</span>
+          Maximum trade loss per trade at current settings:{" "}
+          <span className="text-white">${maxRisk.toLocaleString()}</span> — this is your Account Balance × Risk per
+          Trade %, the most one single position is allowed to cost you. It's a different number from the Daily Loss
+          Limit above, which is a cumulative cap across every trade in the day.
         </p>
+
+        <div className="rounded border border-white/10 bg-white/5 p-3">
+          <p className="text-xs font-semibold uppercase tracking-wide text-white/50">How to set your own numbers</p>
+          <p className="mt-2 text-xs leading-relaxed text-white/60">
+            1. Split your balance into an Active Sleeve you actually trade (60%) and an Idle Sleeve that stays
+            untouched (40%) — see the Capital Allocation panel in Start Session.
+          </p>
+          <p className="mt-1.5 text-xs leading-relaxed text-white/60">
+            2. Multiply your balance by your pace tier's risk-per-trade % (2–22%, see the{" "}
+            <a href="/playbook#risk-tiering" className="underline hover:text-white/80">
+              Risk Tiering Matrix
+            </a>
+            ) — that's your <span className="text-white/80">Maximum Trade Loss per Trade</span>, shown above.
+          </p>
+          <p className="mt-1.5 text-xs leading-relaxed text-white/60">
+            3. Your <span className="text-white/80">Daily Loss Limit</span> should be smaller than your max trade
+            loss — a fraction of it, not a multiple — so a couple of rough trades don't have to fully play out
+            before you step away for the day.
+          </p>
+          <p className="mt-2.5 rounded border border-white/10 bg-black/20 p-2 font-mono text-[11px] leading-relaxed text-white/50">
+            Example — $200 account, Aggressive tier (22% risk/trade):
+            <br />
+            Active Sleeve (60%): $120 · Idle Sleeve (40%): $80
+            <br />
+            Max Trade Loss per Trade (22% of $200): $44
+            <br />
+            Daily Loss Limit — a fraction of that, e.g. ~$15–22
+          </p>
+          <p className="mt-2 text-[11px] text-white/40">
+            The number you save above is a personal ceiling you're committing to — XRILL doesn't currently auto-lock
+            your terminal when you hit it, so it only works if you actually walk away once you cross it.
+          </p>
+        </div>
 
         <button className="rounded bg-accent px-4 py-2 text-sm font-medium text-black hover:opacity-90">
           Save settings

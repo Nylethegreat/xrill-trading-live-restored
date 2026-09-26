@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import CandlestickGlow from "@/components/visuals/CandlestickGlow";
+import RiverGlow from "@/components/visuals/RiverGlow";
 import { STRATEGIES } from "@/lib/data/strategies";
 import { GREEKS } from "@/lib/data/greeks";
 import { TRADING_STYLES } from "@/lib/data/trading-styles";
@@ -275,6 +276,9 @@ export default function GlossaryPage() {
     <div className="relative mx-auto max-w-2xl px-4 py-12">
       <div className="pointer-events-none absolute inset-x-0 -top-4 h-40 opacity-40">
         <CandlestickGlow variant="banner" className="h-full w-full" />
+      </div>
+      <div className="pointer-events-none absolute -left-24 top-0 hidden h-[880px] w-20 opacity-80 xl:block">
+        <RiverGlow />
       </div>
       <h1 className="relative font-mono text-xl font-bold tracking-widest text-white">📖 TRADING GLOSSARY</h1>
       <p className="relative mt-1 text-sm text-white/50">

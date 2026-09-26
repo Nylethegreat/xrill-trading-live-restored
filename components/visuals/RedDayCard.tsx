@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 
 // A collapsed-by-default card for the days trading (or life) knocks you
 // down. Not therapy, not a diagnosis, not a substitute for a real person --
@@ -67,6 +68,11 @@ export default function RedDayCard() {
           <p className="mt-3 text-xs text-white/40">
             If this feeling is bigger than today's trade -- if it's been sitting on you for a while -- that's worth
             saying out loud to someone you trust, or a professional. Nothing here is a substitute for that.
+          </p>
+          <p className="mt-1 text-center text-[11px] text-white/40">
+            <Link href="/journal#codex" className="underline hover:text-white/70">
+              Put it into words in the Journal Codex →
+            </Link>
           </p>
         </div>
       )}
