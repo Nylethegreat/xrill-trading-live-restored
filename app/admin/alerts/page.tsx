@@ -48,6 +48,11 @@ export default async function AdminAlertsPage() {
       <p className="mt-1 text-sm text-white/50">
         Publish a trade setup — it broadcasts live to every member on the site and to Discord.
       </p>
+      <p className="mt-1 text-xs text-white/40">
+        <Link href="/admin/leads" className="underline hover:text-white/70">
+          View captured leads →
+        </Link>
+      </p>
 
       <div className="mt-4 rounded border border-caution/30 bg-caution/10 p-3 text-xs leading-relaxed text-white/70">
         <strong className="text-caution">Compliance reminder:</strong> every alert published here is educational
