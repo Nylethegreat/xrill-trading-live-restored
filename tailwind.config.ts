@@ -122,6 +122,18 @@ const config: Config = {
           "0%, 100%": { boxShadow: "0 0 8px 1px rgba(34,211,238,0.35)" },
           "50%": { boxShadow: "0 0 20px 5px rgba(34,211,238,0.8)" },
         },
+        // Intelligence page's Performance Areas bars -- same breathing
+        // box-shadow technique as exp-glow/daytrade-glow, in the two colors
+        // those bars actually render in (bg-accent / bg-caution), so the
+        // glow always matches the fill instead of being a flat overlay.
+        "perf-glow-accent": {
+          "0%, 100%": { boxShadow: "0 0 6px 1px rgba(34,197,94,0.35)" },
+          "50%": { boxShadow: "0 0 14px 3px rgba(34,197,94,0.75)" },
+        },
+        "perf-glow-caution": {
+          "0%, 100%": { boxShadow: "0 0 6px 1px rgba(234,179,8,0.35)" },
+          "50%": { boxShadow: "0 0 14px 3px rgba(234,179,8,0.75)" },
+        },
       },
       animation: {
         // EKG heartbeat line — the SVG polyline is duplicated end-to-end,
@@ -142,6 +154,8 @@ const config: Config = {
         "book-page-turn": "book-page-turn 9s ease-in-out infinite",
         "holo-sheen": "holo-sheen 5s ease-in-out infinite",
         "daytrade-glow": "daytrade-glow 2.2s ease-in-out infinite",
+        "perf-glow-accent": "perf-glow-accent 2.2s ease-in-out infinite",
+        "perf-glow-caution": "perf-glow-caution 2.2s ease-in-out infinite",
       },
     },
   },

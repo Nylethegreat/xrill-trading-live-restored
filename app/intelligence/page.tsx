@@ -82,7 +82,11 @@ export default async function IntelligencePage() {
                     </div>
                     <div className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-white/10">
                       <div
-                        className={`h-full rounded-full ${isWeakest ? "bg-caution" : "bg-accent"}`}
+                        className={`h-full rounded-full ${
+                          isWeakest
+                            ? "bg-caution motion-safe:animate-perf-glow-caution"
+                            : "bg-accent motion-safe:animate-perf-glow-accent"
+                        }`}
                         style={{ width: `${Math.min(100, Math.max(0, a.percent))}%` }}
                       />
                     </div>

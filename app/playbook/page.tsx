@@ -43,14 +43,6 @@ const SHEET_COLUMNS = [
   { col: "M", header: "Bank Sweep (60% Profit)", formula: "=IF(K2>0, K2*0.60, 0)", rule: "Routes weekly realized gains to main account (WF 6333)" },
 ];
 
-const EXECUTION_RULES = [
-  "Opening Bell Lockout: Strictly ZERO buying of contracts between 9:30 AM – 9:40 AM EST. Let opening spread volatility settle.",
-  "TTM Squeeze Filter: Confirm 20-period Bollinger Bands are contracted inside 20-period Keltner Channels (1.5 ATR).",
-  "Donchian Volume Trigger: Enter on 20-period high/low breakout accompanied by volume > 1.5x 20-day SMA.",
-  "Contract Selection: 30 to 45 DTE with 0.35 to 0.40 Delta. Never trade sub-7 DTE lottery options during recovery.",
-  "Max Position Limits: Max 2 different tickers simultaneously to prevent cognitive dilution.",
-];
-
 function money(v: number) {
   return `$${v.toLocaleString()}`;
 }
@@ -199,14 +191,6 @@ export default async function PlaybookPage() {
             </tbody>
           </table>
         </div>
-      </Section>
-
-      <Section title='Non-Negotiable Operating Protocol ("The Shield")' subtitle="Structural execution rules — read right before clicking order entry.">
-        <ul className="space-y-2 text-sm text-white/70">
-          {EXECUTION_RULES.map((r, i) => (
-            <li key={i} className="border-l-2 border-primary/40 pl-3">{r}</li>
-          ))}
-        </ul>
       </Section>
 
       <div className="mt-10 rounded-xl border-2 border-blocked/40 bg-blocked/10 p-5">
