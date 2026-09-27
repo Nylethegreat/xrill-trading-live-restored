@@ -14,6 +14,10 @@ const config: Config = {
         primary: "#3b82f6",
         secondary: "#c026d3",
         loss: "#ef4444",
+        // Daytrade Engine's signature color -- a distinct neon light blue,
+        // separate from "primary" (#3b82f6), so the fast/riskier engine is
+        // never visually confused with the traditional green one.
+        daytrade: "#22d3ee",
       },
       keyframes: {
         "ekg-scroll": {
@@ -112,6 +116,12 @@ const config: Config = {
           "0%, 100%": { backgroundPosition: "0% 0%" },
           "50%": { backgroundPosition: "100% 100%" },
         },
+        // Daytrade Engine chrome -- a cyan box-shadow breathing in and out,
+        // same technique as exp-glow but in the engine's own neon color.
+        "daytrade-glow": {
+          "0%, 100%": { boxShadow: "0 0 8px 1px rgba(34,211,238,0.35)" },
+          "50%": { boxShadow: "0 0 20px 5px rgba(34,211,238,0.8)" },
+        },
       },
       animation: {
         // EKG heartbeat line — the SVG polyline is duplicated end-to-end,
@@ -131,6 +141,7 @@ const config: Config = {
         "neuron-impulse": "neuron-impulse 2.2s linear infinite",
         "book-page-turn": "book-page-turn 9s ease-in-out infinite",
         "holo-sheen": "holo-sheen 5s ease-in-out infinite",
+        "daytrade-glow": "daytrade-glow 2.2s ease-in-out infinite",
       },
     },
   },

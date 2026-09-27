@@ -32,6 +32,7 @@ export interface SessionOutcomeRow {
   trade_score: number | null;
   trade_authorized: boolean | null;
   rejection_reason: string | null;
+  engine: string | null;
   profit_loss: number | null;
   followed_plan: boolean | null;
   followed_exit_rules: boolean | null;

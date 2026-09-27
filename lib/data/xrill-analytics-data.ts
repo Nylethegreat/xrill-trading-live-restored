@@ -15,7 +15,7 @@ export async function getSessionOutcomeRows(userId: string): Promise<SessionOutc
        ticker, direction, entry, stop, target, contracts, point_value,
        risk_points, reward_points, trade_risk, trade_reward, rr, max_risk,
        daily_score, trade_gate_score, setup_score, risk_approved,
-       execution_score, trade_score, trade_authorized, rejection_reason,
+       execution_score, trade_score, trade_authorized, rejection_reason, engine,
        xrill_outcomes ( profit_loss, followed_plan, followed_exit_rules,
          emotion, lesson, exit_price, holding_minutes, risk_multiple,
          max_favorable_excursion, max_adverse_excursion )`
@@ -58,6 +58,7 @@ export async function getSessionOutcomeRows(userId: string): Promise<SessionOutc
       trade_score: row.trade_score,
       trade_authorized: row.trade_authorized,
       rejection_reason: row.rejection_reason,
+      engine: row.engine,
       profit_loss: outcome?.profit_loss ?? null,
       followed_plan: outcome?.followed_plan ?? null,
       followed_exit_rules: outcome?.followed_exit_rules ?? null,

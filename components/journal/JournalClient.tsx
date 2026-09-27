@@ -217,10 +217,15 @@ export default function JournalClient({ rows }: { rows: SessionOutcomeRow[] }) {
                     </span>
                   </div>
                   <div className="flex items-center gap-2">
+                    {r.engine === "daytrade" && (
+                      <span className="font-mono text-xs text-daytrade">⚡ Daytrade</span>
+                    )}
                     <Badge tone={r.trade_authorized ? "good" : "blocked"}>
                       {r.trade_authorized ? "AUTHORIZED" : "BLOCKED"}
                     </Badge>
-                    <span className="font-mono text-xs text-white/50">{r.trade_score}/100</span>
+                    {r.trade_score !== null && (
+                      <span className="font-mono text-xs text-white/50">{r.trade_score}/100</span>
+                    )}
                   </div>
                 </div>
 

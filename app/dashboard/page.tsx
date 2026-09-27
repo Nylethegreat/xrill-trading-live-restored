@@ -114,7 +114,7 @@ export default async function DashboardPage() {
       </Section>
 
       {last && (
-        <Section title="Last Session">
+        <Section title={last.engine === "daytrade" ? "Last Session — ⚡ Daytrade Engine" : "Last Session"}>
           <Grid>
             <Stat label="Ticker" value={last.ticker ?? "—"} />
             <Stat label="Type" value={last.direction ?? "—"} />
@@ -124,14 +124,23 @@ export default async function DashboardPage() {
             <Stat label="R:R" value={last.rr ? last.rr.toFixed(2) : "—"} />
           </Grid>
 
-          <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3">
-            <Stat label="Daily" value={`${last.daily_score}/4`} badge={last.daily_score >= 4 ? { text: "READY", tone: "good" } : last.daily_score >= 3 ? { text: "CAUTION", tone: "caution" } : { text: "NOT READY", tone: "blocked" }} />
-            <Stat label="Gate" value={`${last.trade_gate_score}/5`} badge={last.trade_gate_score >= 4 ? { text: "CLEAR", tone: "good" } : { text: "BLOCKED", tone: "blocked" }} />
-            <Stat label="Setup" value={`${last.setup_score}/25`} badge={last.setup_score >= 25 ? { text: "A+ SETUP", tone: "good" } : last.setup_score >= 20 ? { text: "GOOD SETUP", tone: "good" } : { text: "BLOCKED", tone: "blocked" }} />
-            <Stat label="Execution" value={`${last.execution_score}/5`} badge={last.execution_score >= 4 ? { text: "APPROVED", tone: "good" } : { text: "BLOCKED", tone: "blocked" }} />
-            <Stat label="XRILL Score" value={`${last.trade_score}/100`} badge={last.trade_authorized ? { text: "AUTHORIZED", tone: "good" as const } : { text: "BLOCKED", tone: "blocked" as const }} />
-            <Stat label="Grade" value={scoreGrade(last.trade_score ?? 0)} />
-          </div>
+          {last.engine === "daytrade" ? (
+            <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3">
+              <Stat label="Trade Gate" value={`${last.trade_gate_score}/2`} badge={last.trade_gate_score >= 2 ? { text: "CLEAR", tone: "good" } : { text: "BLOCKED", tone: "blocked" }} />
+              <Stat label="Setup Read" value={`${last.setup_score}/25`} badge={{ text: "INFO ONLY", tone: "neutral" }} />
+              <Stat label="Execution" value={`${last.execution_score}/5`} badge={last.execution_score >= 4 ? { text: "APPROVED", tone: "good" } : { text: "BLOCKED", tone: "blocked" }} />
+              <Stat label="Verdict" value={last.trade_authorized ? "AUTHORIZED" : "BLOCKED"} badge={last.trade_authorized ? { text: "AUTHORIZED", tone: "good" as const } : { text: "BLOCKED", tone: "blocked" as const }} />
+            </div>
+          ) : (
+            <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3">
+              <Stat label="Daily" value={`${last.daily_score}/4`} badge={last.daily_score >= 4 ? { text: "READY", tone: "good" } : last.daily_score >= 3 ? { text: "CAUTION", tone: "caution" } : { text: "NOT READY", tone: "blocked" }} />
+              <Stat label="Gate" value={`${last.trade_gate_score}/5`} badge={last.trade_gate_score >= 4 ? { text: "CLEAR", tone: "good" } : { text: "BLOCKED", tone: "blocked" }} />
+              <Stat label="Setup" value={`${last.setup_score}/25`} badge={last.setup_score >= 25 ? { text: "A+ SETUP", tone: "good" } : last.setup_score >= 20 ? { text: "GOOD SETUP", tone: "good" } : { text: "BLOCKED", tone: "blocked" }} />
+              <Stat label="Execution" value={`${last.execution_score}/5`} badge={last.execution_score >= 4 ? { text: "APPROVED", tone: "good" } : { text: "BLOCKED", tone: "blocked" }} />
+              <Stat label="XRILL Score" value={`${last.trade_score}/100`} badge={last.trade_authorized ? { text: "AUTHORIZED", tone: "good" as const } : { text: "BLOCKED", tone: "blocked" as const }} />
+              <Stat label="Grade" value={scoreGrade(last.trade_score ?? 0)} />
+            </div>
+          )}
         </Section>
       )}
 
@@ -158,8 +167,9 @@ export default async function DashboardPage() {
               >
                 <span>
                   #{s.id} <span className="text-white/60">{s.ticker} {s.direction}</span>
+                  {s.engine === "daytrade" && <span className="ml-1.5 text-daytrade">⚡</span>}
                 </span>
-                <span className="text-white/60">Score: {s.trade_score}</span>
+                <span className="text-white/60">{s.engine === "daytrade" ? "Daytrade" : `Score: ${s.trade_score}`}</span>
                 <span className={s.trade_authorized ? "text-accent" : "text-blocked"}>
                   {s.trade_authorized ? "🟢 AUTHORIZED" : "🟣 BLOCKED"}
                 </span>

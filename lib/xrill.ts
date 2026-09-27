@@ -55,6 +55,22 @@ export function scoreTradeGate(a: TradeGate) {
   return { score, status: passed ? "CLEAR" : "BLOCKED", passed };
 }
 
+// The Daytrade Engine's trimmed Trade Gate -- only the two questions that
+// actually matter when speed is the point: are you psychologically clear to
+// trade, and is liquidity acceptable (with a real warning about thin
+// liquidity, since the whole engine trades higher risk/less confluence).
+// Both are required -- unlike the Setup Read below, this one still gates.
+export interface FastTradeGate {
+  mentallyAllowed: boolean;
+  liquidity: boolean;
+}
+
+export function scoreFastTradeGate(a: FastTradeGate) {
+  const score = [a.mentallyAllowed, a.liquidity].filter(Boolean).length;
+  const passed = score === 2;
+  return { score, status: passed ? "CLEAR" : "BLOCKED", passed };
+}
+
 // Beginner-friendly setup checklist — five yes/no criteria, 5 points each,
 // replacing the old 1-5 slider scales. Same 25-point scale everywhere else
 // in the app (trade score weighting, dashboard/analytics display) still works
@@ -258,6 +274,31 @@ export function evaluateAuthorization(
   if (!riskApproved) reasons.push("Risk Management");
   if (executionScore < 4) reasons.push("Execution");
   if (tradeScore < 80) reasons.push("XRILL Score");
+
+  return {
+    authorized: reasons.length === 0,
+    rejectionReason: reasons.length > 0 ? reasons.join(", ") : null,
+  };
+}
+
+// Daytrade Engine's final call -- no composite 0-100 score (inventing new
+// weights for a 4-question flow would be arbitrary), just a plain
+// authorized/blocked verdict from the gates that still actually gate:
+// Trade Gate (2/2), Risk Manager, and Execution Check. The Setup Read is
+// informational only by design (see scoreSetup's use in the fast wizard)
+// and never appears here. Trade Plan / R:R failing already stops the
+// submission earlier, same as the standard engine, so it's not repeated
+// as a reason here either.
+export function evaluateFastAuthorization(
+  gateScore: number,
+  riskApproved: boolean,
+  executionScore: number
+) {
+  const reasons: string[] = [];
+
+  if (gateScore < 2) reasons.push("Trade Gate");
+  if (!riskApproved) reasons.push("Risk Management");
+  if (executionScore < 4) reasons.push("Execution");
 
   return {
     authorized: reasons.length === 0,

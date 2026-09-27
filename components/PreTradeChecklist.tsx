@@ -100,18 +100,26 @@ export default function PreTradeChecklist() {
       </p>
 
       {allChecked ? (
-        <Link
-          href="/session"
-          className="mt-4 block rounded bg-accent px-4 py-2 text-center text-sm font-medium text-black hover:opacity-90"
-        >
-          🚀 Start XRILL Session
-        </Link>
+        <div className="mt-4 grid grid-cols-2 gap-2">
+          <Link
+            href="/session?engine=swing"
+            className="block rounded bg-accent px-3 py-2 text-center text-sm font-medium text-black hover:opacity-90"
+          >
+            🟢 Swing Trade
+          </Link>
+          <Link
+            href="/session?engine=daytrade"
+            className="block rounded bg-daytrade px-3 py-2 text-center text-sm font-medium text-black hover:opacity-90"
+          >
+            ⚡ Daytrade
+          </Link>
+        </div>
       ) : (
         <div
           aria-disabled="true"
           className="mt-4 cursor-not-allowed rounded bg-white/10 px-4 py-2 text-center text-sm font-medium text-white/40"
         >
-          🚀 Start XRILL Session — check all 4 items first
+          🚀 Start Session — check all 4 items first
         </div>
       )}
     </div>

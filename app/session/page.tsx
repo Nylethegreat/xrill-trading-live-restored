@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { getDailyLossStatus } from "@/lib/data/dailyLossLock";
-import XrillWizard from "@/components/XrillWizard";
+import EngineSelector from "@/components/session/EngineSelector";
 
 // Queries Supabase (via cookies()) on every request - force dynamic
 // rendering so `next build` doesn't waste time attempting (and timing
@@ -35,7 +35,11 @@ function LockedOut({ netPnl, limit }: { netPnl: number; limit: number }) {
   );
 }
 
-export default async function SessionPage() {
+export default async function SessionPage({
+  searchParams,
+}: {
+  searchParams: { engine?: string };
+}) {
   const supabase = createClient();
   const { data: { user } } = await supabase.auth.getUser();
 
@@ -51,5 +55,7 @@ export default async function SessionPage() {
   const balance = account?.balance ?? 50000;
   const riskPercent = account?.risk_percent ?? 1;
 
-  return <XrillWizard accountBalance={balance} riskPercent={riskPercent} />;
+  const initialEngine = searchParams.engine === "daytrade" ? "daytrade" : searchParams.engine === "swing" ? "swing" : undefined;
+
+  return <EngineSelector accountBalance={balance} riskPercent={riskPercent} initialEngine={initialEngine} />;
 }
