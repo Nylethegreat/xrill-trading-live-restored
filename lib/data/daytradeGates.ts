@@ -26,9 +26,9 @@ export const DAYTRADE_GATES: Gate[] = [
   {
     n: 2,
     name: "Setup Read",
-    short: "Confluence (informational)",
-    detail: "The same five-point setup checklist as the standard engine — trend, key level, momentum/volume, news clear, risk/reward — but here it's informational only and never blocks the trade.",
-    tagline: "Know your confluence going in, even if you're not required to have all of it.",
+    short: "Confluence — 20/25 required",
+    detail: "The same five-point setup checklist as the standard engine — trend, key level, momentum/volume, news clear, risk/reward. Need 20/25 (4 of 5) to continue, same threshold as the standard engine.",
+    tagline: "Fast doesn't mean a free pass on confluence — the setup still has to actually be there.",
   },
   {
     n: 3,

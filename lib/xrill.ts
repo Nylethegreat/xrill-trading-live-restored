@@ -314,11 +314,10 @@ export function evaluateAuthorization(
 // Daytrade Engine's final call -- no composite 0-100 score (inventing new
 // weights for a 4-question flow would be arbitrary), just a plain
 // authorized/blocked verdict from the gates that still actually gate:
-// Trade Gate (2/2), Risk Manager, and Execution Check. The Setup Read is
-// informational only by design (see scoreSetup's use in the fast wizard)
-// and never appears here. Trade Plan / R:R failing already stops the
-// submission earlier, same as the standard engine, so it's not repeated
-// as a reason here either.
+// Trade Gate (2/2), Risk Manager, and Execution Check. Setup Read and
+// Trade Plan / R:R failing both already stop the submission earlier (see
+// submitFastSession), same as the standard engine, so neither is repeated
+// as a reason here.
 export function evaluateFastAuthorization(
   gateScore: number,
   riskApproved: boolean,

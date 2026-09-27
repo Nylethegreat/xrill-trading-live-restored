@@ -140,6 +140,15 @@ const config: Config = {
           "0%, 100%": { boxShadow: "0 0 6px 1px rgba(234,179,8,0.35)" },
           "50%": { boxShadow: "0 0 14px 3px rgba(234,179,8,0.75)" },
         },
+        // "Vein" flow -- a thin purple/orange gradient bar that appears
+        // under a wizard question once it's answered, its background
+        // scrolling sideways on a tiled 200%-width gradient so the color
+        // reads as flowing rather than static. Small dopamine hit for
+        // answering a gate question, distinct from any pass/fail color.
+        "vein-flow": {
+          "0%": { backgroundPosition: "0% 50%" },
+          "100%": { backgroundPosition: "200% 50%" },
+        },
       },
       animation: {
         // EKG heartbeat line — the SVG polyline is duplicated end-to-end,
@@ -162,6 +171,7 @@ const config: Config = {
         "daytrade-glow": "daytrade-glow 2.2s ease-in-out infinite",
         "perf-glow-accent": "perf-glow-accent 2.2s ease-in-out infinite",
         "perf-glow-caution": "perf-glow-caution 2.2s ease-in-out infinite",
+        "vein-flow": "vein-flow 1.6s linear infinite",
       },
     },
   },

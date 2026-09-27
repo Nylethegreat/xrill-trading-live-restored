@@ -3,6 +3,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { getDailyLossStatus, getTradingDateET } from "@/lib/data/dailyLossLock";
 import { getTwoLossStatus } from "@/lib/data/twoLossLock";
+import { getOpenPositionsStatus } from "@/lib/data/openPositions";
 import {
   scoreDailyCheckIn,
   scoreTradeGate,
@@ -87,6 +88,18 @@ export async function submitXrillSession(
     return {
       success: false,
       error: `Two-Loss Lockout: ${twoLoss.stopOutCount} stop-outs journaled today — terminal is locked until tomorrow.`,
+    };
+  }
+
+  // Hard cap on simultaneously open, unjournaled positions -- account-wide
+  // across both engines, same as the two locks above. Multiple unmonitored
+  // trades open at once was a real gap (nothing previously stopped it);
+  // this closes it server-side rather than trusting the wizard to ask.
+  const openPositions = await getOpenPositionsStatus(user.id);
+  if (openPositions.atLimit) {
+    return {
+      success: false,
+      error: `Concurrent Trade Limit: ${openPositions.count} position${openPositions.count === 1 ? "" : "s"} already open (max ${openPositions.limit}) — journal or close an existing trade in the Journal before opening another.`,
     };
   }
 
@@ -179,11 +192,13 @@ export async function submitXrillSession(
 // The Daytrade Engine -- a 4-step fast pass through the same underlying
 // scoring math (lib/xrill.ts stays the single source of truth so the
 // server always re-derives the verdict, never trusts client input). No
-// Daily Check-In, a trimmed 2-question Trade Gate, and a Setup Read that's
-// informational only -- it never blocks, unlike the standard engine's
-// Setup Score. Trade Plan (R:R >= 2.0) and Execution Check are unchanged.
-// There's no composite 0-100 score here, just a plain authorized/blocked
-// verdict -- see evaluateFastAuthorization's comment for why.
+// Daily Check-In and a trimmed 2-question Trade Gate. The Setup Read now
+// gates the same as the standard engine (need 20/25, i.e. 4 of 5) --
+// previously informational-only, changed so a fast pass still requires
+// real confluence, not just speed. Trade Plan (R:R >= 2.0) and Execution
+// Check are unchanged. There's no composite 0-100 score here, just a
+// plain authorized/blocked verdict -- see evaluateFastAuthorization's
+// comment for why.
 export interface SubmitFastSessionInput {
   gate: { mentallyAllowed: boolean; liquidity: boolean };
   setup: {
@@ -246,12 +261,25 @@ export async function submitFastSession(
     };
   }
 
+  // Same cap as the standard engine, checked here too -- account-wide,
+  // not per-engine.
+  const openPositions = await getOpenPositionsStatus(user.id);
+  if (openPositions.atLimit) {
+    return {
+      success: false,
+      error: `Concurrent Trade Limit: ${openPositions.count} position${openPositions.count === 1 ? "" : "s"} already open (max ${openPositions.limit}) — journal or close an existing trade in the Journal before opening another.`,
+    };
+  }
+
   const gate = scoreFastTradeGate(input.gate);
   if (!gate.passed) return { success: false, error: "Trade Gate failed — session not logged." };
 
-  // Informational only -- the Setup Read never blocks in the Daytrade
-  // Engine, it's just recorded for the session record / journal.
+  // Now gates the same threshold as the standard engine (20/25, i.e. 4 of
+  // 5 -- see scoreSetup's `passed` in lib/xrill.ts). Previously
+  // informational-only; a fast pass shouldn't mean a free pass on setup
+  // quality.
   const setup = scoreSetup(input.setup);
+  if (!setup.passed) return { success: false, error: "Setup Score too low — session not logged." };
 
   const plan = evaluateTradePlan(input.plan);
   if (!plan.valid) return { success: false, error: plan.error ?? "Invalid trade plan." };

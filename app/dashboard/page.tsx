@@ -8,7 +8,7 @@ import MilestoneTracker from "@/components/MilestoneTracker";
 import NeonText from "@/components/visuals/NeonText";
 import SuperStar from "@/components/visuals/SuperStar";
 import RetroHud from "@/components/RetroHud";
-import OpenPositionCard from "@/components/OpenPositionCard";
+import OpenPositionsPanel from "@/components/OpenPositionsPanel";
 import MyWinsTicker from "@/components/MyWinsTicker";
 import PowerUpChecklist from "@/components/visuals/PowerUpChecklist";
 import RedDayCard from "@/components/visuals/RedDayCard";
@@ -16,6 +16,7 @@ import DailyLossMeter from "@/components/DailyLossMeter";
 import TwoLossLockMeter from "@/components/TwoLossLockMeter";
 import { getDailyLossStatus } from "@/lib/data/dailyLossLock";
 import { getTwoLossStatus } from "@/lib/data/twoLossLock";
+import { getOpenPositionsStatus } from "@/lib/data/openPositions";
 
 // Queries Supabase (via cookies()) on every request - force dynamic
 // rendering so `next build` doesn't waste time attempting (and timing
@@ -31,16 +32,16 @@ export default async function DashboardPage() {
   const supabase = createClient();
   const { data: { user } } = await supabase.auth.getUser();
 
-  const [{ data: account }, { data: sessions }, { data: outcomes }, dailyLoss, twoLoss] = await Promise.all([
+  const [{ data: account }, { data: sessions }, dailyLoss, twoLoss, openPositions] = await Promise.all([
     supabase.from("accounts").select("balance, risk_percent, daily_loss_limit").eq("user_id", user!.id).maybeSingle(),
     supabase
       .from("xrill_sessions")
       .select("*")
       .eq("user_id", user!.id)
       .order("created_at", { ascending: false }),
-    supabase.from("xrill_outcomes").select("session_id").eq("user_id", user!.id),
     getDailyLossStatus(user!.id),
     getTwoLossStatus(user!.id),
+    getOpenPositionsStatus(user!.id),
   ]);
 
   const balance = account?.balance ?? 50000;
@@ -50,13 +51,6 @@ export default async function DashboardPage() {
   const allSessions = sessions ?? [];
   const last = allSessions[0] ?? null;
   const recent = allSessions.slice(0, 5);
-
-  // "Open position" = the most recent authorized session that doesn't
-  // have a matching xrill_outcomes row yet -- a real, derived fact
-  // (nothing fabricated), not a separately-tracked "is this trade still
-  // open" flag anywhere in the schema.
-  const outcomeSessionIds = new Set((outcomes ?? []).map((o) => o.session_id));
-  const openPosition = allSessions.find((s) => s.trade_authorized && !outcomeSessionIds.has(s.id)) ?? null;
 
   const total = allSessions.length;
   const authorized = allSessions.filter((s) => s.trade_authorized).length;
@@ -88,7 +82,12 @@ export default async function DashboardPage() {
         )}
       </div>
 
-      {openPosition && <OpenPositionCard session={openPosition} />}
+      <OpenPositionsPanel
+        positions={openPositions.positions}
+        totalRisk={openPositions.totalRisk}
+        limit={openPositions.limit}
+        dailyLossLimit={dailyLoss.limit}
+      />
 
       <div className="relative mt-4">
         <PreTradeChecklist />
@@ -131,7 +130,7 @@ export default async function DashboardPage() {
           {last.engine === "daytrade" ? (
             <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3">
               <Stat label="Trade Gate" value={`${last.trade_gate_score}/2`} badge={last.trade_gate_score >= 2 ? { text: "CLEAR", tone: "good" } : { text: "BLOCKED", tone: "blocked" }} />
-              <Stat label="Setup Read" value={`${last.setup_score}/25`} badge={{ text: "INFO ONLY", tone: "neutral" }} />
+              <Stat label="Setup Read" value={`${last.setup_score}/25`} badge={last.setup_score >= 20 ? { text: "CLEAR", tone: "good" } : { text: "BLOCKED", tone: "blocked" }} />
               <Stat label="Execution" value={`${last.execution_score}/5`} badge={last.execution_score >= 4 ? { text: "APPROVED", tone: "good" } : { text: "BLOCKED", tone: "blocked" }} />
               <Stat label="Verdict" value={last.trade_authorized ? "AUTHORIZED" : "BLOCKED"} badge={last.trade_authorized ? { text: "AUTHORIZED", tone: "good" as const } : { text: "BLOCKED", tone: "blocked" as const }} />
             </div>

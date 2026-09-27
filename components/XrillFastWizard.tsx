@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import AllocationWall from "@/components/session/AllocationWall";
+import Badge from "@/components/Badge";
 import {
   scoreFastTradeGate,
   scoreSetup,
@@ -84,31 +85,43 @@ function YesNo({
   onChange: (v: boolean) => void;
 }) {
   return (
-    <div className="flex items-center justify-between gap-4 border-b border-white/10 py-3">
-      <span className="text-sm text-white/80">
-        {label}
-        {hint && <Hint text={hint} />}
-      </span>
-      <div className="flex gap-2">
-        <button
-          type="button"
-          onClick={() => onChange(true)}
-          className={`rounded px-3 py-1 text-sm ${
-            value === true ? "bg-daytrade text-black" : "border border-white/20 text-white/60"
-          }`}
-        >
-          Yes
-        </button>
-        <button
-          type="button"
-          onClick={() => onChange(false)}
-          className={`rounded px-3 py-1 text-sm ${
-            value === false ? "bg-loss text-white" : "border border-white/20 text-white/60"
-          }`}
-        >
-          No
-        </button>
+    <div className="border-b border-white/10 py-3">
+      <div className="flex items-center justify-between gap-4">
+        <span className="text-sm text-white/80">
+          {label}
+          {hint && <Hint text={hint} />}
+        </span>
+        <div className="flex gap-2">
+          <button
+            type="button"
+            onClick={() => onChange(true)}
+            className={`rounded px-3 py-1 text-sm ${
+              value === true ? "bg-daytrade text-black" : "border border-white/20 text-white/60"
+            }`}
+          >
+            Yes
+          </button>
+          <button
+            type="button"
+            onClick={() => onChange(false)}
+            className={`rounded px-3 py-1 text-sm ${
+              value === false ? "bg-loss text-white" : "border border-white/20 text-white/60"
+            }`}
+          >
+            No
+          </button>
+        </div>
       </div>
+      {value !== null && (
+        <div
+          className="mt-2 h-[3px] w-full rounded-full motion-safe:animate-vein-flow"
+          style={{
+            backgroundImage: "linear-gradient(90deg, #a855f7, #f97316, #a855f7, #f97316)",
+            backgroundSize: "200% 100%",
+            boxShadow: "0 0 6px 1px rgba(249,115,22,0.4)",
+          }}
+        />
+      )}
     </div>
   );
 }
@@ -201,9 +214,9 @@ export default function XrillFastWizard({
         <div className="rounded border border-daytrade/40 bg-daytrade/5 p-4 motion-safe:animate-daytrade-glow">
           <p className="text-sm font-semibold uppercase tracking-wide text-daytrade">⚠️ Beware before entering</p>
           <p className="mt-2 text-sm leading-relaxed text-white/70">
-            This is the fast pass — 4 steps instead of 8. No Daily Check-In, a trimmed Trade Gate, and a Setup Read
-            that's informational only, not a blocking score. That means it will let higher-risk, less-confluent
-            setups through that the standard engine would block outright.
+            This is the fast pass — 4 steps instead of 8, and a trimmed 2-question Trade Gate instead of 5. No Daily
+            Check-In. But Setup Read still requires 20/25 (4 of 5) to continue, same threshold as the standard
+            engine — speed doesn't mean a free pass on confluence.
           </p>
           <p className="mt-2 text-sm leading-relaxed text-white/70">
             Trade Plan (R:R ≥ 2.0), Risk Manager, and Execution Check are exactly the same hard requirements as the
@@ -268,12 +281,12 @@ export default function XrillFastWizard({
       (setup.momentumVolume ? 5 : 0) +
       (setup.newsClear ? 5 : 0) +
       (setup.riskReward ? 5 : 0);
+    const badge = total >= 25 ? { text: "A+ SETUP", tone: "good" as const } : total >= 20 ? { text: "GOOD SETUP", tone: "good" as const } : { text: "BLOCKED", tone: "blocked" as const };
 
     return (
       <Shell title="Step 2/4 — Setup Read" step="setup" accountBalance={accountBalance}>
         <p className="mb-3 text-xs text-white/50">
-          Informational only on the Daytrade Engine — check what's actually in line, but you don't need all five
-          (or any of them) to proceed. This is the read, not a gate.
+          Same 20/25 (4 of 5) threshold as the standard engine — speed isn't a free pass on confluence.
         </p>
         <div className="space-y-2">
           <CheckItem
@@ -309,11 +322,21 @@ export default function XrillFastWizard({
         </div>
 
         <div className="mt-4 flex items-center justify-between rounded border border-white/10 bg-white/5 px-3 py-2">
-          <span className="font-mono text-sm text-white">{total}/25 in line</span>
-          <span className="text-xs text-white/40">not required to proceed</span>
+          <span className="font-mono text-sm text-white">{total}/25</span>
+          <Badge tone={badge.tone}>{badge.text}</Badge>
         </div>
 
-        <NextButton onClick={() => setStep("plan")} />
+        <NextButton
+          onClick={() => {
+            const r = scoreSetup(setup);
+            if (!r.passed) {
+              setBlockedReason(`Setup Score: ${r.total}/25 — GRADE: ${r.grade}. Session not logged.`);
+              setStep("blocked");
+            } else {
+              setStep("plan");
+            }
+          }}
+        />
       </Shell>
     );
   }
@@ -496,6 +519,18 @@ export default function XrillFastWizard({
           whichever is more restrictive: your risk-per-trade % ceiling, or your deployable Active Sleeve (60% of
           balance) actually affording the contracts.
         </p>
+
+        <div className="mb-3 rounded border border-daytrade/30 bg-daytrade/10 p-3 text-xs text-white/70">
+          <p className="font-semibold text-daytrade">⚠️ Remember what you're actually risking</p>
+          <p className="mt-1 font-mono">
+            Premium paid: ${parseFloat(plan.entryPremium).toFixed(2)} · Stop-loss premium: $
+            {planResult.effectiveStopPremium!.toFixed(2)} · Target premium: ${parseFloat(plan.targetPremium).toFixed(2)}
+          </p>
+          <p className="mt-1 text-white/50">
+            A daytrade moves fast — confirm your actual broker ticket matches these premiums, per contract, before you place the order.
+          </p>
+        </div>
+
         <Row label="Account balance" value={`$${accountBalance.toLocaleString()}`} />
         <Row label="Risk per trade" value={`${riskPercent}%`} />
         <Row label="Maximum allowed risk" value={`$${risk.maxRisk.toFixed(2)}`} />

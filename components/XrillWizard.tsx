@@ -36,31 +36,43 @@ function YesNo({
   onChange: (v: boolean) => void;
 }) {
   return (
-    <div className="flex items-center justify-between gap-4 border-b border-white/10 py-3">
-      <span className="text-sm text-white/80">
-        {label}
-        {hint && <Hint text={hint} />}
-      </span>
-      <div className="flex gap-2">
-        <button
-          type="button"
-          onClick={() => onChange(true)}
-          className={`rounded px-3 py-1 text-sm ${
-            value === true ? "bg-accent text-black" : "border border-white/20 text-white/60"
-          }`}
-        >
-          Yes
-        </button>
-        <button
-          type="button"
-          onClick={() => onChange(false)}
-          className={`rounded px-3 py-1 text-sm ${
-            value === false ? "bg-blocked text-white" : "border border-white/20 text-white/60"
-          }`}
-        >
-          No
-        </button>
+    <div className="border-b border-white/10 py-3">
+      <div className="flex items-center justify-between gap-4">
+        <span className="text-sm text-white/80">
+          {label}
+          {hint && <Hint text={hint} />}
+        </span>
+        <div className="flex gap-2">
+          <button
+            type="button"
+            onClick={() => onChange(true)}
+            className={`rounded px-3 py-1 text-sm ${
+              value === true ? "bg-accent text-black" : "border border-white/20 text-white/60"
+            }`}
+          >
+            Yes
+          </button>
+          <button
+            type="button"
+            onClick={() => onChange(false)}
+            className={`rounded px-3 py-1 text-sm ${
+              value === false ? "bg-blocked text-white" : "border border-white/20 text-white/60"
+            }`}
+          >
+            No
+          </button>
+        </div>
       </div>
+      {value !== null && (
+        <div
+          className="mt-2 h-[3px] w-full rounded-full motion-safe:animate-vein-flow"
+          style={{
+            backgroundImage: "linear-gradient(90deg, #a855f7, #f97316, #a855f7, #f97316)",
+            backgroundSize: "200% 100%",
+            boxShadow: "0 0 6px 1px rgba(249,115,22,0.4)",
+          }}
+        />
+      )}
     </div>
   );
 }
@@ -475,6 +487,18 @@ export default function XrillWizard({
         <p className="mb-2 text-xs text-white/50">
           1 options contract <Hint text="Standard equity/ETF options contracts control 100 shares of the underlying — that's why risk is always premium × 100 × contracts." /> controls 100 shares — every dollar amount below already accounts for that.
         </p>
+
+        <div className="mb-3 rounded border border-secondary/30 bg-secondary/10 p-3 text-xs text-white/70">
+          <p className="font-semibold text-secondary">⚠️ Remember what you're actually risking</p>
+          <p className="mt-1 font-mono">
+            Premium paid: ${parseFloat(plan.entryPremium).toFixed(2)} · Stop-loss premium: $
+            {planResult.effectiveStopPremium!.toFixed(2)} · Target premium: ${parseFloat(plan.targetPremium).toFixed(2)}
+          </p>
+          <p className="mt-1 text-white/50">
+            Confirm your actual broker ticket matches these premiums — per contract, not the dollar totals below — before you place the order.
+          </p>
+        </div>
+
         <Row label="Account balance" value={`$${accountBalance.toLocaleString()}`} />
         <Row label="Risk per trade" value={`${riskPercent}%`} />
         <Row label="Maximum allowed risk" value={`$${risk.maxRisk.toFixed(2)}`} />
