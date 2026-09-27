@@ -7,6 +7,7 @@ import CodexClient from "@/components/journal/CodexClient";
 import PsychAnchor from "@/components/journal/PsychAnchor";
 import CandlestickGlow from "@/components/visuals/CandlestickGlow";
 import HoloBookFlip from "@/components/visuals/HoloBookFlip";
+import HeaderText from "@/components/HeaderText";
 
 // Queries Supabase (via cookies()) on every request - force dynamic
 // rendering so `next build` doesn't waste time attempting (and timing
@@ -37,9 +38,9 @@ export default async function JournalPage() {
       <div className="pointer-events-none absolute -left-36 top-16 hidden opacity-90 xl:block">
         <HoloBookFlip />
       </div>
-      <h1 className="relative font-mono text-xl font-bold tracking-widest text-white">
+      <HeaderText className="relative font-mono text-xl font-bold tracking-widest">
         📓 XRILL JOURNAL <span aria-hidden="true">😊</span>
-      </h1>
+      </HeaderText>
       <p className="relative mt-1 text-sm text-white/50">
         Every XRILL session, in order. Record the real outcome on any session that doesn't have one yet.
       </p>

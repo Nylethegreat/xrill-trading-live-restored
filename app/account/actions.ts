@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { getStripe } from "@/lib/stripe";
 import { isBackgroundTheme } from "@/lib/data/backgroundThemes";
+import { isHeaderStyle } from "@/lib/data/headerStyles";
 
 // Was hardcoded to a stale preview-deployment URL
 // ("xrill-trading-xrill-alert-system.vercel.app") that stopped being the
@@ -112,6 +113,36 @@ export async function saveBackgroundTheme(formData: FormData) {
     redirect(`/account?error=${encodeURIComponent(error.message)}`);
   }
 
+  revalidatePath("/account");
+  redirect("/account");
+}
+
+// Sets the optional decorative treatment for the app's big wordmark-style
+// page headers (see components/HeaderText.tsx) -- "white" is the default
+// and leaves every header exactly as it always looked, the others are all
+// opt-in. Same validate-then-upsert shape as saveBackgroundTheme above.
+export async function saveHeaderStyle(formData: FormData) {
+  const supabase = createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) redirect("/login?next=/account");
+
+  const value = String(formData.get("header_style") || "");
+  if (!isHeaderStyle(value)) {
+    redirect("/account?error=Unknown header style option.");
+  }
+
+  const { error } = await supabase
+    .from("profiles")
+    .upsert({ user_id: user.id, header_style: value });
+
+  if (error) {
+    redirect(`/account?error=${encodeURIComponent(error.message)}`);
+  }
+
+  // Every page that renders a HeaderText header reads header_style fresh
+  // from the DB on every request, so there's no per-route cache to bust --
+  // revalidating /account alone (to reflect the new active swatch here) is
+  // enough.
   revalidatePath("/account");
   redirect("/account");
 }

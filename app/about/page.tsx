@@ -2,6 +2,7 @@ import Link from "next/link";
 import CandlestickGlow from "@/components/visuals/CandlestickGlow";
 import { Section } from "@/components/Layout";
 import { GATES } from "@/lib/data/gates";
+import HeaderText from "@/components/HeaderText";
 
 const FAQS: { q: string; a: string }[] = [
   {
@@ -35,7 +36,7 @@ export default function AboutPage() {
         </div>
         <div className="pointer-events-none absolute inset-x-0 top-0 h-[420px] bg-gradient-to-b from-background/10 via-background/60 to-background" />
         <div className="relative mx-auto max-w-3xl px-4 py-16 text-center">
-          <h1 className="font-mono text-3xl font-bold tracking-widest text-white">ABOUT XRILL</h1>
+          <HeaderText className="font-mono text-3xl font-bold tracking-widest">ABOUT XRILL</HeaderText>
           <p className="mx-auto mt-4 max-w-xl text-white/70">
             XRILL isn't a signal service and it isn't a bot. It's a gate — the same eight questions, asked in
             the same order, every single time, before a trade ever gets your authorization to execute.

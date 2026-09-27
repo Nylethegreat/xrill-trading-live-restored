@@ -6,6 +6,7 @@ import CoachCheckIn from "@/components/intelligence/CoachCheckIn";
 import Link from "next/link";
 import PulseBrain from "@/components/visuals/PulseBrain";
 import NeuronPulse from "@/components/visuals/NeuronPulse";
+import HeaderText from "@/components/HeaderText";
 
 // Queries Supabase (via cookies()) on every request - force dynamic
 // rendering so `next build` doesn't waste time attempting (and timing
@@ -35,7 +36,7 @@ export default async function IntelligencePage() {
       </div>
       <div className="relative flex items-start justify-between gap-4">
         <div>
-          <h1 className="font-mono text-xl font-bold tracking-widest text-white">🧠 XRILL INTELLIGENCE</h1>
+          <HeaderText className="font-mono text-xl font-bold tracking-widest">🧠 XRILL INTELLIGENCE</HeaderText>
           <p className="mt-1 text-sm text-white/50">
             Your mindset check-in, plus what your recorded sessions say about your process.
           </p>

@@ -7,6 +7,7 @@ import BouncingStarsToggle from "@/components/visuals/BouncingStarsToggle";
 import WhizzingBanner from "@/components/visuals/WhizzingBanner";
 import { SCALING_PRINCIPAL, WEEKLY_RATE_PLANS } from "@/lib/data/scaling";
 import { createClient } from "@/lib/supabase/server";
+import HeaderText from "@/components/HeaderText";
 
 // Queries Supabase for the real balance behind the Star Unlocks section --
 // force dynamic so `next build` doesn't attempt to prerender this.
@@ -60,9 +61,9 @@ export default async function PlaybookPage() {
   return (
     <div className="relative mx-auto max-w-5xl px-4 py-10">
       <SuperStar />
-      <h1 className="font-mono text-xl font-bold tracking-widest text-white">
+      <HeaderText className="font-mono text-xl font-bold tracking-widest">
         XRILL PROGRESSIVE COMPOUND SYSTEM
-      </h1>
+      </HeaderText>
       <p className="mt-1 text-sm text-white/50">
         Asymmetric 7.5:1 Alpha Framework • Capital Multiplication & Reset Matrix
       </p>

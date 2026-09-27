@@ -1,7 +1,13 @@
 import type { Config } from "tailwindcss";
 
 const config: Config = {
-  content: ["./app/**/*.{ts,tsx}", "./components/**/*.{ts,tsx}"],
+  // lib/** is now scanned too -- lib/data/headerStyles.ts holds the actual
+  // Tailwind class strings for the header-style treatments (shared between
+  // HeaderText.tsx and its Account Settings picker), and without this
+  // Tailwind's JIT never sees those class names as literal text anywhere
+  // in a scanned file, so it silently drops the utilities (bg-clip-text,
+  // the arbitrary gradient colors, via-75%, etc) from the built CSS.
+  content: ["./app/**/*.{ts,tsx}", "./components/**/*.{ts,tsx}", "./lib/**/*.{ts,tsx}"],
   theme: {
     extend: {
       colors: {

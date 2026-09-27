@@ -4,10 +4,12 @@ import { saveAccountSettings, signInFromAccount, signUpFromAccount, createProChe
 import RealtimeAlertsFeed from "@/components/RealtimeAlertsFeed";
 import LightningBolt from "@/components/visuals/LightningBolt";
 import BackgroundThemePicker from "@/components/account/BackgroundThemePicker";
+import HeaderStylePicker from "@/components/account/HeaderStylePicker";
 import MossyForestTexture from "@/components/visuals/textures/MossyForestTexture";
 import RockWallTexture from "@/components/visuals/textures/RockWallTexture";
 import DarkNeoTexture from "@/components/visuals/textures/DarkNeoTexture";
 import { isBackgroundTheme, type BackgroundTheme } from "@/lib/data/backgroundThemes";
+import { isHeaderStyle, type HeaderStyle } from "@/lib/data/headerStyles";
 
 const BACKGROUND_COMPONENT: Record<BackgroundTheme, React.ComponentType<{ className?: string }>> = {
   mossy_forest: MossyForestTexture,
@@ -148,7 +150,7 @@ export default async function AccountPage({
 
   const { data: profile } = await supabase
     .from("profiles")
-    .select("display_name, discord_user_id, tier, background_theme")
+    .select("display_name, discord_user_id, tier, background_theme, header_style")
     .eq("user_id", user.id)
     .maybeSingle();
 
@@ -160,6 +162,8 @@ export default async function AccountPage({
   const backgroundTheme: BackgroundTheme =
     profile?.background_theme && isBackgroundTheme(profile.background_theme) ? profile.background_theme : "mossy_forest";
   const BackgroundComponent = BACKGROUND_COMPONENT[backgroundTheme];
+  const headerStyle: HeaderStyle =
+    profile?.header_style && isHeaderStyle(profile.header_style) ? profile.header_style : "white";
 
   return (
     <div className="relative mx-auto max-w-md overflow-hidden px-4 py-12">
@@ -274,6 +278,10 @@ export default async function AccountPage({
 
       <div className="relative mt-8">
         <BackgroundThemePicker current={backgroundTheme} />
+      </div>
+
+      <div className="relative mt-8">
+        <HeaderStylePicker current={headerStyle} />
       </div>
 
       <form action={saveAccountSettings} className="relative mt-8 space-y-4">

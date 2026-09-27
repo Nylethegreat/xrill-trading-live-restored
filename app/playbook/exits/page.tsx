@@ -1,3 +1,5 @@
+import HeaderText from "@/components/HeaderText";
+
 const SECTIONS = [
   {
     title: "Structure-First Exits",
@@ -65,7 +67,7 @@ const MINDSET_RULES = [
 export default function ExitsPlaybookPage() {
   return (
     <div className="mx-auto max-w-5xl px-4 py-10">
-      <h1 className="font-mono text-xl font-bold tracking-widest text-white">ADJUSTING EXITS & TRADE MANAGEMENT</h1>
+      <HeaderText className="font-mono text-xl font-bold tracking-widest">ADJUSTING EXITS & TRADE MANAGEMENT</HeaderText>
       <p className="mt-1 text-sm text-white/50">
         Breaking the "arbitrary 200% gain" trap — exits driven by structure, not by a number on the screen.
       </p>

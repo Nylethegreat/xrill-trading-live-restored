@@ -1,9 +1,10 @@
 import GreeksDashboard from "@/components/playbook/GreeksDashboard";
+import HeaderText from "@/components/HeaderText";
 
 export default function OptionsPlaybookPage() {
   return (
     <div className="mx-auto max-w-5xl px-4 py-10">
-      <h1 className="font-mono text-xl font-bold tracking-widest text-white">OPTIONS FUNDAMENTALS & GREEKS</h1>
+      <HeaderText className="font-mono text-xl font-bold tracking-widest">OPTIONS FUNDAMENTALS & GREEKS</HeaderText>
       <p className="mt-1 text-sm text-white/50">
         The dashboard dials for every contract — direction, acceleration, decay, and volatility, at a glance.
       </p>

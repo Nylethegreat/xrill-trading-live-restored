@@ -5,6 +5,7 @@ import WinsTicker from "@/components/visuals/WinsTicker";
 import { Section } from "@/components/Layout";
 import { MilestoneTrackerPreview } from "@/components/MilestoneTracker";
 import EngineGatePipeline from "@/components/EngineGatePipeline";
+import HeaderText from "@/components/HeaderText";
 import PublicTradeLedger from "@/components/PublicTradeLedger";
 import StageStatusBadge from "@/components/StageStatusBadge";
 
@@ -32,7 +33,7 @@ export default function HomePage() {
 
       <div className="relative mx-auto max-w-3xl px-4 py-20 text-center">
         <div className="flex justify-center"><Logo size={56} /></div>
-        <h1 className="mt-4 font-mono text-4xl font-bold tracking-widest text-white">XRILL</h1>
+        <HeaderText className="mt-4 font-mono text-4xl font-bold tracking-widest">XRILL</HeaderText>
         <p className="mt-2 text-white/60">Trading Operating System</p>
 
         <div className="mt-4 flex justify-center">
