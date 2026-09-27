@@ -11,6 +11,7 @@ import {
   calculateMaxRisk,
   scoreExecution,
   OPTIONS_CONTRACT_MULTIPLIER,
+  ACTIVE_SLEEVE_PERCENT,
   type OptionType,
   type StopMode,
 } from "@/lib/xrill";
@@ -25,12 +26,13 @@ import Hint from "./Hint";
 // traditional green, so it's never visually confused with the standard
 // engine. See lib/xrill.ts's scoreFastTradeGate/evaluateFastAuthorization
 // for exactly what's trimmed and why.
-type Step = "beware" | "gate" | "setup" | "plan" | "execution" | "result" | "blocked";
+type Step = "beware" | "gate" | "setup" | "plan" | "risk" | "execution" | "result" | "blocked";
 
 const FAST_STEPS = [
   { key: "gate", label: "Trade\nGate" },
   { key: "setup", label: "Setup\nRead" },
   { key: "plan", label: "Trade\nPlan" },
+  { key: "risk", label: "Risk\nManager" },
   { key: "execution", label: "Execution\nCheck" },
 ] as const;
 
@@ -329,11 +331,20 @@ export default function XrillFastWizard({
     const totalOutlay = hasEntry && contracts > 0 ? entry * OPTIONS_CONTRACT_MULTIPLIER * contracts : null;
 
     const maxRisk = calculateMaxRisk(accountBalance, riskPercent);
-    const maxContracts = riskPerContract && riskPerContract > 0 ? Math.floor(maxRisk / riskPerContract) : null;
+    const maxContractsByRisk = riskPerContract && riskPerContract > 0 ? Math.floor(maxRisk / riskPerContract) : null;
+    // Cap by the deployable Active Sleeve (60% of balance) too -- a tight
+    // stop alone can recommend more contracts than the account can afford
+    // to buy. Same fix as the standard engine / lib/xrill.ts's evaluateRisk.
+    const activeSleeve = accountBalance * ACTIVE_SLEEVE_PERCENT;
+    const maxContractsByOutlay = hasEntry && entry > 0 ? Math.floor(activeSleeve / (entry * OPTIONS_CONTRACT_MULTIPLIER)) : null;
+    const maxContracts =
+      maxContractsByRisk !== null && maxContractsByOutlay !== null
+        ? Math.min(maxContractsByRisk, maxContractsByOutlay)
+        : maxContractsByRisk ?? maxContractsByOutlay;
     const exceedsMax = maxContracts !== null && contracts > maxContracts;
 
     return (
-      <Shell title="Step 3/4 — Trade Plan" step="plan" accountBalance={accountBalance}>
+      <Shell title="Step 3/5 — Trade Plan" step="plan" accountBalance={accountBalance}>
         <div className="space-y-3">
           <Field label="Ticker">
             <input
@@ -425,13 +436,14 @@ export default function XrillFastWizard({
 
           {maxContracts !== null && (
             <p className={`text-xs ${exceedsMax ? "text-loss" : "text-white/40"}`}>
-              Maximum allowed by your risk settings: {maxContracts} contract{maxContracts === 1 ? "" : "s"} (max risk
-              ${maxRisk.toFixed(2)} at {riskPercent}%).
+              Maximum allowed: {maxContracts} contract{maxContracts === 1 ? "" : "s"} — whichever is more restrictive
+              of max risk (${maxRisk.toFixed(2)} at {riskPercent}%, {maxContractsByRisk} contracts) or your
+              deployable Active Sleeve (${activeSleeve.toFixed(2)} at 60% of balance, {maxContractsByOutlay}{" "}
+              contracts).
               {exceedsMax && (
                 <>
                   {" "}
-                  ⚠️ Exceeds max allowed risk of ${maxRisk.toFixed(2)}. Reduce to {maxContracts} contract
-                  {maxContracts === 1 ? "" : "s"} to qualify.
+                  ⚠️ Exceeds max allowed of {maxContracts} contract{maxContracts === 1 ? "" : "s"}.
                 </>
               )}
             </p>
@@ -465,6 +477,53 @@ export default function XrillFastWizard({
               setBlockedReason(`Trade Plan: R:R ${r.rr!.toFixed(2)} — minimum required is 2.00. Session not logged.`);
               setStep("blocked");
             } else {
+              setStep("risk");
+            }
+          }}
+        />
+      </Shell>
+    );
+  }
+
+  if (step === "risk" && planResult) {
+    const contracts = parseInt(plan.contracts, 10);
+    const risk = evaluateRisk(planResult.tradeRisk!, contracts, accountBalance, riskPercent, planResult.totalOutlay!);
+
+    return (
+      <Shell title="Step 4/5 — Risk Manager" step="risk" accountBalance={accountBalance}>
+        <p className="mb-2 text-xs text-white/50">
+          1 options contract controls 100 shares — every dollar amount below already accounts for that. Capped by
+          whichever is more restrictive: your risk-per-trade % ceiling, or your deployable Active Sleeve (60% of
+          balance) actually affording the contracts.
+        </p>
+        <Row label="Account balance" value={`$${accountBalance.toLocaleString()}`} />
+        <Row label="Risk per trade" value={`${riskPercent}%`} />
+        <Row label="Maximum allowed risk" value={`$${risk.maxRisk.toFixed(2)}`} />
+        <Row label="Trade risk" value={`$${planResult.tradeRisk!.toFixed(2)}`} />
+        <Row label="Actual account risk" value={`${risk.actualRiskPercent.toFixed(2)}%`} />
+        <Row label="Total premium outlay" value={`$${planResult.totalOutlay!.toFixed(2)}`} />
+        <Row label="Deployable Active Sleeve (60%)" value={`$${risk.activeSleeve.toFixed(2)}`} />
+        <Row label="Max contracts by risk" value={`${risk.maxContractsByRisk}`} />
+        <Row label="Max contracts by outlay" value={`${risk.maxContractsByOutlay}`} />
+        <Row label="Maximum contracts allowed" value={`${risk.maxContracts}`} />
+        <Row
+          label="Status"
+          value={risk.passed ? "✅ APPROVED" : "❌ TOO LARGE"}
+          highlight={risk.passed ? "good" : "bad"}
+        />
+        {!risk.passed && (
+          <p className="mt-2 text-xs text-loss">
+            ⚠️ Exceeds what your account can risk and/or afford. Reduce to {risk.maxContracts} contract
+            {risk.maxContracts === 1 ? "" : "s"} on the previous step to qualify.
+          </p>
+        )}
+
+        <NextButton
+          onClick={() => {
+            if (!risk.passed) {
+              setBlockedReason("Risk Manager rejected the trade — reduce contracts or adjust the stop. Session not logged.");
+              setStep("blocked");
+            } else {
               setStep("execution");
             }
           }}
@@ -474,19 +533,11 @@ export default function XrillFastWizard({
   }
 
   if (step === "execution" && planResult) {
-    const contracts = parseInt(plan.contracts, 10);
-    const risk = evaluateRisk(planResult.tradeRisk!, contracts, accountBalance, riskPercent);
     const executionValues = Object.values(execution);
     const allAnswered = executionValues.every((v) => v !== null);
 
     return (
-      <Shell title="Step 4/4 — Execution Check" step="execution" accountBalance={accountBalance}>
-        {!risk.passed && (
-          <p className="mb-3 rounded border border-loss/40 bg-loss/10 p-2 text-xs text-loss">
-            ⚠️ Risk Manager: this size exceeds your max allowed risk of ${risk.maxRisk.toFixed(2)}. Reduce to{" "}
-            {risk.maxContracts} contract{risk.maxContracts === 1 ? "" : "s"} on the previous step to qualify.
-          </p>
-        )}
+      <Shell title="Step 5/5 — Execution Check" step="execution" accountBalance={accountBalance}>
         <YesNo
           label="Did you wait for confirmation?"
           hint="Wait for the candle to close before acting — chasing a spike mid-candle is how you buy the top of the move instead of the start of it."

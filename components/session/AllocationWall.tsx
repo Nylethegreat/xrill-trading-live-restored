@@ -11,10 +11,11 @@
 // -- see lib/data/riskTiers.ts / the Dynamic Risk Tiering Matrix on
 // /playbook for the full 2-22% range scaled to pace.
 import LightningBolt from "@/components/visuals/LightningBolt";
+import { ACTIVE_SLEEVE_PERCENT } from "@/lib/xrill";
 
 export default function AllocationWall({ balance }: { balance: number }) {
-  const tradeAllocation = balance * 0.6;
-  const idleCash = balance * 0.4;
+  const tradeAllocation = balance * ACTIVE_SLEEVE_PERCENT;
+  const idleCash = balance * (1 - ACTIVE_SLEEVE_PERCENT);
 
   return (
     <div className="relative overflow-hidden rounded-lg border border-white/10 bg-surface p-4">

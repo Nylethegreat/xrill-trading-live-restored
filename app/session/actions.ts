@@ -101,7 +101,7 @@ export async function submitXrillSession(
   const balance = account?.balance ?? 50000;
   const riskPercent = account?.risk_percent ?? 1;
 
-  const risk = evaluateRisk(plan.tradeRisk!, input.plan.contracts, balance, riskPercent);
+  const risk = evaluateRisk(plan.tradeRisk!, input.plan.contracts, balance, riskPercent, plan.totalOutlay!);
   if (!risk.passed) return { success: false, error: "Risk Manager rejected the trade — session not logged." };
 
   const execution = scoreExecution(input.execution);
@@ -246,7 +246,7 @@ export async function submitFastSession(
   const balance = account?.balance ?? 50000;
   const riskPercent = account?.risk_percent ?? 1;
 
-  const risk = evaluateRisk(plan.tradeRisk!, input.plan.contracts, balance, riskPercent);
+  const risk = evaluateRisk(plan.tradeRisk!, input.plan.contracts, balance, riskPercent, plan.totalOutlay!);
   if (!risk.passed) return { success: false, error: "Risk Manager rejected the trade — session not logged." };
 
   const execution = scoreExecution(input.execution);

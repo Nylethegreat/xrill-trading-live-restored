@@ -17,6 +17,11 @@ export type StopMode = "PRICE" | "ZERO_OUT";
 
 export const OPTIONS_CONTRACT_MULTIPLIER = 100;
 
+// The 60% deployable / 40% idle-buffer split shown on AllocationWall.tsx --
+// kept here as the single source of truth so evaluateRisk's affordability
+// cap (below) and the allocation display never drift apart.
+export const ACTIVE_SLEEVE_PERCENT = 0.6;
+
 export function calculateMaxRisk(balance: number, riskPercent: number) {
   return balance * (riskPercent / 100);
 }
@@ -184,20 +189,45 @@ export function evaluateTradePlan(input: TradePlanInput): TradePlanResult {
   };
 }
 
+// BUG FIX: maxContracts used to come from risk-to-stop alone. On a cheap
+// contract with a tight stop, that let this recommend more contracts than
+// the account could physically afford to buy in the first place -- e.g. a
+// $280 account, $0.20 premium with a $0.02 stop, "risk" only $2/contract so
+// the risk-based cap alone said 20+ contracts, even though 20 contracts at
+// $20/contract ($0.20 x 100) costs $400 -- more than the whole account.
+// Now capped by BOTH the risk-per-trade % ceiling AND the total premium
+// outlay never exceeding the deployable Active Sleeve (60% of balance,
+// ACTIVE_SLEEVE_PERCENT above) -- whichever is more restrictive wins.
 export function evaluateRisk(
   tradeRisk: number,
   contracts: number,
   accountBalance: number,
-  riskPercent: number
+  riskPercent: number,
+  totalOutlay: number
 ) {
   const maxRisk = calculateMaxRisk(accountBalance, riskPercent);
   const riskPerContract = tradeRisk / contracts;
-  const maxContracts = riskPerContract > 0 ? Math.floor(maxRisk / riskPerContract) : 0;
+  const maxContractsByRisk = riskPerContract > 0 ? Math.floor(maxRisk / riskPerContract) : 0;
+
+  const activeSleeve = accountBalance * ACTIVE_SLEEVE_PERCENT;
+  const outlayPerContract = contracts > 0 ? totalOutlay / contracts : 0;
+  const maxContractsByOutlay = outlayPerContract > 0 ? Math.floor(activeSleeve / outlayPerContract) : 0;
+
+  const maxContracts = Math.min(maxContractsByRisk, maxContractsByOutlay);
   const actualRiskPercent = (tradeRisk / accountBalance) * 100;
 
-  const passed = maxContracts >= 1 && tradeRisk <= maxRisk;
+  const passed = maxContracts >= 1 && tradeRisk <= maxRisk && totalOutlay <= activeSleeve;
 
-  return { maxRisk, riskPerContract, maxContracts, actualRiskPercent, passed };
+  return {
+    maxRisk,
+    riskPerContract,
+    maxContracts,
+    maxContractsByRisk,
+    maxContractsByOutlay,
+    activeSleeve,
+    actualRiskPercent,
+    passed,
+  };
 }
 
 export interface ExecutionCheck {

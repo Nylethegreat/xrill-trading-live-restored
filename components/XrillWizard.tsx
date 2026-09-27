@@ -14,6 +14,7 @@ import {
   calculateMaxRisk,
   scoreExecution,
   OPTIONS_CONTRACT_MULTIPLIER,
+  ACTIVE_SLEEVE_PERCENT,
   type OptionType,
   type StopMode,
 } from "@/lib/xrill";
@@ -309,7 +310,16 @@ export default function XrillWizard({
     const totalOutlay = hasEntry && contracts > 0 ? entry * OPTIONS_CONTRACT_MULTIPLIER * contracts : null;
 
     const maxRisk = calculateMaxRisk(accountBalance, riskPercent);
-    const maxContracts = riskPerContract && riskPerContract > 0 ? Math.floor(maxRisk / riskPerContract) : null;
+    const maxContractsByRisk = riskPerContract && riskPerContract > 0 ? Math.floor(maxRisk / riskPerContract) : null;
+    // A tight stop alone can recommend more contracts than the account can
+    // actually afford to buy -- cap by the deployable Active Sleeve (60% of
+    // balance) too, same fix as lib/xrill.ts's evaluateRisk.
+    const activeSleeve = accountBalance * ACTIVE_SLEEVE_PERCENT;
+    const maxContractsByOutlay = hasEntry && entry > 0 ? Math.floor(activeSleeve / (entry * OPTIONS_CONTRACT_MULTIPLIER)) : null;
+    const maxContracts =
+      maxContractsByRisk !== null && maxContractsByOutlay !== null
+        ? Math.min(maxContractsByRisk, maxContractsByOutlay)
+        : maxContractsByRisk ?? maxContractsByOutlay;
     const exceedsMax = maxContracts !== null && contracts > maxContracts;
 
     return (
@@ -404,8 +414,10 @@ export default function XrillWizard({
 
           {maxContracts !== null && (
             <p className={`text-xs ${exceedsMax ? "text-blocked" : "text-white/40"}`}>
-              Maximum allowed by your risk settings: {maxContracts} contract{maxContracts === 1 ? "" : "s"} (max risk $
-              {maxRisk.toFixed(2)} at {riskPercent}%).
+              Maximum allowed: {maxContracts} contract{maxContracts === 1 ? "" : "s"} — whichever is more
+              restrictive of max risk (${maxRisk.toFixed(2)} at {riskPercent}%, {maxContractsByRisk} contracts) or
+              your deployable Active Sleeve (${activeSleeve.toFixed(2)} at 60% of balance, {maxContractsByOutlay}{" "}
+              contracts).
               {exceedsMax && (
                 <>
                   {" "}
@@ -456,7 +468,7 @@ export default function XrillWizard({
 
   if (step === "risk" && planResult) {
     const contracts = parseInt(plan.contracts, 10);
-    const risk = evaluateRisk(planResult.tradeRisk!, contracts, accountBalance, riskPercent);
+    const risk = evaluateRisk(planResult.tradeRisk!, contracts, accountBalance, riskPercent, planResult.totalOutlay!);
 
     return (
       <Shell title="Step 5/6 — Risk Manager" step="risk" accountBalance={accountBalance}>
