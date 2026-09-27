@@ -4,7 +4,7 @@ import CandlestickGlow from "@/components/visuals/CandlestickGlow";
 import WinsTicker from "@/components/visuals/WinsTicker";
 import { Section } from "@/components/Layout";
 import { MilestoneTrackerPreview } from "@/components/MilestoneTracker";
-import GatePipeline from "@/components/GatePipeline";
+import EngineGatePipeline from "@/components/EngineGatePipeline";
 import PublicTradeLedger from "@/components/PublicTradeLedger";
 import StageStatusBadge from "@/components/StageStatusBadge";
 
@@ -62,8 +62,8 @@ export default function HomePage() {
       </div>
 
       <div className="relative mx-auto max-w-3xl px-4 pb-20">
-        <Section title="🔒 The 8-Gate Trade Engine" subtitle="Click through the pipeline every trade has to clear">
-          <GatePipeline />
+        <Section title="🔒 The Trade Engine" subtitle="Click through the pipeline every trade has to clear — or switch to the faster daytrade pass">
+          <EngineGatePipeline />
         </Section>
 
         <Section title="📒 Public Trade Ledger" subtitle="Every closed alert, live from the database — no login required">

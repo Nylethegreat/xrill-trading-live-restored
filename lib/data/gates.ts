@@ -9,12 +9,19 @@
 // landing-page pipeline preview (Part 1 spec) — real gate names/details stay
 // authoritative and unchanged so the wizard and the marketing copy can never
 // describe two different systems.
+//
+// `auto` marks a step that isn't an interactive question-based gate at all —
+// it's a number the engine calculates from every gate before it (XRILL Score)
+// or a final re-check of everything already answered (Authorization). The
+// pipeline UI calls this out so it's clear those last steps aren't asking
+// the trader anything new.
 export interface Gate {
   n: number;
   name: string;
   short: string;
   detail: string;
   tagline: string;
+  auto?: boolean;
 }
 
 export const GATES: Gate[] = [
@@ -49,8 +56,8 @@ export const GATES: Gate[] = [
   {
     n: 5,
     name: "Risk Manager",
-    short: "Risk sizing ≤ 2–5%",
-    detail: "Your account balance and risk % dynamically cap position size — never a fixed number.",
+    short: "Risk sizing 2–22%",
+    detail: "Your account balance and risk % dynamically cap position size — never a fixed number. Scales from a 2% Conservative floor up to a 22% Aggressive ceiling on the Dynamic Risk Tiering Matrix, and now also caps contracts by what the account can actually afford to buy, not just the stop distance.",
     tagline: "Contract/Instrument Fit — a Greeks check confirms the right contract for the setup and timeframe.",
   },
   {
@@ -66,6 +73,7 @@ export const GATES: Gate[] = [
     short: "Composite score",
     detail: "A weighted 0–100 composite of every gate above. Needs 80+ to authorize.",
     tagline: "Pre-Trade Gate Score — the minimum composite score required to fire, no exceptions.",
+    auto: true,
   },
   {
     n: 8,
@@ -73,5 +81,6 @@ export const GATES: Gate[] = [
     short: "Final sign-off",
     detail: "Every gate re-checked server-side. One failure anywhere blocks the trade and logs why.",
     tagline: "Execution & Journal Lock — trade taken, logged, and locked into the record either way.",
+    auto: true,
   },
 ];

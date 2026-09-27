@@ -1,18 +1,60 @@
 "use client";
 
 import { useState } from "react";
-import { GATES } from "@/lib/data/gates";
+import type { Gate } from "@/lib/data/gates";
 
-export default function GatePipeline() {
+// Themed so the same pipeline UI can render either the standard 8-gate
+// engine (green) or the Daytrade Engine's fast pass (cyan/blue) — see
+// EngineGatePipeline.tsx for the toggle that switches between them.
+type Theme = "green" | "blue";
+
+const THEMES: Record<
+  Theme,
+  {
+    circleActive: string;
+    circlePast: string;
+    bubbleCleared: string;
+    dotCleared: string;
+    connectorPast: string;
+    label: string;
+  }
+> = {
+  green: {
+    circleActive: "border-accent bg-accent text-black shadow-[0_0_12px_rgba(34,197,94,0.6)]",
+    circlePast: "border-accent/50 bg-accent/15 text-accent",
+    bubbleCleared: "border-accent/50 bg-accent/10",
+    dotCleared: "bg-accent shadow-[0_0_6px_rgba(34,197,94,0.9)]",
+    connectorPast: "bg-accent shadow-[0_0_8px_2px_rgba(34,197,94,0.7)]",
+    label: "text-accent",
+  },
+  blue: {
+    circleActive: "border-daytrade bg-daytrade text-black shadow-[0_0_12px_rgba(34,211,238,0.6)]",
+    circlePast: "border-daytrade/50 bg-daytrade/15 text-daytrade",
+    bubbleCleared: "border-daytrade/50 bg-daytrade/10",
+    dotCleared: "bg-daytrade shadow-[0_0_6px_rgba(34,211,238,0.9)]",
+    connectorPast: "bg-daytrade shadow-[0_0_8px_2px_rgba(34,211,238,0.7)]",
+    label: "text-daytrade",
+  },
+};
+
+export default function GatePipeline({
+  gates,
+  theme = "green",
+}: {
+  gates: Gate[];
+  theme?: Theme;
+}) {
   const [active, setActive] = useState(0);
-  const gate = GATES[active];
+  const t = THEMES[theme];
+  const gate = gates[active];
+  const total = gates.length;
 
   return (
     <div className="rounded-xl border border-white/10 bg-surface p-5">
       {/* Horizontal rail of gate stations */}
       <div className="relative overflow-x-auto pb-2">
         <div className="flex min-w-[560px] items-start justify-between gap-1 px-1 sm:min-w-0">
-          {GATES.map((g, i) => {
+          {gates.map((g, i) => {
             const isActive = i === active;
             const isPast = i < active;
             const cleared = isPast || isActive;
@@ -27,28 +69,26 @@ export default function GatePipeline() {
                   <span
                     className={`flex h-9 w-9 flex-none items-center justify-center rounded-full border font-mono text-xs font-bold transition-all ${
                       isActive
-                        ? "border-accent bg-accent text-black shadow-[0_0_12px_rgba(34,197,94,0.6)]"
+                        ? t.circleActive
                         : isPast
-                          ? "border-accent/50 bg-accent/15 text-accent"
+                          ? t.circlePast
                           : "border-white/20 bg-white/5 text-white/50 group-hover:border-white/40 group-hover:text-white"
                     }`}
                   >
-                    {g.n}
+                    {g.auto ? "⚙" : g.n}
                   </span>
                   {/* Spirit-level bubble: bubble sits centered ("LEVEL") once this
                       gate is cleared, drifted to one side otherwise -- a
                       construction-tool nod to the gate being "leveled/plumb". */}
                   <span
                     className={`relative flex h-3 w-8 items-center rounded-full border ${
-                      cleared ? "border-accent/50 bg-accent/10" : "border-white/15 bg-black/30"
+                      cleared ? t.bubbleCleared : "border-white/15 bg-black/30"
                     }`}
                     title={cleared ? "LEVEL" : "Not yet cleared"}
                   >
                     <span
                       className={`absolute h-2 w-2 rounded-full transition-all duration-500 ${
-                        cleared
-                          ? "left-1/2 -translate-x-1/2 bg-accent shadow-[0_0_6px_rgba(34,197,94,0.9)]"
-                          : "left-1 bg-white/30"
+                        cleared ? `left-1/2 -translate-x-1/2 ${t.dotCleared}` : "left-1 bg-white/30"
                       }`}
                     />
                   </span>
@@ -60,10 +100,10 @@ export default function GatePipeline() {
                     {g.short}
                   </span>
                 </button>
-                {i < GATES.length - 1 && (
+                {i < gates.length - 1 && (
                   <div
                     className={`relative mx-1 mt-4 h-[3px] flex-1 flex-none overflow-hidden rounded-full ${
-                      isPast ? "bg-accent shadow-[0_0_8px_2px_rgba(34,197,94,0.7)]" : "bg-white/10"
+                      isPast ? t.connectorPast : "bg-white/10"
                     }`}
                     style={{ width: "100%" }}
                   >
@@ -82,9 +122,16 @@ export default function GatePipeline() {
       {/* Detail card for the selected gate */}
       <div className="mt-5 rounded-lg border border-white/10 bg-white/5 p-4">
         <div className="flex items-center gap-2">
-          <span className="font-mono text-xs text-accent">GATE {gate.n}/8</span>
+          <span className={`font-mono text-xs ${t.label}`}>
+            GATE {gate.n}/{total}
+          </span>
           <span className="text-white/20">·</span>
           <h3 className="text-sm font-semibold text-white">{gate.name}</h3>
+          {gate.auto && (
+            <span className="ml-auto rounded-full border border-white/15 bg-white/5 px-2 py-0.5 text-[10px] uppercase tracking-wide text-white/50">
+              ⚙ Calculated automatically
+            </span>
+          )}
         </div>
         <p className="mt-2 text-sm leading-relaxed text-white/70">{gate.detail}</p>
         <p className="mt-2 border-t border-white/10 pt-2 text-xs italic leading-relaxed text-white/50">
@@ -104,8 +151,8 @@ export default function GatePipeline() {
         <span>Click any gate to jump to it</span>
         <button
           type="button"
-          onClick={() => setActive((a) => Math.min(GATES.length - 1, a + 1))}
-          disabled={active === GATES.length - 1}
+          onClick={() => setActive((a) => Math.min(gates.length - 1, a + 1))}
+          disabled={active === gates.length - 1}
           className="rounded border border-white/10 px-2 py-1 hover:bg-white/10 disabled:opacity-30"
         >
           Next →
