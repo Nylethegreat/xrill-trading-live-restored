@@ -44,8 +44,13 @@ export default function GatePipeline({
   gates: Gate[];
   theme?: Theme;
 }) {
-  const [active, setActive] = useState(0);
+  const [rawActive, setActive] = useState(0);
   const t = THEMES[theme];
+  // Defensive clamp: if this instance ever gets reused across a `gates`
+  // array that shrunk (e.g. a caller that doesn't remount via key, see
+  // EngineGatePipeline.tsx's comment on why it does), fall back to the
+  // last valid gate instead of indexing past the end and crashing render.
+  const active = Math.min(rawActive, gates.length - 1);
   const gate = gates[active];
   const total = gates.length;
 

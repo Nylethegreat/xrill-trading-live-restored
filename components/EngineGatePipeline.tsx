@@ -42,7 +42,17 @@ export default function EngineGatePipeline() {
 
       {engine === "standard" ? (
         <>
-          <GatePipeline gates={GATES} theme="green" />
+          {/* key="standard" forces a fresh GatePipeline instance on switch --
+              without it, React reuses the same component instance across the
+              engine toggle (same type, same position), so its internal
+              `active` gate index carried over unchanged. Clicking through to
+              gate 7 or 8 on the 8-gate pipeline (index 6/7), then switching
+              to the 6-step Daytrade Engine, left `active` pointing past the
+              end of the shorter gates array -- gates[active] came back
+              undefined and the render crashed ("Application error: a
+              client-side exception has occurred"). A fresh key remounts with
+              active reset to 0 every time. */}
+          <GatePipeline key="standard" gates={GATES} theme="green" />
           <p className="mt-3 text-center text-[11px] leading-relaxed text-white/40">
             The last two steps, XRILL Score and Authorization, aren't questions — they're calculated automatically
             from everything above once the first six gates clear.
@@ -50,7 +60,7 @@ export default function EngineGatePipeline() {
         </>
       ) : (
         <>
-          <GatePipeline gates={DAYTRADE_GATES} theme="blue" />
+          <GatePipeline key="daytrade" gates={DAYTRADE_GATES} theme="blue" />
           <p className="mt-3 text-center text-[11px] leading-relaxed text-white/40">
             A faster pass for higher-risk daytrading — fewer questions, same Risk Manager and Execution Check as the
             8-gate engine. Authorization is calculated automatically from the steps above, no composite score.
