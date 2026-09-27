@@ -370,9 +370,10 @@ export default async function AccountPage({
             ) — that's your <span className="text-white/80">Maximum Trade Loss per Trade</span>, shown above.
           </p>
           <p className="mt-1.5 text-xs leading-relaxed text-white/60">
-            3. Your <span className="text-white/80">Daily Loss Limit</span> should be smaller than your max trade
-            loss — a fraction of it, not a multiple — so a couple of rough trades don't have to fully play out
-            before you step away for the day.
+            3. Your <span className="text-white/80">Daily Loss Limit</span> should be a small multiple of your max
+            trade loss — roughly 2×, not a fraction of it — so it reflects a genuinely bad stretch (a couple of
+            stop-outs), not a single trade. A limit smaller than one trade's max loss gets blown past by the very
+            first stop-out, before it ever functions as a cumulative, whole-day cap.
           </p>
           <p className="mt-2.5 rounded border border-white/10 bg-black/20 p-2 font-mono text-[11px] leading-relaxed text-white/50">
             Example — $200 account, Aggressive tier (22% risk/trade):
@@ -381,14 +382,15 @@ export default async function AccountPage({
             <br />
             Max Trade Loss per Trade (22% of $200): $44
             <br />
-            Daily Loss Limit — a fraction of that, e.g. ~$15–22
+            Daily Loss Limit (~2× max trade loss): ~$85–90
           </p>
           <p className="mt-2 text-[11px] text-white/40">
-            This is enforced: once today's journaled net P/L hits the Daily Loss Limit above,{" "}
+            This is enforced two ways: once today's journaled net P/L hits the Daily Loss Limit above,{" "}
             <a href="/session" className="underline hover:text-white/70">
               Start Session
             </a>{" "}
-            locks for the rest of the trading day (resets at midnight Eastern). See the live meter on your{" "}
+            locks for the rest of the trading day (resets at midnight Eastern) — and separately, two stop-outs in
+            one day (the Two-Loss Lockout) locks it too, whichever hits first. See both live meters on your{" "}
             <a href="/dashboard" className="underline hover:text-white/70">
               Dashboard
             </a>

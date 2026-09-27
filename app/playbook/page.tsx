@@ -103,9 +103,18 @@ export default async function PlaybookPage() {
       <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4">
         <MetricCard label="Target Gain / Trade" value="+300%" tone="good" />
         <MetricCard label="Hard Stop Loss" value="-40%" tone="blocked" />
-        <MetricCard label="Required Win Rate" value="30%" tone="caution" />
+        <MetricCard label="Example Win Rate" value="30%" tone="caution" />
         <MetricCard label="Expected Value (EV)" value="+62.0%" tone="info" />
       </div>
+      <p className="mt-3 rounded border border-white/10 bg-white/5 p-3 text-xs leading-relaxed text-white/60">
+        <span className="text-white/80">30% isn't a requirement</span> — it's just the win rate plugged into the EV
+        figure above (0.30 × 300% − 0.70 × 40% = +62.0%). The actual break-even, the win rate where this stops
+        losing money, is a lot lower:{" "}
+        <span className="font-mono text-white/80">break-even win rate = 1 ÷ (1 + reward:risk)</span>. At this
+        system's 7.5:1 reward:risk (+300% target vs. −40% stop), that's{" "}
+        <span className="font-mono text-white/80">1 ÷ 8.5 ≈ 11.8%</span> — roughly 1 winner in every 8–9 trades
+        just to break even. A 30% win rate at this reward:risk isn't the bar to clear, it's already well past it.
+      </p>
 
       <Section
         title={`🚀 Compound Scaling Roadmap ($${SCALING_PRINCIPAL} → $100K in ${Math.min(
@@ -170,6 +179,17 @@ export default async function PlaybookPage() {
       </Section>
 
       <Section title="Real-Time Execution Tracking Sheet Schema">
+        <p className="mb-3 text-xs leading-relaxed text-white/50">
+          This is a template for a spreadsheet you build yourself (Excel or Google Sheets) to log real trades — it's
+          not a feature inside the app. "Row 2" means your first actual trade row: every formula below is written in
+          terms of row 2's own cells (C2, E2, and so on) and copies straight down as you add rows, so row 3
+          recalculates from row 3's own numbers, row 4 from row 4's, etc. A couple of the less obvious ones spelled
+          out: column F, <span className="font-mono text-primary">=INT(D2/(E2*100))</span>, is how many contracts
+          you can afford — your allocated capital (D) divided by the cost of one contract (entry premium × 100
+          shares), rounded down so you never round up into a position you can't pay for. Column M,{" "}
+          <span className="font-mono text-primary">=IF(K2&gt;0, K2*0.60, 0)</span>, only sweeps money on a winning
+          trade (K2&gt;0) — a loss sweeps nothing.
+        </p>
         <div className="overflow-x-auto rounded border border-white/10">
           <table className="w-full text-left text-sm">
             <thead className="bg-surface text-white/50">

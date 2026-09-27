@@ -2,6 +2,7 @@
 
 import { createClient } from "@/lib/supabase/server";
 import { getDailyLossStatus, getTradingDateET } from "@/lib/data/dailyLossLock";
+import { getTwoLossStatus } from "@/lib/data/twoLossLock";
 import {
   scoreDailyCheckIn,
   scoreTradeGate,
@@ -76,6 +77,16 @@ export async function submitXrillSession(
     return {
       success: false,
       error: `Daily loss limit hit ($${Math.abs(dailyLoss.netPnl).toLocaleString()} of $${dailyLoss.limit.toLocaleString()}) — terminal is locked until tomorrow.`,
+    };
+  }
+
+  // Same idea, a different trigger: two stop-outs today locks the
+  // terminal even if the dollar loss limit above hasn't been hit yet.
+  const twoLoss = await getTwoLossStatus(user.id);
+  if (twoLoss.locked) {
+    return {
+      success: false,
+      error: `Two-Loss Lockout: ${twoLoss.stopOutCount} stop-outs journaled today — terminal is locked until tomorrow.`,
     };
   }
 
@@ -223,6 +234,15 @@ export async function submitFastSession(
     return {
       success: false,
       error: `Daily loss limit hit ($${Math.abs(dailyLoss.netPnl).toLocaleString()} of $${dailyLoss.limit.toLocaleString()}) — terminal is locked until tomorrow.`,
+    };
+  }
+
+  // Account-wide, not per-engine, same as the daily loss lock above.
+  const twoLoss = await getTwoLossStatus(user.id);
+  if (twoLoss.locked) {
+    return {
+      success: false,
+      error: `Two-Loss Lockout: ${twoLoss.stopOutCount} stop-outs journaled today — terminal is locked until tomorrow.`,
     };
   }
 

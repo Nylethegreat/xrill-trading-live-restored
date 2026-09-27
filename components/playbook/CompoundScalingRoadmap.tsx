@@ -36,6 +36,17 @@ export default function CompoundScalingRoadmap() {
           Because a week can't be partially completed, the actual crossing week always lands a little above
           $100,000 — that overshoot is exactly what the "Final Balance" column below shows.
         </p>
+        <p className="mt-3 border-t border-white/10 pt-3 text-xs leading-relaxed text-white/50">
+          In plain terms: <span className="font-mono text-white/70">ln()</span> is the natural logarithm — the
+          question it's answering is "how many times do I have to multiply by r before I've multiplied by{" "}
+          {SCALING_MULTIPLE} total?" For a fixed multiplier that's always ln(target multiple) ÷ ln(per-step
+          multiplier). At 100% weekly (r = 2, since the balance doubles), that's{" "}
+          <span className="font-mono text-white/70">
+            ln({SCALING_MULTIPLE}) ÷ ln(2) ≈ {(Math.log(SCALING_MULTIPLE) / Math.log(2)).toFixed(1)}
+          </span>{" "}
+          — rounded up to {WEEKLY_RATE_PLANS.find((p) => p.ratePercent === 100)?.weeks ?? 9} whole weeks, matching
+          the table below.
+        </p>
       </div>
 
       {/* Comparison table */}

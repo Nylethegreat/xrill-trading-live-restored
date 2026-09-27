@@ -107,18 +107,31 @@ export default function ExitsPlaybookPage() {
             <li className="flex gap-2">
               <span className="mt-1 h-1.5 w-1.5 flex-none rounded-full bg-secondary" />
               <span>
-                <strong>Two-Loss Morning Lockout:</strong> if two morning trades hit their stop-loss, or you
-                notice real emotional bleed creeping into your decisions, the terminal closes for the rest of
-                the session. No exceptions, no "making it back before the close."
+                <strong>Two-Loss Lockout:</strong> if two trades hit their stop-loss on the same trading day, the
+                terminal closes for the rest of the session. No exceptions, no "making it back before the close."
               </span>
             </li>
             <li className="flex gap-2">
               <span className="mt-1 h-1.5 w-1.5 flex-none rounded-full bg-secondary" />
               <span>
-                This is currently a self-enforced discipline rule, not an automated lockout — the wizard's
-                Execution Check step asks "Within your daily loss limit?" as an honest yes/no gut-check, but
-                nothing in the code counts your losses today and locks the session for you yet. Say the word
-                and that becomes a real, coded enforcement.
+                This is enforced server-side, the same way the dollar Daily Loss Limit is — a stop-out counts once
+                a journaled trade's loss reaches roughly its full planned risk. Whichever rule trips first locks{" "}
+                <a href="/session" className="underline hover:text-white">
+                  Start Session
+                </a>{" "}
+                until the next trading day. See the live counter on your{" "}
+                <a href="/dashboard" className="underline hover:text-white">
+                  Dashboard
+                </a>
+                .
+              </span>
+            </li>
+            <li className="flex gap-2">
+              <span className="mt-1 h-1.5 w-1.5 flex-none rounded-full bg-secondary" />
+              <span>
+                If you notice real emotional bleed creeping into your decisions before either hard rule trips —
+                that's still yours to catch. The Execution Check's "Within your daily loss limit?" gut-check is
+                there for exactly that.
               </span>
             </li>
           </ul>

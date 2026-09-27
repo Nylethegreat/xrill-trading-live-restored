@@ -16,7 +16,10 @@ export interface WeeklyRatePlan {
   // you can't stop mid-week, so the crossing week ends above $100K)
 }
 
-// n = ln(500) / ln(r)  where r = 1 + weeklyRate.
+// n = ln(400) / ln(r)  where r = 1 + weeklyRate  (400 = SCALING_MULTIPLE,
+// $100,000 / $250 -- this comment used to say 500, stale from an earlier
+// version of the model; the math below always used SCALING_MULTIPLE
+// directly so the rendered numbers were never wrong, only this comment).
 // Whole weeks required (rounded up, since the target is only realized
 // crossing week n, not part-way through it).
 export function weeksToMultiply(multiple: number, ratePercent: number): number {

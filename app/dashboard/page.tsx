@@ -13,7 +13,9 @@ import MyWinsTicker from "@/components/MyWinsTicker";
 import PowerUpChecklist from "@/components/visuals/PowerUpChecklist";
 import RedDayCard from "@/components/visuals/RedDayCard";
 import DailyLossMeter from "@/components/DailyLossMeter";
+import TwoLossLockMeter from "@/components/TwoLossLockMeter";
 import { getDailyLossStatus } from "@/lib/data/dailyLossLock";
+import { getTwoLossStatus } from "@/lib/data/twoLossLock";
 
 // Queries Supabase (via cookies()) on every request - force dynamic
 // rendering so `next build` doesn't waste time attempting (and timing
@@ -29,7 +31,7 @@ export default async function DashboardPage() {
   const supabase = createClient();
   const { data: { user } } = await supabase.auth.getUser();
 
-  const [{ data: account }, { data: sessions }, { data: outcomes }, dailyLoss] = await Promise.all([
+  const [{ data: account }, { data: sessions }, { data: outcomes }, dailyLoss, twoLoss] = await Promise.all([
     supabase.from("accounts").select("balance, risk_percent, daily_loss_limit").eq("user_id", user!.id).maybeSingle(),
     supabase
       .from("xrill_sessions")
@@ -38,6 +40,7 @@ export default async function DashboardPage() {
       .order("created_at", { ascending: false }),
     supabase.from("xrill_outcomes").select("session_id").eq("user_id", user!.id),
     getDailyLossStatus(user!.id),
+    getTwoLossStatus(user!.id),
   ]);
 
   const balance = account?.balance ?? 50000;
@@ -99,8 +102,9 @@ export default async function DashboardPage() {
           <Stat label="Risk Per Trade" value={`${riskPercent}%`} />
           <Stat label="Maximum Trade Risk" value={money(maxRisk)} />
         </Grid>
-        <div className="mt-3">
+        <div className="mt-3 space-y-3">
           <DailyLossMeter netPnl={dailyLoss.netPnl} limit={dailyLoss.limit} />
+          <TwoLossLockMeter stopOutCount={twoLoss.stopOutCount} threshold={twoLoss.threshold} />
         </div>
       </Section>
 

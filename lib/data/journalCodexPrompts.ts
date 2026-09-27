@@ -6,4 +6,5 @@ export const CODEX_PROMPTS = [
   "How's your day going?",
   "What's actually on your mind right now?",
   "One thing that went right today?",
+  "One good memory -- a specific detail from a day you liked?",
 ] as const;

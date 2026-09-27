@@ -28,6 +28,11 @@ const PILLARS = [
     title: "Your Choice",
     body: "Pick literally anything for the next hour that's yours, not obligation -- a walk, a show, silence. No one else's agenda.",
   },
+  {
+    icon: "⚓",
+    title: "One Good Memory",
+    body: "Recall one specific detail from a day you liked -- a clear sky, a clean workout, a quiet moment. Prove to your brain that satisfaction is a real, recorded data point, not something that only happened once.",
+  },
 ];
 
 export default function RedDayCard() {
