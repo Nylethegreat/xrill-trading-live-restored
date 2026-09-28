@@ -103,13 +103,13 @@ export default function PreTradeChecklist() {
         <div className="mt-4 grid grid-cols-2 gap-2">
           <Link
             href="/session?engine=swing"
-            className="block rounded bg-accent px-3 py-2 text-center text-sm font-medium text-black hover:opacity-90"
+            className="block rounded bg-accent px-3 py-2 text-center text-sm font-medium text-black hover:opacity-90 motion-safe:animate-perf-glow-accent"
           >
             🟢 Swing Trade
           </Link>
           <Link
             href="/session?engine=daytrade"
-            className="block rounded bg-daytrade px-3 py-2 text-center text-sm font-medium text-black hover:opacity-90"
+            className="block rounded bg-daytrade px-3 py-2 text-center text-sm font-medium text-black hover:opacity-90 motion-safe:animate-daytrade-glow"
           >
             ⚡ Daytrade
           </Link>

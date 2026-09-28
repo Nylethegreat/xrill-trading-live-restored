@@ -17,6 +17,12 @@ import TwoLossLockMeter from "@/components/TwoLossLockMeter";
 import { getDailyLossStatus } from "@/lib/data/dailyLossLock";
 import { getTwoLossStatus } from "@/lib/data/twoLossLock";
 import { getOpenPositionsStatus } from "@/lib/data/openPositions";
+import BouncingStarsToggle from "@/components/visuals/BouncingStarsToggle";
+import DashboardThemePicker from "@/components/dashboard/DashboardThemePicker";
+import NeonArcadeTexture from "@/components/visuals/textures/NeonArcadeTexture";
+import DeepSpaceTexture from "@/components/visuals/textures/DeepSpaceTexture";
+import DarkNeoTexture from "@/components/visuals/textures/DarkNeoTexture";
+import { isDashboardTheme, type DashboardTheme } from "@/lib/data/dashboardThemes";
 
 // Queries Supabase (via cookies()) on every request - force dynamic
 // rendering so `next build` doesn't waste time attempting (and timing
@@ -32,7 +38,7 @@ export default async function DashboardPage() {
   const supabase = createClient();
   const { data: { user } } = await supabase.auth.getUser();
 
-  const [{ data: account }, { data: sessions }, dailyLoss, twoLoss, openPositions] = await Promise.all([
+  const [{ data: account }, { data: sessions }, dailyLoss, twoLoss, openPositions, { data: profile }] = await Promise.all([
     supabase.from("accounts").select("balance, risk_percent, daily_loss_limit").eq("user_id", user!.id).maybeSingle(),
     supabase
       .from("xrill_sessions")
@@ -42,7 +48,11 @@ export default async function DashboardPage() {
     getDailyLossStatus(user!.id),
     getTwoLossStatus(user!.id),
     getOpenPositionsStatus(user!.id),
+    supabase.from("profiles").select("dashboard_theme").eq("user_id", user!.id).maybeSingle(),
   ]);
+
+  const dashboardTheme: DashboardTheme =
+    profile?.dashboard_theme && isDashboardTheme(profile.dashboard_theme) ? profile.dashboard_theme : "classic";
 
   const balance = account?.balance ?? 50000;
   const riskPercent = account?.risk_percent ?? 1;
@@ -61,6 +71,7 @@ export default async function DashboardPage() {
 
   return (
     <div className="relative mx-auto max-w-3xl px-4 py-10">
+      <DashboardBackdrop theme={dashboardTheme} />
       <div className="pointer-events-none absolute inset-x-0 -top-4 h-40 opacity-40">
         <CandlestickGlow variant="banner" className="h-full w-full" />
       </div>
@@ -147,6 +158,11 @@ export default async function DashboardPage() {
         </Section>
       )}
 
+      <Section title="🎨 Customize XRILL Status" subtitle="Background and star field — only affects your own view.">
+        <DashboardThemePicker current={dashboardTheme} />
+        <BouncingStarsToggle className="mt-3" />
+      </Section>
+
       <Section title="Performance">
         <Grid>
           <Stat label="Total Sessions" value={String(total)} />
@@ -187,6 +203,20 @@ export default async function DashboardPage() {
           to record trade outcomes and review every session.
         </p>
       </Section>
+    </div>
+  );
+}
+
+// Full-viewport backdrop behind everything on XRILL Status. Fixed at
+// -z-20 inside the layout's z-10 content layer: under the page content and
+// under the star field (-z-10), above the site-wide TerminalBackdrop.
+function DashboardBackdrop({ theme }: { theme: DashboardTheme }) {
+  if (theme === "classic") return null;
+  return (
+    <div aria-hidden="true" className="pointer-events-none fixed inset-0 -z-20">
+      {theme === "neon_arcade" && <NeonArcadeTexture className="opacity-70" />}
+      {theme === "deep_space" && <DeepSpaceTexture className="opacity-80" />}
+      {theme === "dark_neo" && <DarkNeoTexture className="opacity-90" />}
     </div>
   );
 }

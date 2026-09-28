@@ -21,7 +21,7 @@ export default function EngineGatePipeline() {
           onClick={() => setEngine("standard")}
           className={`rounded-full border px-4 py-1.5 text-xs font-semibold transition-all ${
             engine === "standard"
-              ? "border-accent bg-accent/15 text-accent shadow-[0_0_10px_rgba(34,197,94,0.35)]"
+              ? "border-accent bg-accent/15 text-accent shadow-[0_0_16px_3px_rgba(34,197,94,0.5)] [text-shadow:0_0_4px_currentColor,0_0_11px_currentColor,0_0_19px_currentColor]"
               : "border-white/15 text-white/50 hover:border-white/30 hover:text-white/80"
           }`}
         >
@@ -32,7 +32,7 @@ export default function EngineGatePipeline() {
           onClick={() => setEngine("daytrade")}
           className={`rounded-full border px-4 py-1.5 text-xs font-semibold transition-all ${
             engine === "daytrade"
-              ? "border-daytrade bg-daytrade/15 text-daytrade shadow-[0_0_10px_rgba(34,211,238,0.35)]"
+              ? "border-daytrade bg-daytrade/15 text-daytrade shadow-[0_0_16px_3px_rgba(34,211,238,0.5)] [text-shadow:0_0_4px_currentColor,0_0_11px_currentColor,0_0_19px_currentColor]"
               : "border-white/15 text-white/50 hover:border-white/30 hover:text-white/80"
           }`}
         >

@@ -687,7 +687,7 @@ function Shell({
       {step && <FastStepTracker current={step} />}
       <div className="mt-6 grid gap-6 lg:grid-cols-[1fr_260px]">
         <div className="relative max-w-2xl">
-          <h1 className="mb-6 flex items-center gap-2 text-xl font-semibold text-daytrade">
+          <h1 className="mb-6 flex items-center gap-2 text-xl font-semibold text-daytrade [text-shadow:0_0_4px_currentColor,0_0_11px_currentColor,0_0_19px_currentColor]">
             <span aria-hidden="true">⚡</span>
             {title}
           </h1>

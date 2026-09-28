@@ -40,10 +40,10 @@ export default function EngineSelector({
         <button
           type="button"
           onClick={() => setEngine("swing")}
-          className="group rounded-lg border border-accent/30 bg-surface p-5 text-left transition-colors hover:border-accent"
+          className="group rounded-lg border border-accent/50 bg-surface p-5 text-left transition-colors hover:border-accent motion-safe:animate-perf-glow-accent"
         >
           <p className="text-2xl">🟢</p>
-          <p className="mt-2 text-sm font-semibold uppercase tracking-wide text-accent">Swing Trade</p>
+          <p className="mt-2 text-sm font-semibold uppercase tracking-wide text-accent motion-safe:animate-neon-flicker [text-shadow:0_0_4px_currentColor,0_0_11px_currentColor,0_0_19px_currentColor]">Swing Trade</p>
           <p className="mt-1 text-xs text-white/50">
             The full 8-gate pipeline — Daily Check-In through Authorization. Slower, more scrutiny, the standard
             engine.
@@ -53,10 +53,10 @@ export default function EngineSelector({
         <button
           type="button"
           onClick={() => setEngine("daytrade")}
-          className="group rounded-lg border border-daytrade/30 bg-surface p-5 text-left transition-colors hover:border-daytrade motion-safe:hover:animate-daytrade-glow"
+          className="group rounded-lg border border-daytrade/50 bg-surface p-5 text-left transition-colors hover:border-daytrade motion-safe:animate-daytrade-glow"
         >
           <p className="text-2xl">⚡</p>
-          <p className="mt-2 text-sm font-semibold uppercase tracking-wide text-daytrade">Daytrade Engine</p>
+          <p className="mt-2 text-sm font-semibold uppercase tracking-wide text-daytrade motion-safe:animate-neon-flicker [text-shadow:0_0_4px_currentColor,0_0_11px_currentColor,0_0_19px_currentColor]">Daytrade Engine</p>
           <p className="mt-1 text-xs text-white/50">
             A 4-step fast pass for faster-moving daytrades — fewer questions, same hard risk limits. Higher risk by
             design.

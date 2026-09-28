@@ -1,7 +1,9 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { isDashboardTheme } from "@/lib/data/dashboardThemes";
 
 export interface UpdateBalanceResult {
   success: boolean;
@@ -34,4 +36,27 @@ export async function updateBalance(balance: number): Promise<UpdateBalanceResul
   revalidatePath("/account");
 
   return { success: true };
+}
+
+// One-click XRILL Status background picker (DashboardThemePicker) -- each
+// swatch is its own tiny form posting straight here, same validate-then-
+// upsert shape as saveBackgroundTheme on /account. The DB column's CHECK
+// constraint is the real backstop; validating here too turns a forged
+// value into a clean redirect instead of a raw constraint error.
+export async function saveDashboardTheme(formData: FormData) {
+  const supabase = createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) redirect("/login?next=/dashboard");
+
+  const value = String(formData.get("dashboard_theme") || "");
+  if (!isDashboardTheme(value)) {
+    redirect("/dashboard");
+  }
+
+  await supabase.from("profiles").upsert({ user_id: user.id, dashboard_theme: value });
+
+  revalidatePath("/dashboard");
+  redirect("/dashboard");
 }
