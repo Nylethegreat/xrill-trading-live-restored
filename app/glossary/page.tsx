@@ -198,6 +198,37 @@ const CATEGORIES: Category[] = [
     ],
   },
   {
+    name: "Psychology",
+    terms: [
+      {
+        term: "Revenge Trading",
+        definition:
+          "Jumping straight into another trade to win back a loss — usually bigger, faster and with no real setup. It's the single most common way a bad day turns into a blown account.",
+      },
+      {
+        term: "FOMO",
+        short: "Fear Of Missing Out",
+        definition:
+          "Chasing a move because it's already running and you don't want to miss it. FOMO entries are late, have wide stops and poor R:R — exactly what XRILL's Setup Score is built to catch.",
+      },
+      {
+        term: "Tilt",
+        definition:
+          "An emotional state (frustration, anger, euphoria) where you stop following your rules. Borrowed from poker. If you notice it, the trade is to walk away, not to click buy.",
+      },
+      {
+        term: "Overtrading",
+        definition:
+          "Taking more trades than your setups justify — out of boredom, excitement or to force a daily goal. More trades means more fees, more mistakes and more exposure to bad fills.",
+      },
+      {
+        term: "Two-Loss Lockout",
+        definition:
+          "XRILL's hard stop for the day: after two journaled stop-outs, Start Session locks until midnight Eastern. It exists because the third trade after two losses is where most revenge trading happens.",
+      },
+    ],
+  },
+  {
     name: "The Greeks",
     terms: GREEKS.map((g) => ({
       term: g.name,
@@ -223,45 +254,127 @@ const CATEGORIES: Category[] = [
   },
 ];
 
-function AccordionItem({ term, isOpen, onToggle }: { term: Term; isOpen: boolean; onToggle: () => void }) {
+// Each category's accent, as "R G B" so one CSS variable (--acc) drives the
+// border, tag, corner brackets and glow with any alpha. All colors come
+// from the app's existing palette (tailwind.config.ts tokens + Tailwind
+// defaults) so the glossary matches the rest of XRILL.
+const ACCENTS: Record<string, string> = {
+  "Risk & Money Management": "34 197 94", // accent green
+  "Setup & Confluence": "59 130 246", // primary blue
+  "Options & Execution": "34 211 238", // daytrade cyan
+  "XRILL System": "168 85 247", // blocked purple
+  "Progress & Levels": "234 179 8", // caution yellow
+  Psychology: "244 114 182", // pink-400
+  "The Greeks": "192 38 211", // secondary magenta
+  "Trading Styles by Holding Time": "251 146 60", // orange-400
+  "Strategy Library": "45 212 191", // teal-400
+};
+const accentFor = (category: string) => ACCENTS[category] ?? "148 163 184";
+
+// Shorter labels for the pills; the full name still shows on each card.
+const PILL_LABELS: Record<string, string> = {
+  "Risk & Money Management": "Risk & Money",
+  "Setup & Confluence": "Setup",
+  "Options & Execution": "Options",
+  "XRILL System": "XRILL System",
+  "Progress & Levels": "Progress",
+  Psychology: "Psychology",
+  "The Greeks": "Greeks",
+  "Trading Styles by Holding Time": "Trading Styles",
+  "Strategy Library": "Strategies",
+};
+
+function Corner({ pos }: { pos: "tl" | "tr" | "bl" | "br" }) {
+  const place = {
+    tl: "left-0 top-0 border-l-2 border-t-2",
+    tr: "right-0 top-0 border-r-2 border-t-2",
+    bl: "bottom-0 left-0 border-b-2 border-l-2",
+    br: "bottom-0 right-0 border-b-2 border-r-2",
+  }[pos];
   return (
-    <div className="rounded border border-white/10 bg-surface">
-      <button
-        type="button"
-        onClick={onToggle}
-        className="flex w-full items-center justify-between gap-3 px-4 py-3 text-left"
-      >
-        <span className="text-sm font-medium text-white">
+    <span
+      aria-hidden="true"
+      className={`pointer-events-none absolute h-3 w-3 border-[rgb(var(--acc)/0.55)] transition-all duration-200 group-hover:h-4 group-hover:w-4 group-hover:border-[rgb(var(--acc))] group-hover:drop-shadow-[0_0_6px_rgb(var(--acc))] ${place}`}
+    />
+  );
+}
+
+function HudCard({
+  term,
+  category,
+  isOpen,
+  onToggle,
+}: {
+  term: Term;
+  category: string;
+  isOpen: boolean;
+  onToggle: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onToggle}
+      aria-expanded={isOpen}
+      style={{ "--acc": accentFor(category) } as React.CSSProperties}
+      className="group relative flex h-full w-full flex-col rounded-sm border border-[rgb(var(--acc)/0.28)] bg-[#0b0e1a]/70 p-4 text-left transition-all duration-200 hover:border-[rgb(var(--acc)/0.85)] hover:shadow-[0_0_18px_-4px_rgb(var(--acc)/0.6)] md:backdrop-blur-md"
+    >
+      <Corner pos="tl" />
+      <Corner pos="tr" />
+      <Corner pos="bl" />
+      <Corner pos="br" />
+
+      <div className="flex items-start justify-between gap-2">
+        <span className="font-mono text-base font-bold tracking-wide text-white [text-shadow:0_0_10px_rgb(var(--acc)/0.45)]">
           {term.term}
-          {term.short && <span className="ml-2 text-xs font-normal text-white/40">{term.short}</span>}
         </span>
-        <span className={`text-white/40 transition-transform ${isOpen ? "rotate-45" : ""}`}>+</span>
-      </button>
-      {isOpen && <p className="border-t border-white/10 px-4 py-3 text-sm text-white/60">{term.definition}</p>}
-    </div>
+        <span className="shrink-0 rounded-full border border-[rgb(var(--acc)/0.4)] bg-[rgb(var(--acc)/0.1)] px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-[rgb(var(--acc))]">
+          {PILL_LABELS[category] ?? category}
+        </span>
+      </div>
+      {term.short && <p className="mt-1 text-xs font-medium text-white/60">{term.short}</p>}
+      <p className={`mt-2 text-sm leading-relaxed text-white/55 ${isOpen ? "" : "line-clamp-2"}`}>{term.definition}</p>
+      <span className="mt-auto pt-2 text-[10px] uppercase tracking-widest text-[rgb(var(--acc)/0.6)]">
+        {isOpen ? "− Collapse" : "+ Expand"}
+      </span>
+    </button>
   );
 }
 
 export default function GlossaryPage() {
   const [query, setQuery] = useState("");
+  const [active, setActive] = useState<string>("All");
   const [openIds, setOpenIds] = useState<Set<string>>(new Set());
 
   const normalized = query.trim().toLowerCase();
 
-  const filtered = useMemo(() => {
-    if (!normalized) return CATEGORIES;
-    return CATEGORIES.map((cat) => ({
-      ...cat,
-      terms: cat.terms.filter(
-        (t) =>
-          t.term.toLowerCase().includes(normalized) ||
-          t.short?.toLowerCase().includes(normalized) ||
-          t.definition.toLowerCase().includes(normalized)
-      ),
-    })).filter((cat) => cat.terms.length > 0);
+  const matches = (t: Term) =>
+    !normalized ||
+    t.term.toLowerCase().includes(normalized) ||
+    t.short?.toLowerCase().includes(normalized) ||
+    t.definition.toLowerCase().includes(normalized);
+
+  // Counts follow the search, so each pill shows how many hits it holds.
+  const counts = useMemo(() => {
+    const c: Record<string, number> = {};
+    let all = 0;
+    for (const cat of CATEGORIES) {
+      const n = cat.terms.filter(matches).length;
+      c[cat.name] = n;
+      all += n;
+    }
+    c.All = all;
+    return c;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [normalized]);
 
-  const totalShown = filtered.reduce((sum, c) => sum + c.terms.length, 0);
+  const cards = useMemo(
+    () =>
+      CATEGORIES.filter((cat) => active === "All" || cat.name === active).flatMap((cat) =>
+        cat.terms.filter(matches).map((t) => ({ term: t, category: cat.name, id: `${cat.name}::${t.term}` }))
+      ),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [normalized, active]
+  );
 
   function toggle(id: string) {
     setOpenIds((prev) => {
@@ -272,8 +385,10 @@ export default function GlossaryPage() {
     });
   }
 
+  const pills = ["All", ...CATEGORIES.map((c) => c.name)];
+
   return (
-    <div className="relative mx-auto max-w-2xl px-4 py-12">
+    <div className="relative mx-auto max-w-6xl px-4 py-12">
       <div className="pointer-events-none absolute inset-x-0 -top-4 h-40 opacity-40">
         <CandlestickGlow variant="banner" className="h-full w-full" />
       </div>
@@ -289,25 +404,49 @@ export default function GlossaryPage() {
         value={query}
         onChange={(e) => setQuery(e.target.value)}
         placeholder="Search terms — e.g. R:R, trim, liquidity..."
-        className="relative mt-6 w-full rounded border border-white/20 bg-transparent px-3 py-2 text-sm outline-none focus:border-accent"
+        className="relative mt-6 w-full rounded border border-white/20 bg-[#0b0e1a]/70 px-3 py-2.5 text-sm outline-none transition-shadow focus:border-accent focus:shadow-[0_0_14px_-2px_rgba(34,197,94,0.6)]"
       />
 
-      {normalized && (
-        <p className="relative mt-2 text-xs text-white/40">
-          {totalShown === 0 ? "No terms match." : `${totalShown} term${totalShown === 1 ? "" : "s"} found.`}
-        </p>
-      )}
+      <div className="relative mt-3 flex flex-wrap gap-2" role="group" aria-label="Filter by category">
+        {pills.map((name) => {
+          const isActive = active === name;
+          const acc = name === "All" ? "232 234 245" : accentFor(name);
+          const n = counts[name] ?? 0;
+          return (
+            <button
+              key={name}
+              type="button"
+              aria-pressed={isActive}
+              onClick={() => setActive(name)}
+              style={{ "--acc": acc } as React.CSSProperties}
+              className={`rounded-full border px-3 py-1 text-xs font-medium backdrop-blur-sm transition-all ${
+                isActive
+                  ? "border-[rgb(var(--acc))] bg-[rgb(var(--acc)/0.15)] text-[rgb(var(--acc))] shadow-[0_0_14px_-2px_rgb(var(--acc)/0.75)]"
+                  : "border-white/15 bg-white/[0.03] text-white/55 hover:border-[rgb(var(--acc)/0.6)] hover:text-white/85 hover:shadow-[0_0_10px_-3px_rgb(var(--acc)/0.6)]"
+              } ${n === 0 && !isActive ? "opacity-40" : ""}`}
+            >
+              {name === "All" ? "All" : PILL_LABELS[name] ?? name}
+              <span className="ml-1.5 font-mono text-[10px] opacity-70">{n}</span>
+            </button>
+          );
+        })}
+      </div>
 
-      <div className="relative mt-6 space-y-8">
-        {filtered.map((cat) => (
-          <div key={cat.name}>
-            <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-white/50">{cat.name}</h2>
-            <div className="space-y-2">
-              {cat.terms.map((t) => (
-                <AccordionItem key={t.term} term={t} isOpen={openIds.has(t.term)} onToggle={() => toggle(t.term)} />
-              ))}
-            </div>
-          </div>
+      <p className="relative mt-3 text-xs text-white/40">
+        {cards.length === 0
+          ? "No terms match."
+          : `${cards.length} term${cards.length === 1 ? "" : "s"}${active === "All" ? "" : ` in ${active}`}${normalized ? ` matching "${query.trim()}"` : ""}`}
+      </p>
+
+      <div className="relative mt-4 grid grid-cols-1 items-start gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        {cards.map((c) => (
+          <HudCard
+            key={c.id}
+            term={c.term}
+            category={c.category}
+            isOpen={openIds.has(c.id)}
+            onToggle={() => toggle(c.id)}
+          />
         ))}
       </div>
     </div>

@@ -5,6 +5,7 @@ import AnalyticsClient from "@/components/analytics/AnalyticsClient";
 import PulseChart from "@/components/visuals/PulseChart";
 import PurpleOrbs from "@/components/visuals/PurpleOrbs";
 import HeaderText from "@/components/HeaderText";
+import { LeavesBackdropControl } from "@/components/visuals/BackdropControls";
 
 // Queries Supabase (via cookies()) on every request - force dynamic
 // rendering so `next build` doesn't waste time attempting (and timing
@@ -27,6 +28,7 @@ export default async function AnalyticsPage() {
         <div>
           <HeaderText className="font-mono text-xl font-bold tracking-widest">📈 XRILL ANALYTICS</HeaderText>
           <p className="mt-1 text-sm text-white/50">Command center for your recorded sessions.</p>
+          <LeavesBackdropControl className="mt-3" />
         </div>
         <PulseChart className="hidden h-20 w-48 flex-none sm:block" />
       </div>

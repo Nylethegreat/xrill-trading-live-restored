@@ -7,6 +7,7 @@ import Link from "next/link";
 import PulseBrain from "@/components/visuals/PulseBrain";
 import NeuronPulse from "@/components/visuals/NeuronPulse";
 import HeaderText from "@/components/HeaderText";
+import { NeuronBackdropControl } from "@/components/visuals/BackdropControls";
 
 // Queries Supabase (via cookies()) on every request - force dynamic
 // rendering so `next build` doesn't waste time attempting (and timing
@@ -40,6 +41,7 @@ export default async function IntelligencePage() {
           <p className="mt-1 text-sm text-white/50">
             Your mindset check-in, plus what your recorded sessions say about your process.
           </p>
+          <NeuronBackdropControl className="mt-3" />
         </div>
         <PulseBrain className="hidden h-24 w-24 flex-none sm:block" />
       </div>
