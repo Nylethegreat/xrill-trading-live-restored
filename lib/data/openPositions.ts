@@ -19,6 +19,9 @@ export interface OpenPosition {
   target: number | null;
   trade_risk: number | null;
   engine: string | null;
+  contracts: number | null;
+  strike: number | null;
+  expiration: string | null; // YYYY-MM-DD
 }
 
 export interface OpenPositionsStatus {
@@ -35,7 +38,7 @@ export async function getOpenPositionsStatus(userId: string): Promise<OpenPositi
   const [{ data: sessions }, { data: outcomes }] = await Promise.all([
     supabase
       .from("xrill_sessions")
-      .select("id, ticker, direction, trade_score, created_at, entry, stop, target, trade_risk, engine, trade_authorized")
+      .select("id, ticker, direction, trade_score, created_at, entry, stop, target, trade_risk, engine, trade_authorized, contracts, strike, expiration")
       .eq("user_id", userId)
       .eq("trade_authorized", true)
       .order("created_at", { ascending: false }),
@@ -56,6 +59,9 @@ export async function getOpenPositionsStatus(userId: string): Promise<OpenPositi
       target: s.target,
       trade_risk: s.trade_risk,
       engine: s.engine,
+      contracts: s.contracts,
+      strike: s.strike,
+      expiration: s.expiration,
     }));
 
   const totalRisk = positions.reduce((sum, p) => sum + (p.trade_risk ?? 0), 0);

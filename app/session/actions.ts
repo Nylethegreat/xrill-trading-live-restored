@@ -20,6 +20,19 @@ import {
   type StopMode,
 } from "@/lib/xrill";
 
+// Strike and expiration are optional details (they don't affect any gate),
+// so bad or missing values are simply dropped instead of failing the
+// session: a strike must be a positive number, an expiration a real
+// YYYY-MM-DD date.
+function cleanContractDetails(strike?: number | null, expiration?: string | null) {
+  const out: { strike?: number; expiration?: string } = {};
+  if (typeof strike === "number" && Number.isFinite(strike) && strike > 0) out.strike = strike;
+  if (typeof expiration === "string" && /^\d{4}-\d{2}-\d{2}$/.test(expiration) && !Number.isNaN(Date.parse(expiration))) {
+    out.expiration = expiration;
+  }
+  return out;
+}
+
 export interface SubmitSessionInput {
   daily: { sleep: boolean; focused: boolean; emotional: boolean; disciplined: boolean };
   gate: {
@@ -44,6 +57,8 @@ export interface SubmitSessionInput {
     stopPremium?: number;
     targetPremium: number;
     contracts: number;
+    strike?: number | null; // optional -- shown on the open-position card
+    expiration?: string | null; // optional, YYYY-MM-DD
   };
   execution: {
     confirmation: boolean;
@@ -161,6 +176,7 @@ export async function submitXrillSession(
       stop: plan.effectiveStopPremium,
       target: input.plan.targetPremium,
       contracts: input.plan.contracts,
+      ...cleanContractDetails(input.plan.strike, input.plan.expiration),
       point_value: OPTIONS_CONTRACT_MULTIPLIER,
       risk_points: plan.riskPerContractPoints,
       reward_points: plan.rewardPerContractPoints,
@@ -216,6 +232,8 @@ export interface SubmitFastSessionInput {
     stopPremium?: number;
     targetPremium: number;
     contracts: number;
+    strike?: number | null; // optional -- shown on the open-position card
+    expiration?: string | null; // optional, YYYY-MM-DD
   };
   execution: {
     confirmation: boolean;
@@ -316,6 +334,7 @@ export async function submitFastSession(
       stop: plan.effectiveStopPremium,
       target: input.plan.targetPremium,
       contracts: input.plan.contracts,
+      ...cleanContractDetails(input.plan.strike, input.plan.expiration),
       point_value: OPTIONS_CONTRACT_MULTIPLIER,
       risk_points: plan.riskPerContractPoints,
       reward_points: plan.rewardPerContractPoints,

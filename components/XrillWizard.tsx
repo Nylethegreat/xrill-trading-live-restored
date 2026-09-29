@@ -160,6 +160,8 @@ export default function XrillWizard({
     stopPremium: "",
     targetPremium: "",
     contracts: "1",
+    strike: "",
+    expiration: "",
   });
   const [planResult, setPlanResult] = useState<ReturnType<typeof evaluateTradePlan> | null>(null);
   const [planError, setPlanError] = useState<string | null>(null);
@@ -348,6 +350,20 @@ export default function XrillWizard({
               className="w-full rounded border border-white/20 bg-transparent px-3 py-2 outline-none focus:border-accent"
             />
           </Field>
+
+          <div className="grid grid-cols-2 gap-3">
+            <Field label="Strike (optional)">
+              <NumberInput value={plan.strike} onChange={(v) => setPlan({ ...plan, strike: v })} />
+            </Field>
+            <Field label="Expiration (optional)">
+              <input
+                type="date"
+                value={plan.expiration}
+                onChange={(e) => setPlan({ ...plan, expiration: e.target.value })}
+                className="w-full rounded border border-white/20 bg-transparent px-3 py-2 outline-none [color-scheme:dark] focus:border-accent"
+              />
+            </Field>
+          </div>
 
           <Field label="Option Type">
             <div className="flex gap-2">
@@ -581,6 +597,8 @@ export default function XrillWizard({
                 stopPremium: plan.stopMode === "PRICE" ? parseFloat(plan.stopPremium) : undefined,
                 targetPremium: parseFloat(plan.targetPremium),
                 contracts: parseInt(plan.contracts, 10),
+                strike: plan.strike ? parseFloat(plan.strike) : null,
+                expiration: plan.expiration || null,
               },
               execution: execution as any,
             });
