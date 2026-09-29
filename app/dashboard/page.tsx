@@ -23,6 +23,9 @@ import DashboardThemePicker from "@/components/dashboard/DashboardThemePicker";
 import NeonArcadeTexture from "@/components/visuals/textures/NeonArcadeTexture";
 import DeepSpaceTexture from "@/components/visuals/textures/DeepSpaceTexture";
 import DarkNeoTexture from "@/components/visuals/textures/DarkNeoTexture";
+import NightDriveTexture from "@/components/visuals/textures/NightDriveTexture";
+import SynthwaveTexture from "@/components/visuals/textures/SynthwaveTexture";
+import RetroRoomTexture from "@/components/visuals/textures/RetroRoomTexture";
 import { isDashboardTheme, type DashboardTheme } from "@/lib/data/dashboardThemes";
 
 // Queries Supabase (via cookies()) on every request - force dynamic
@@ -218,6 +221,9 @@ function DashboardBackdrop({ theme }: { theme: DashboardTheme }) {
       {theme === "neon_arcade" && <NeonArcadeTexture className="opacity-70" />}
       {theme === "deep_space" && <DeepSpaceTexture className="opacity-80" />}
       {theme === "dark_neo" && <DarkNeoTexture className="opacity-90" />}
+      {theme === "night_drive" && <NightDriveTexture className="opacity-75" />}
+      {theme === "synthwave" && <SynthwaveTexture className="opacity-70" />}
+      {theme === "retro_room" && <RetroRoomTexture className="opacity-65" />}
     </div>
   );
 }

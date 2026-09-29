@@ -3,6 +3,9 @@ import { DASHBOARD_THEMES, type DashboardTheme } from "@/lib/data/dashboardTheme
 import NeonArcadeTexture from "@/components/visuals/textures/NeonArcadeTexture";
 import DeepSpaceTexture from "@/components/visuals/textures/DeepSpaceTexture";
 import DarkNeoTexture from "@/components/visuals/textures/DarkNeoTexture";
+import NightDriveTexture from "@/components/visuals/textures/NightDriveTexture";
+import SynthwaveTexture from "@/components/visuals/textures/SynthwaveTexture";
+import RetroRoomTexture from "@/components/visuals/textures/RetroRoomTexture";
 
 // Same one-form-per-swatch, works-without-JS pattern as the Account page's
 // BackgroundThemePicker. Each preview gets its own SVG id prefix so its
@@ -15,6 +18,12 @@ function Preview({ theme }: { theme: DashboardTheme }) {
       return <DeepSpaceTexture idPrefix="space-swatch" />;
     case "dark_neo":
       return <DarkNeoTexture />;
+    case "night_drive":
+      return <NightDriveTexture idPrefix="drive-swatch" />;
+    case "synthwave":
+      return <SynthwaveTexture idPrefix="synth-swatch" />;
+    case "retro_room":
+      return <RetroRoomTexture idPrefix="room-swatch" />;
     default:
       return (
         <div className="absolute inset-0 flex items-center justify-center font-mono text-[10px] font-bold tracking-widest text-accent [text-shadow:0_0_6px_currentColor]">

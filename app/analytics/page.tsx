@@ -3,9 +3,8 @@ import { createClient } from "@/lib/supabase/server";
 import { getSessionOutcomeRows } from "@/lib/data/xrill-analytics-data";
 import AnalyticsClient from "@/components/analytics/AnalyticsClient";
 import PulseChart from "@/components/visuals/PulseChart";
-import PurpleOrbs from "@/components/visuals/PurpleOrbs";
 import HeaderText from "@/components/HeaderText";
-import { LeavesBackdropControl } from "@/components/visuals/BackdropControls";
+import { LeavesBackdropControl, OrbsBackdropControl } from "@/components/visuals/BackdropControls";
 
 // Queries Supabase (via cookies()) on every request - force dynamic
 // rendering so `next build` doesn't waste time attempting (and timing
@@ -23,12 +22,14 @@ export default async function AnalyticsPage() {
 
   return (
     <div className="relative mx-auto max-w-5xl px-4 py-10">
-      <PurpleOrbs className="-z-10" />
       <div className="relative flex items-start justify-between gap-4">
         <div>
           <HeaderText className="font-mono text-xl font-bold tracking-widest">📈 XRILL ANALYTICS</HeaderText>
           <p className="mt-1 text-sm text-white/50">Command center for your recorded sessions.</p>
-          <LeavesBackdropControl className="mt-3" />
+          <div className="mt-3 flex flex-wrap gap-3">
+            <LeavesBackdropControl />
+            <OrbsBackdropControl />
+          </div>
         </div>
         <PulseChart className="hidden h-20 w-48 flex-none sm:block" />
       </div>

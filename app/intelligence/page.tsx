@@ -5,7 +5,6 @@ import { buildTradingProfile, type PerformanceArea } from "@/lib/intelligence";
 import CoachCheckIn from "@/components/intelligence/CoachCheckIn";
 import Link from "next/link";
 import PulseBrain from "@/components/visuals/PulseBrain";
-import NeuronPulse from "@/components/visuals/NeuronPulse";
 import HeaderText from "@/components/HeaderText";
 import { NeuronBackdropControl } from "@/components/visuals/BackdropControls";
 
@@ -32,9 +31,6 @@ export default async function IntelligencePage() {
 
   return (
     <div className="relative mx-auto max-w-3xl px-4 py-10">
-      <div className="pointer-events-none absolute inset-x-0 -top-4 h-[420px] opacity-30">
-        <NeuronPulse className="h-full w-full" />
-      </div>
       <div className="relative flex items-start justify-between gap-4">
         <div>
           <HeaderText className="font-mono text-xl font-bold tracking-widest">🧠 XRILL INTELLIGENCE</HeaderText>

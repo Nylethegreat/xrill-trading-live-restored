@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
+import { PricingBackdropControl } from "@/components/visuals/BackdropControls";
 import { createProCheckoutSession, createEliteCheckoutSession } from "@/app/account/actions";
 
 export const dynamic = "force-dynamic"; // reads the signed-in user's tier on every request
@@ -73,6 +74,7 @@ export default async function PricingPage() {
         <p className="mt-2 text-white/60">
           Every tier runs the same 8-Gate trade-authorization engine. Pro and Elite add what happens around it.
         </p>
+        <PricingBackdropControl className="mt-4" />
       </div>
 
       <div className="mt-10 grid gap-6 sm:grid-cols-3">
@@ -83,10 +85,10 @@ export default async function PricingPage() {
               key={t.id}
               className={`relative flex flex-col rounded-lg border p-6 ${
                 t.id === "elite"
-                  ? "border-secondary/50 bg-secondary/5"
+                  ? "border-secondary/50 bg-[#150d22]/95"
                   : t.id === "pro"
-                  ? "border-accent/50 bg-accent/5"
-                  : "border-white/10 bg-surface"
+                  ? "border-accent/50 bg-[#0c1a16]/95"
+                  : "border-white/10 bg-surface/95"
               }`}
             >
               {t.highlight && (

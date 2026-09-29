@@ -1,16 +1,23 @@
-// Decorative "blue neurons firing" backdrop for the Intelligence page —
-// a small branching network of axons (SVG paths) with synapse nodes that
-// flash and a dashed "impulse" that runs the length of each path on a
-// loop. Pure inline SVG, deterministic geometry (no Math.random), same
-// approach as CandlestickGlow/PulseBrain. Absolutely positioned,
-// pointer-events-none; meant to sit behind page content inside a
-// `relative` ancestor.
+// Decorative "neurons firing" backdrop for the Intelligence page — a
+// small branching network of axons (SVG paths) with synapse nodes that
+// glow and a soft impulse that travels each path. Pure inline SVG,
+// deterministic geometry (no Math.random), CSS animations only.
+//
+// `spectrum` recolors it in fluorescence-microscopy colors (cyan, green,
+// yellow, orange, blue, magenta) with slow, calm pulses; without it you
+// get the original blue version. Deliberately lightweight: a dozen paths
+// and nodes, no canvas, no per-frame JavaScript.
 
 const PATHS = [
   { d: "M40,180 C120,120 160,200 240,140 S360,80 440,120", delay: "0s" },
   { d: "M20,60 C90,100 140,40 220,90 S320,150 420,70", delay: "-0.7s" },
   { d: "M60,260 C140,220 190,280 260,230 S380,190 460,240", delay: "-1.4s" },
   { d: "M10,140 C80,180 130,120 210,160 S330,220 430,180", delay: "-2.1s" },
+  // extra branches, only drawn in spectrum mode
+  { d: "M240,140 C260,110 300,100 330,60", delay: "-3s" },
+  { d: "M210,160 C230,200 280,210 300,280", delay: "-4.2s" },
+  { d: "M220,90 C200,60 170,40 150,10", delay: "-5.1s" },
+  { d: "M260,230 C300,250 340,300 380,310", delay: "-2.6s" },
 ];
 
 const NODES = [
@@ -26,22 +33,40 @@ const NODES = [
   { cx: 10, cy: 140, delay: "0.3s" },
   { cx: 210, cy: 160, delay: "0.8s" },
   { cx: 430, cy: 180, delay: "1.3s" },
+  { cx: 330, cy: 60, delay: "2.1s" },
+  { cx: 300, cy: 280, delay: "2.6s" },
+  { cx: 150, cy: 10, delay: "3.2s" },
+  { cx: 380, cy: 310, delay: "1.8s" },
 ];
 
-export default function NeuronPulse({ className = "" }: { className?: string }) {
+const SPECTRUM = ["#22d3ee", "#4ade80", "#facc15", "#fb923c", "#3b82f6", "#e879f9", "#a3e635", "#38bdf8"];
+
+export default function NeuronPulse({
+  className = "",
+  spectrum = false,
+  idPrefix = "neuron",
+}: {
+  className?: string;
+  spectrum?: boolean;
+  idPrefix?: string;
+}) {
+  const paths = spectrum ? PATHS : PATHS.slice(0, 4);
+  const nodes = spectrum ? NODES : NODES.slice(0, 12);
+  const glowId = `${idPrefix}-glow`;
+  const lineId = `${idPrefix}-line`;
+
+  // Spectrum mode is slow on purpose: long, calm cycles instead of flashes.
+  const impulseDuration = spectrum ? "7s" : undefined;
+  const flashDuration = spectrum ? "5.5s" : undefined;
+
   return (
-    <svg
-      viewBox="0 0 480 320"
-      preserveAspectRatio="xMidYMid slice"
-      className={className}
-      aria-hidden="true"
-    >
+    <svg viewBox="0 0 480 320" preserveAspectRatio="xMidYMid slice" className={className} aria-hidden="true">
       <defs>
-        <linearGradient id="neuronLine" x1="0" y1="0" x2="1" y2="1">
+        <linearGradient id={lineId} x1="0" y1="0" x2="1" y2="1">
           <stop offset="0%" stopColor="#3b82f6" stopOpacity="0.5" />
           <stop offset="100%" stopColor="#67e8f9" stopOpacity="0.5" />
         </linearGradient>
-        <filter id="neuronGlow" x="-60%" y="-60%" width="220%" height="220%">
+        <filter id={glowId} x="-60%" y="-60%" width="220%" height="220%">
           <feGaussianBlur stdDeviation="2.5" result="blur" />
           <feMerge>
             <feMergeNode in="blur" />
@@ -51,35 +76,48 @@ export default function NeuronPulse({ className = "" }: { className?: string }) 
       </defs>
 
       {/* faint static axon lines */}
-      <g stroke="url(#neuronLine)" strokeWidth="1.5" fill="none">
-        {PATHS.map((p, i) => (
-          <path key={i} d={p.d} />
-        ))}
-      </g>
-
-      {/* the traveling impulse -- a short bright dash scrolling along each path */}
-      <g stroke="#93c5fd" strokeWidth="2.5" fill="none" filter="url(#neuronGlow)">
-        {PATHS.map((p, i) => (
+      <g strokeWidth="1.5" fill="none">
+        {paths.map((p, i) => (
           <path
             key={i}
             d={p.d}
-            strokeDasharray="16 224"
-            className="animate-neuron-impulse"
-            style={{ animationDelay: p.delay }}
+            stroke={spectrum ? SPECTRUM[i % SPECTRUM.length] : `url(#${lineId})`}
+            strokeOpacity={spectrum ? 0.45 : 1}
           />
         ))}
       </g>
 
-      {/* synapse nodes, flashing on their own staggered cadence */}
-      <g fill="#67e8f9" filter="url(#neuronGlow)">
-        {NODES.map((n, i) => (
+      {/* the traveling impulse -- a soft bright dash moving along each path */}
+      <g strokeWidth={spectrum ? 3 : 2.5} fill="none" filter={`url(#${glowId})`}>
+        {paths.map((p, i) => (
+          <path
+            key={i}
+            d={p.d}
+            stroke={spectrum ? SPECTRUM[(i + 2) % SPECTRUM.length] : "#93c5fd"}
+            strokeDasharray={spectrum ? "28 212" : "16 224"}
+            strokeLinecap="round"
+            className="animate-neuron-impulse"
+            style={{ animationDelay: p.delay, animationDuration: impulseDuration }}
+          />
+        ))}
+      </g>
+
+      {/* synapse nodes, glowing on their own staggered cadence */}
+      <g filter={`url(#${glowId})`}>
+        {nodes.map((n, i) => (
           <circle
             key={i}
             cx={n.cx}
             cy={n.cy}
-            r={3}
+            r={spectrum ? 3.5 : 3}
+            fill={spectrum ? SPECTRUM[(i * 3) % SPECTRUM.length] : "#67e8f9"}
             className="animate-neuron-flash"
-            style={{ transformBox: "fill-box", transformOrigin: "center", animationDelay: n.delay }}
+            style={{
+              transformBox: "fill-box",
+              transformOrigin: "center",
+              animationDelay: n.delay,
+              animationDuration: flashDuration,
+            }}
           />
         ))}
       </g>
