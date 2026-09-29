@@ -24,7 +24,9 @@ import NeonArcadeTexture from "@/components/visuals/textures/NeonArcadeTexture";
 import DeepSpaceTexture from "@/components/visuals/textures/DeepSpaceTexture";
 import DarkNeoTexture from "@/components/visuals/textures/DarkNeoTexture";
 import NightDriveTexture from "@/components/visuals/textures/NightDriveTexture";
-import SynthwaveTexture from "@/components/visuals/textures/SynthwaveTexture";
+import TraderDeskTexture from "@/components/visuals/textures/TraderDeskTexture";
+import SummerHazeTexture from "@/components/visuals/textures/SummerHazeTexture";
+import MarketPulseTexture from "@/components/visuals/textures/MarketPulseTexture";
 import RetroRoomTexture from "@/components/visuals/textures/RetroRoomTexture";
 import { isDashboardTheme, type DashboardTheme } from "@/lib/data/dashboardThemes";
 
@@ -222,7 +224,9 @@ function DashboardBackdrop({ theme }: { theme: DashboardTheme }) {
       {theme === "deep_space" && <DeepSpaceTexture className="opacity-80" />}
       {theme === "dark_neo" && <DarkNeoTexture className="opacity-90" />}
       {theme === "night_drive" && <NightDriveTexture className="opacity-75" />}
-      {theme === "synthwave" && <SynthwaveTexture className="opacity-70" />}
+      {theme === "trader_desk" && <TraderDeskTexture className="opacity-70" />}
+      {theme === "summer_haze" && <SummerHazeTexture className="opacity-60" />}
+      {theme === "market_pulse" && <MarketPulseTexture className="opacity-75" />}
       {theme === "retro_room" && <RetroRoomTexture className="opacity-65" />}
     </div>
   );

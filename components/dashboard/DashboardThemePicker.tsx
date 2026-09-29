@@ -4,7 +4,9 @@ import NeonArcadeTexture from "@/components/visuals/textures/NeonArcadeTexture";
 import DeepSpaceTexture from "@/components/visuals/textures/DeepSpaceTexture";
 import DarkNeoTexture from "@/components/visuals/textures/DarkNeoTexture";
 import NightDriveTexture from "@/components/visuals/textures/NightDriveTexture";
-import SynthwaveTexture from "@/components/visuals/textures/SynthwaveTexture";
+import TraderDeskTexture from "@/components/visuals/textures/TraderDeskTexture";
+import SummerHazeTexture from "@/components/visuals/textures/SummerHazeTexture";
+import MarketPulseTexture from "@/components/visuals/textures/MarketPulseTexture";
 import RetroRoomTexture from "@/components/visuals/textures/RetroRoomTexture";
 
 // Same one-form-per-swatch, works-without-JS pattern as the Account page's
@@ -20,8 +22,12 @@ function Preview({ theme }: { theme: DashboardTheme }) {
       return <DarkNeoTexture />;
     case "night_drive":
       return <NightDriveTexture idPrefix="drive-swatch" />;
-    case "synthwave":
-      return <SynthwaveTexture idPrefix="synth-swatch" />;
+    case "trader_desk":
+      return <TraderDeskTexture idPrefix="desk-swatch" />;
+    case "summer_haze":
+      return <SummerHazeTexture idPrefix="haze-swatch" />;
+    case "market_pulse":
+      return <MarketPulseTexture idPrefix="pulse-swatch" />;
     case "retro_room":
       return <RetroRoomTexture idPrefix="room-swatch" />;
     default:
