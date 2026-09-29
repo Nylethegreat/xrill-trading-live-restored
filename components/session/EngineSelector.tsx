@@ -13,20 +13,22 @@ type Engine = "swing" | "daytrade" | null;
 export default function EngineSelector({
   accountBalance,
   riskPercent,
+  stopPercent,
   initialEngine,
 }: {
   accountBalance: number;
   riskPercent: number;
+  stopPercent?: number;
   initialEngine?: Engine;
 }) {
   const [engine, setEngine] = useState<Engine>(initialEngine ?? null);
 
   if (engine === "swing") {
-    return <XrillWizard accountBalance={accountBalance} riskPercent={riskPercent} />;
+    return <XrillWizard accountBalance={accountBalance} riskPercent={riskPercent} stopPercent={stopPercent} />;
   }
 
   if (engine === "daytrade") {
-    return <XrillFastWizard accountBalance={accountBalance} riskPercent={riskPercent} />;
+    return <XrillFastWizard accountBalance={accountBalance} riskPercent={riskPercent} stopPercent={stopPercent} />;
   }
 
   return (

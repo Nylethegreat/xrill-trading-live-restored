@@ -118,14 +118,14 @@ export async function submitXrillSession(
 
   const { data: account } = await supabase
     .from("accounts")
-    .select("balance, risk_percent")
+    .select("balance, risk_percent, stop_loss_percent")
     .eq("user_id", user.id)
     .maybeSingle();
 
   const balance = account?.balance ?? 50000;
   const riskPercent = account?.risk_percent ?? 1;
 
-  const risk = evaluateRisk(plan.tradeRisk!, input.plan.contracts, balance, riskPercent, plan.totalOutlay!);
+  const risk = evaluateRisk(plan.tradeRisk!, input.plan.contracts, balance, riskPercent, plan.totalOutlay!, account?.stop_loss_percent ?? undefined);
   if (!risk.passed) return { success: false, error: "Risk Manager rejected the trade — session not logged." };
 
   const execution = scoreExecution(input.execution);
@@ -287,14 +287,14 @@ export async function submitFastSession(
 
   const { data: account } = await supabase
     .from("accounts")
-    .select("balance, risk_percent")
+    .select("balance, risk_percent, stop_loss_percent")
     .eq("user_id", user.id)
     .maybeSingle();
 
   const balance = account?.balance ?? 50000;
   const riskPercent = account?.risk_percent ?? 1;
 
-  const risk = evaluateRisk(plan.tradeRisk!, input.plan.contracts, balance, riskPercent, plan.totalOutlay!);
+  const risk = evaluateRisk(plan.tradeRisk!, input.plan.contracts, balance, riskPercent, plan.totalOutlay!, account?.stop_loss_percent ?? undefined);
   if (!risk.passed) return { success: false, error: "Risk Manager rejected the trade — session not logged." };
 
   const execution = scoreExecution(input.execution);

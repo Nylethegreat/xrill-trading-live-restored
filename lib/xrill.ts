@@ -9,6 +9,15 @@
 // so risk/reward is computed from premiums, not a per-ticker point-value
 // lookup table.
 
+import {
+  ACTIVE_SLEEVE_PERCENT,
+  DEFAULT_STOP_PERCENT,
+  clampRiskPercent,
+  clampStopPercent,
+  roundCents,
+  wholeUnitsWithin,
+} from "@/lib/riskProfile";
+
 export type OptionType = "CALL" | "PUT";
 // Kept as an alias so anything still importing the old name keeps compiling.
 export type Direction = OptionType;
@@ -17,13 +26,15 @@ export type StopMode = "PRICE" | "ZERO_OUT";
 
 export const OPTIONS_CONTRACT_MULTIPLIER = 100;
 
-// The 60% deployable / 40% idle-buffer split shown on AllocationWall.tsx --
-// kept here as the single source of truth so evaluateRisk's affordability
-// cap (below) and the allocation display never drift apart.
-export const ACTIVE_SLEEVE_PERCENT = 0.6;
+// The 60% deployable / 40% idle-buffer split, the risk % bounds and the
+// structural stop all live in lib/riskProfile.ts now -- re-exported here so
+// existing imports keep working and there is still exactly one source.
+export { ACTIVE_SLEEVE_PERCENT } from "@/lib/riskProfile";
 
+// Risk % is clamped to the Risk Tiering Matrix (max 22%) so a stale or
+// mistyped setting (e.g. 40) can never size a trade past the matrix.
 export function calculateMaxRisk(balance: number, riskPercent: number) {
-  return balance * (riskPercent / 100);
+  return roundCents(balance * (clampRiskPercent(riskPercent) / 100));
 }
 
 export interface DailyCheckIn {
@@ -203,24 +214,36 @@ export function evaluateRisk(
   contracts: number,
   accountBalance: number,
   riskPercent: number,
-  totalOutlay: number
+  totalOutlay: number,
+  stopPercent: number = DEFAULT_STOP_PERCENT
 ) {
   const maxRisk = calculateMaxRisk(accountBalance, riskPercent);
-  const riskPerContract = tradeRisk / contracts;
-  const maxContractsByRisk = riskPerContract > 0 ? Math.floor(maxRisk / riskPerContract) : 0;
+  const stopPct = clampStopPercent(stopPercent);
+  const riskPerContract = roundCents(tradeRisk / contracts);
+  const outlayPerContract = contracts > 0 ? roundCents(totalOutlay / contracts) : 0;
 
-  const activeSleeve = accountBalance * ACTIVE_SLEEVE_PERCENT;
-  const outlayPerContract = contracts > 0 ? totalOutlay / contracts : 0;
-  const maxContractsByOutlay = outlayPerContract > 0 ? Math.floor(activeSleeve / outlayPerContract) : 0;
+  // Structural stop: size as if each contract can lose at least stopPct of
+  // its premium, even when the planned stop is tighter. A tight stop that
+  // slips (gaps, fast 0DTE moves) then still can't breach Max Trade Loss.
+  // Wider stops (incl. Full Premium at Risk) use their real, larger risk.
+  const sizingRiskPerContract = roundCents(Math.max(riskPerContract, outlayPerContract * (stopPct / 100)));
+
+  // Computed in cents -- float division used to turn an exact 50 into 49.
+  const maxContractsByRisk = wholeUnitsWithin(maxRisk, sizingRiskPerContract);
+
+  const activeSleeve = roundCents(accountBalance * ACTIVE_SLEEVE_PERCENT);
+  const maxContractsByOutlay = wholeUnitsWithin(activeSleeve, outlayPerContract);
 
   const maxContracts = Math.min(maxContractsByRisk, maxContractsByOutlay);
   const actualRiskPercent = (tradeRisk / accountBalance) * 100;
 
-  const passed = maxContracts >= 1 && tradeRisk <= maxRisk && totalOutlay <= activeSleeve;
+  const passed = maxContracts >= 1 && contracts <= maxContracts && roundCents(tradeRisk) <= maxRisk && roundCents(totalOutlay) <= activeSleeve;
 
   return {
     maxRisk,
     riskPerContract,
+    sizingRiskPerContract,
+    stopPercent: stopPct,
     maxContracts,
     maxContractsByRisk,
     maxContractsByOutlay,
@@ -228,6 +251,33 @@ export function evaluateRisk(
     actualRiskPercent,
     passed,
   };
+}
+
+// Live contract-cap preview for the Trade Plan step, before a full plan
+// exists. Same rules as evaluateRisk (risk cap w/ structural stop, Active
+// Sleeve cap, cents math) so the preview can never promise more contracts
+// than the Risk Manager will then approve.
+export function previewMaxContracts(
+  accountBalance: number,
+  riskPercent: number,
+  stopPercent: number,
+  entryPremium: number | null,
+  riskPerContract: number | null
+) {
+  const maxRisk = calculateMaxRisk(accountBalance, riskPercent);
+  const activeSleeve = roundCents(accountBalance * ACTIVE_SLEEVE_PERCENT);
+  const outlayPerContract = entryPremium && entryPremium > 0 ? roundCents(entryPremium * OPTIONS_CONTRACT_MULTIPLIER) : null;
+  const sizingRisk =
+    riskPerContract && riskPerContract > 0
+      ? roundCents(Math.max(riskPerContract, (outlayPerContract ?? 0) * (clampStopPercent(stopPercent) / 100)))
+      : null;
+  const maxContractsByRisk = sizingRisk ? wholeUnitsWithin(maxRisk, sizingRisk) : null;
+  const maxContractsByOutlay = outlayPerContract ? wholeUnitsWithin(activeSleeve, outlayPerContract) : null;
+  const maxContracts =
+    maxContractsByRisk !== null && maxContractsByOutlay !== null
+      ? Math.min(maxContractsByRisk, maxContractsByOutlay)
+      : maxContractsByRisk ?? maxContractsByOutlay;
+  return { maxRisk, activeSleeve, maxContractsByRisk, maxContractsByOutlay, maxContracts };
 }
 
 export interface ExecutionCheck {

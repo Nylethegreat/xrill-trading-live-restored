@@ -6,6 +6,7 @@ import { createClient } from "@/lib/supabase/server";
 import { getStripe } from "@/lib/stripe";
 import { isBackgroundTheme } from "@/lib/data/backgroundThemes";
 import { isHeaderStyle } from "@/lib/data/headerStyles";
+import { computeRiskProfile, normalizeDailyLossLimit } from "@/lib/riskProfile";
 
 // Was hardcoded to a stale preview-deployment URL
 // ("xrill-trading-xrill-alert-system.vercel.app") that stopped being the
@@ -58,14 +59,32 @@ export async function saveAccountSettings(formData: FormData) {
   if (!user) redirect("/login?next=/account");
 
   const balance = Number(formData.get("balance"));
-  const risk_percent = Number(formData.get("risk_percent"));
-  const daily_loss_limit = Number(formData.get("daily_loss_limit"));
   const display_name = String(formData.get("display_name") || "").trim();
   const discord_user_id = String(formData.get("discord_user_id") || "").trim();
 
-  const { error: accountError } = await supabase
-    .from("accounts")
-    .upsert({ user_id: user.id, balance, risk_percent, daily_loss_limit, updated_at: new Date().toISOString() });
+  if (!Number.isFinite(balance) || balance <= 0) {
+    redirect("/account?error=Enter an account balance greater than $0.");
+  }
+
+  // Re-apply the risk hierarchy server-side (lib/riskProfile.ts) -- never
+  // trust the form: risk % clamped to the Risk Tiering Matrix, the
+  // structural stop kept in range, and the Daily Loss Limit bound to
+  // [1.5x max trade loss, Active Sleeve] so it can't sit below one trade.
+  const profile = computeRiskProfile({
+    balance,
+    riskPercent: Number(formData.get("risk_percent")),
+    stopPercent: Number(formData.get("stop_loss_percent")),
+  });
+  const daily = normalizeDailyLossLimit(Number(formData.get("daily_loss_limit")), profile);
+
+  const { error: accountError } = await supabase.from("accounts").upsert({
+    user_id: user.id,
+    balance,
+    risk_percent: profile.riskPercent,
+    stop_loss_percent: profile.stopPercent,
+    daily_loss_limit: daily.value,
+    updated_at: new Date().toISOString(),
+  });
 
   if (accountError) {
     redirect(`/account?error=${encodeURIComponent(accountError.message)}`);
@@ -87,7 +106,14 @@ export async function saveAccountSettings(formData: FormData) {
 
   revalidatePath("/account");
   revalidatePath("/dashboard");
-  redirect("/account?message=Settings saved");
+  revalidatePath("/session");
+  const note =
+    daily.adjusted === "raised"
+      ? ` — daily loss limit raised to $${daily.value.toFixed(2)} (minimum 1.5× your $${profile.maxTradeLoss.toFixed(2)} max trade loss)`
+      : daily.adjusted === "lowered"
+      ? ` — daily loss limit lowered to $${daily.value.toFixed(2)} (can't exceed your Active Sleeve)`
+      : "";
+  redirect(`/account?message=${encodeURIComponent(`Settings saved${note}`)}`);
 }
 
 // One-click background swatch picker -- each swatch is its own tiny form

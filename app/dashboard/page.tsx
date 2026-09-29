@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
-import { scoreGrade } from "@/lib/xrill";
+import { scoreGrade, calculateMaxRisk } from "@/lib/xrill";
+import { clampRiskPercent } from "@/lib/riskProfile";
 import Badge from "@/components/Badge";
 import CandlestickGlow from "@/components/visuals/CandlestickGlow";
 import PreTradeChecklist from "@/components/PreTradeChecklist";
@@ -55,8 +56,8 @@ export default async function DashboardPage() {
     profile?.dashboard_theme && isDashboardTheme(profile.dashboard_theme) ? profile.dashboard_theme : "classic";
 
   const balance = account?.balance ?? 50000;
-  const riskPercent = account?.risk_percent ?? 1;
-  const maxRisk = balance * (riskPercent / 100);
+  const riskPercent = clampRiskPercent(account?.risk_percent ?? 1);
+  const maxRisk = calculateMaxRisk(balance, riskPercent);
 
   const allSessions = sessions ?? [];
   const last = allSessions[0] ?? null;

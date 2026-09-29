@@ -5,6 +5,14 @@ import RealtimeAlertsFeed from "@/components/RealtimeAlertsFeed";
 import LightningBolt from "@/components/visuals/LightningBolt";
 import BackgroundThemePicker from "@/components/account/BackgroundThemePicker";
 import HeaderStylePicker from "@/components/account/HeaderStylePicker";
+import RiskSettingsFields from "@/components/account/RiskSettingsFields";
+import {
+  DEFAULT_STOP_PERCENT,
+  clampRiskPercent,
+  clampStopPercent,
+  computeRiskProfile,
+  effectiveDailyLossLimit,
+} from "@/lib/riskProfile";
 import MossyForestTexture from "@/components/visuals/textures/MossyForestTexture";
 import RockWallTexture from "@/components/visuals/textures/RockWallTexture";
 import DarkNeoTexture from "@/components/visuals/textures/DarkNeoTexture";
@@ -144,7 +152,7 @@ export default async function AccountPage({
 
   const { data: account } = await supabase
     .from("accounts")
-    .select("balance, risk_percent, daily_loss_limit")
+    .select("balance, risk_percent, stop_loss_percent, daily_loss_limit")
     .eq("user_id", user.id)
     .maybeSingle();
 
@@ -156,9 +164,13 @@ export default async function AccountPage({
 
   const tier = profile?.tier ?? "free";
   const balance = account?.balance ?? 50000;
-  const riskPercent = account?.risk_percent ?? 1;
-  const dailyLossLimit = account?.daily_loss_limit ?? 1000;
-  const maxRisk = balance * (riskPercent / 100);
+  // Show the bound values the engine actually enforces, so a stale row
+  // (e.g. 40% risk with a $61.20 daily limit) opens already corrected.
+  const riskPercent = clampRiskPercent(account?.risk_percent ?? 1);
+  const stopPercent = clampStopPercent(account?.stop_loss_percent ?? DEFAULT_STOP_PERCENT);
+  const dailyLossLimit = account
+    ? effectiveDailyLossLimit(account)
+    : computeRiskProfile({ balance, riskPercent, stopPercent }).dailyLossDefault;
   const backgroundTheme: BackgroundTheme =
     profile?.background_theme && isBackgroundTheme(profile.background_theme) ? profile.background_theme : "mossy_forest";
   const BackgroundComponent = BACKGROUND_COMPONENT[backgroundTheme];
@@ -315,46 +327,12 @@ export default async function AccountPage({
             username. Leave blank and save to unlink.
           </p>
         </div>
-        <div>
-          <label className="block text-sm text-white/70">Account balance ($)</label>
-          <input
-            name="balance"
-            type="number"
-            step="0.01"
-            defaultValue={balance}
-            required
-            className="mt-1 w-full rounded border border-white/20 bg-transparent px-3 py-2 outline-none focus:border-accent"
-          />
-        </div>
-        <div>
-          <label className="block text-sm text-white/70">Risk per trade (%)</label>
-          <input
-            name="risk_percent"
-            type="number"
-            step="0.01"
-            defaultValue={riskPercent}
-            required
-            className="mt-1 w-full rounded border border-white/20 bg-transparent px-3 py-2 outline-none focus:border-accent"
-          />
-        </div>
-        <div>
-          <label className="block text-sm text-white/70">Daily loss limit ($)</label>
-          <input
-            name="daily_loss_limit"
-            type="number"
-            step="0.01"
-            defaultValue={dailyLossLimit}
-            required
-            className="mt-1 w-full rounded border border-white/20 bg-transparent px-3 py-2 outline-none focus:border-accent"
-          />
-        </div>
-
-        <p className="text-sm text-white/50">
-          Maximum trade loss per trade at current settings:{" "}
-          <span className="text-white">${maxRisk.toLocaleString()}</span> — this is your Account Balance × Risk per
-          Trade %, the most one single position is allowed to cost you. It's a different number from the Daily Loss
-          Limit above, which is a cumulative cap across every trade in the day.
-        </p>
+        <RiskSettingsFields
+          initialBalance={balance}
+          initialRiskPercent={riskPercent}
+          initialStopPercent={stopPercent}
+          initialDailyLossLimit={dailyLossLimit}
+        />
 
         <div className="rounded border border-white/10 bg-white/5 p-3">
           <p className="text-xs font-semibold uppercase tracking-wide text-white/50">How to set your own numbers</p>
@@ -370,19 +348,20 @@ export default async function AccountPage({
             ) — that's your <span className="text-white/80">Maximum Trade Loss per Trade</span>, shown above.
           </p>
           <p className="mt-1.5 text-xs leading-relaxed text-white/60">
-            3. Your <span className="text-white/80">Daily Loss Limit</span> should be a small multiple of your max
-            trade loss — roughly 2×, not a fraction of it — so it reflects a genuinely bad stretch (a couple of
-            stop-outs), not a single trade. A limit smaller than one trade's max loss gets blown past by the very
-            first stop-out, before it ever functions as a cumulative, whole-day cap.
+            3. Your <span className="text-white/80">Daily Loss Limit</span> is locked to at least 1.5× your max
+            trade loss (2× by default) and at most your Active Sleeve — so it reflects a genuinely bad stretch (a
+            couple of stop-outs), never a single trade. The form won't let it go below one trade's max loss.
           </p>
           <p className="mt-2.5 rounded border border-white/10 bg-black/20 p-2 font-mono text-[11px] leading-relaxed text-white/50">
-            Example — $200 account, Aggressive tier (22% risk/trade):
+            Example — $280 account, Aggressive tier (22% risk/trade), 40% structural stop:
             <br />
-            Active Sleeve (60%): $120 · Idle Sleeve (40%): $80
+            Active Sleeve (60%): $168 · Idle Sleeve (40%): $112
             <br />
-            Max Trade Loss per Trade (22% of $200): $44
+            Max Trade Loss per Trade (22% of $280): $61.60
             <br />
-            Daily Loss Limit (~2× max trade loss): ~$85–90
+            Max position size ($61.60 ÷ 40% stop): $154
+            <br />
+            Daily Loss Limit (1.5×–2× max trade loss): $92.40–$123.20
           </p>
           <p className="mt-2 text-[11px] text-white/40">
             This is enforced two ways: once today's journaled net P/L hits the Daily Loss Limit above,{" "}

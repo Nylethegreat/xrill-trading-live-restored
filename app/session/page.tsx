@@ -40,7 +40,7 @@ export default async function SessionPage({
   const { data: { user } } = await supabase.auth.getUser();
 
   const [{ data: account }, dailyLoss, twoLoss] = await Promise.all([
-    supabase.from("accounts").select("balance, risk_percent").eq("user_id", user!.id).maybeSingle(),
+    supabase.from("accounts").select("balance, risk_percent, stop_loss_percent").eq("user_id", user!.id).maybeSingle(),
     getDailyLossStatus(user!.id),
     getTwoLossStatus(user!.id),
   ]);
@@ -78,5 +78,10 @@ export default async function SessionPage({
 
   const initialEngine = searchParams.engine === "daytrade" ? "daytrade" : searchParams.engine === "swing" ? "swing" : undefined;
 
-  return <EngineSelector accountBalance={balance} riskPercent={riskPercent} initialEngine={initialEngine} />;
+  return <EngineSelector
+      accountBalance={balance}
+      riskPercent={riskPercent}
+      stopPercent={account?.stop_loss_percent ?? undefined}
+      initialEngine={initialEngine}
+    />;
 }

@@ -1,4 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
+import { effectiveDailyLossLimit } from "@/lib/riskProfile";
 
 // The "trading day" for every daily-loss-limit calculation, and for new
 // xrill_sessions.session_date going forward, is the US Eastern calendar
@@ -37,7 +38,7 @@ export async function getDailyLossStatus(userId: string): Promise<DailyLossStatu
   const tradingDate = getTradingDateET();
 
   const [{ data: account }, { data: outcomes }] = await Promise.all([
-    supabase.from("accounts").select("daily_loss_limit").eq("user_id", userId).maybeSingle(),
+    supabase.from("accounts").select("balance, risk_percent, stop_loss_percent, daily_loss_limit").eq("user_id", userId).maybeSingle(),
     supabase
       .from("xrill_outcomes")
       .select("profit_loss, xrill_sessions!inner(session_date)")
@@ -45,7 +46,10 @@ export async function getDailyLossStatus(userId: string): Promise<DailyLossStatu
       .eq("xrill_sessions.session_date", tradingDate),
   ]);
 
-  const limit = account?.daily_loss_limit ?? 1000;
+  // Enforce the bound limit, not the raw stored one: a stale row (saved
+  // before the hierarchy rules, or left behind by a balance change) can
+  // never lock the day below 1.5x one Max Trade Loss.
+  const limit = account ? effectiveDailyLossLimit(account) : 1000;
   const netPnl = (outcomes ?? []).reduce((sum, row) => sum + (row.profit_loss ?? 0), 0);
 
   return {

@@ -9,13 +9,13 @@ import {
   scoreSetup,
   evaluateTradePlan,
   evaluateRisk,
-  calculateMaxRisk,
+  previewMaxContracts,
   scoreExecution,
   OPTIONS_CONTRACT_MULTIPLIER,
-  ACTIVE_SLEEVE_PERCENT,
   type OptionType,
   type StopMode,
 } from "@/lib/xrill";
+import { DEFAULT_STOP_PERCENT, clampRiskPercent } from "@/lib/riskProfile";
 import { submitFastSession } from "@/app/session/actions";
 import Hint from "./Hint";
 
@@ -162,11 +162,16 @@ function CheckItem({
 
 export default function XrillFastWizard({
   accountBalance,
-  riskPercent,
+  riskPercent: rawRiskPercent,
+  stopPercent = DEFAULT_STOP_PERCENT,
 }: {
   accountBalance: number;
   riskPercent: number;
+  stopPercent?: number;
 }) {
+  // Clamp once so every row this wizard shows ("Risk per trade 22%")
+  // matches what the Risk Manager actually enforces.
+  const riskPercent = clampRiskPercent(rawRiskPercent);
   const router = useRouter();
   const [step, setStep] = useState<Step>("beware");
   const [blockedReason, setBlockedReason] = useState("");
@@ -353,17 +358,15 @@ export default function XrillFastWizard({
     const rewardPerContract = hasEntry && !Number.isNaN(target) && target > entry ? (target - entry) * OPTIONS_CONTRACT_MULTIPLIER : null;
     const totalOutlay = hasEntry && contracts > 0 ? entry * OPTIONS_CONTRACT_MULTIPLIER * contracts : null;
 
-    const maxRisk = calculateMaxRisk(accountBalance, riskPercent);
-    const maxContractsByRisk = riskPerContract && riskPerContract > 0 ? Math.floor(maxRisk / riskPerContract) : null;
-    // Cap by the deployable Active Sleeve (60% of balance) too -- a tight
-    // stop alone can recommend more contracts than the account can afford
-    // to buy. Same fix as the standard engine / lib/xrill.ts's evaluateRisk.
-    const activeSleeve = accountBalance * ACTIVE_SLEEVE_PERCENT;
-    const maxContractsByOutlay = hasEntry && entry > 0 ? Math.floor(activeSleeve / (entry * OPTIONS_CONTRACT_MULTIPLIER)) : null;
-    const maxContracts =
-      maxContractsByRisk !== null && maxContractsByOutlay !== null
-        ? Math.min(maxContractsByRisk, maxContractsByOutlay)
-        : maxContractsByRisk ?? maxContractsByOutlay;
+    // Same caps as lib/xrill.ts's evaluateRisk: risk % (max 22%) sized at
+    // the structural stop, the Active Sleeve, and cents-safe division.
+    const { maxRisk, activeSleeve, maxContractsByRisk, maxContractsByOutlay, maxContracts } = previewMaxContracts(
+      accountBalance,
+      riskPercent,
+      stopPercent,
+      hasEntry ? entry : null,
+      riskPerContract
+    );
     const exceedsMax = maxContracts !== null && contracts > maxContracts;
 
     return (
@@ -510,7 +513,7 @@ export default function XrillFastWizard({
 
   if (step === "risk" && planResult) {
     const contracts = parseInt(plan.contracts, 10);
-    const risk = evaluateRisk(planResult.tradeRisk!, contracts, accountBalance, riskPercent, planResult.totalOutlay!);
+    const risk = evaluateRisk(planResult.tradeRisk!, contracts, accountBalance, riskPercent, planResult.totalOutlay!, stopPercent);
 
     return (
       <Shell title="Step 4/5 — Risk Manager" step="risk" accountBalance={accountBalance}>
