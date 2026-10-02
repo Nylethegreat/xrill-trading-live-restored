@@ -3,6 +3,8 @@ import { createClient } from "@/lib/supabase/server";
 import { getDailyLossStatus } from "@/lib/data/dailyLossLock";
 import { getTwoLossStatus } from "@/lib/data/twoLossLock";
 import EngineSelector from "@/components/session/EngineSelector";
+import AfterFactLog from "@/components/session/AfterFactLog";
+import { getOpenPositionsStatus } from "@/lib/data/openPositions";
 
 // Queries Supabase (via cookies()) on every request - force dynamic
 // rendering so `next build` doesn't waste time attempting (and timing
@@ -23,6 +25,9 @@ function LockedOut({ reason }: { reason: React.ReactNode }) {
         <Link href="/journal#codex" className="text-sm text-primary underline hover:text-primary/80">
           Put it into words in the Journal Codex →
         </Link>
+        <Link href="/session?mode=after" className="text-sm text-loss underline hover:text-loss/80">
+          🚨 Already took a trade? Log it after the fact
+        </Link>
         <Link href="/dashboard" className="text-sm text-white/50 underline hover:text-white/70">
           Back to Dashboard
         </Link>
@@ -34,16 +39,29 @@ function LockedOut({ reason }: { reason: React.ReactNode }) {
 export default async function SessionPage({
   searchParams,
 }: {
-  searchParams: { engine?: string };
+  searchParams: { engine?: string; mode?: string };
 }) {
   const supabase = createClient();
   const { data: { user } } = await supabase.auth.getUser();
 
-  const [{ data: account }, dailyLoss, twoLoss] = await Promise.all([
+  const [{ data: account }, dailyLoss, twoLoss, openPositions] = await Promise.all([
     supabase.from("accounts").select("balance, risk_percent, stop_loss_percent").eq("user_id", user!.id).maybeSingle(),
     getDailyLossStatus(user!.id),
     getTwoLossStatus(user!.id),
+    getOpenPositionsStatus(user!.id),
   ]);
+
+  // Emergency "logged after" path comes before the locks on purpose: the
+  // trade already exists, and getting it on record beats hiding it.
+  if (searchParams.mode === "after") {
+    return (
+      <AfterFactLog
+        accountBalance={account?.balance ?? 50000}
+        riskPercent={account?.risk_percent ?? 1}
+        stopPercent={account?.stop_loss_percent ?? undefined}
+      />
+    );
+  }
 
   if (dailyLoss.locked) {
     return (
@@ -83,5 +101,8 @@ export default async function SessionPage({
       riskPercent={riskPercent}
       stopPercent={account?.stop_loss_percent ?? undefined}
       initialEngine={initialEngine}
+      openCount={openPositions.count}
+      openLimit={openPositions.limit}
+      recommendedOpen={openPositions.recommended}
     />;
 }

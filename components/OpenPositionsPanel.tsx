@@ -30,6 +30,9 @@ export default function OpenPositionsPanel({
         <p className="text-xs font-semibold uppercase tracking-wide text-primary">
           Open Positions ({positions.length}/{limit})
         </p>
+        {positions.length > 2 && (
+          <span className="text-[11px] text-caution">⚠️ {positions.length} open: XRILL recommends no more than 2</span>
+        )}
       </div>
 
       <div className="rounded border border-white/10 bg-white/5 p-3">
@@ -49,7 +52,7 @@ export default function OpenPositionsPanel({
         )}
       </div>
 
-      <div className="grid gap-3 sm:grid-cols-2">
+      <div className={`grid gap-3 ${positions.length > 2 ? "lg:grid-cols-3 sm:grid-cols-2" : "sm:grid-cols-2"}`}>
         {positions.map((p) => (
           <OpenPositionCard key={p.id} session={p} />
         ))}

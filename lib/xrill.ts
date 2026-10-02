@@ -124,6 +124,9 @@ export interface TradePlanInput {
   stopPremium?: number; // required when stopMode === "PRICE"; ignored (treated as 0) for "ZERO_OUT"
   targetPremium: number;
   contracts: number;
+  // Max possible value of the position (a vertical spread is never worth
+  // more than its strike width). When set, the target can't exceed it.
+  maxValue?: number;
 }
 
 export interface TradePlanResult {
@@ -168,6 +171,13 @@ export function evaluateTradePlan(input: TradePlanInput): TradePlanResult {
 
   if (!targetPremium || targetPremium <= entryPremium) {
     return { valid: false, error: "Target premium must be ABOVE your entry premium." };
+  }
+
+  if (input.maxValue !== undefined && targetPremium > input.maxValue + 1e-9) {
+    return {
+      valid: false,
+      error: `Target $${targetPremium.toFixed(2)} is above this spread's max value of $${input.maxValue.toFixed(2)} (its strike width).`,
+    };
   }
 
   const riskPerContractPoints = entryPremium - effectiveStopPremium;

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import XrillWizard from "@/components/XrillWizard";
 import XrillFastWizard from "@/components/XrillFastWizard";
 
@@ -15,11 +16,17 @@ export default function EngineSelector({
   riskPercent,
   stopPercent,
   initialEngine,
+  openCount = 0,
+  openLimit = 3,
+  recommendedOpen = 2,
 }: {
   accountBalance: number;
   riskPercent: number;
   stopPercent?: number;
   initialEngine?: Engine;
+  openCount?: number;
+  openLimit?: number;
+  recommendedOpen?: number;
 }) {
   const [engine, setEngine] = useState<Engine>(initialEngine ?? null);
 
@@ -37,6 +44,13 @@ export default function EngineSelector({
       <p className="mt-2 text-center text-sm text-white/50">
         Same account, same risk limits — different pace for a different kind of trade.
       </p>
+
+      {openCount >= recommendedOpen && openCount < openLimit && (
+        <div className="mt-6 rounded border border-caution/40 bg-caution/10 p-3 text-center text-xs text-caution">
+          ⚠️ You have {openCount} positions open. A new one would be #{openCount + 1} of {openLimit}: allowed, but XRILL doesn&apos;t
+          recommend more than {recommendedOpen} at once. A spread counts as one position.
+        </div>
+      )}
 
       <div className="mt-8 grid gap-4 sm:grid-cols-2">
         <button
@@ -64,6 +78,17 @@ export default function EngineSelector({
             design.
           </p>
         </button>
+      </div>
+
+      <div className="mt-8 rounded border border-loss/40 bg-loss/5 p-4 text-center">
+        <p className="text-sm text-white/70">Already in a trade you didn&apos;t run through XRILL?</p>
+        <Link
+          href="/session?mode=after"
+          className="mt-2 inline-block rounded bg-loss px-4 py-2 text-sm font-bold text-white shadow-[0_0_16px_-2px_rgba(239,68,68,0.7)] hover:opacity-90"
+        >
+          🚨 Emergency: Log a Trade After the Fact
+        </Link>
+        <p className="mt-2 text-[11px] text-white/40">Not a shortcut. Gets the trade on record so it&apos;s tracked and journaled.</p>
       </div>
     </div>
   );

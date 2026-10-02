@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import { getSessionOutcomeRows } from "@/lib/data/xrill-analytics-data";
+import { getJournalExtras, getSessionOutcomeRows } from "@/lib/data/xrill-analytics-data";
 import { getCodexDays } from "@/lib/data/journalCodex";
 import JournalClient from "@/components/journal/JournalClient";
 import CodexClient from "@/components/journal/CodexClient";
@@ -27,7 +27,11 @@ export default async function JournalPage() {
   } = await supabase.auth.getUser();
   if (!user) redirect("/login");
 
-  const [rows, codexDays] = await Promise.all([getSessionOutcomeRows(user.id), getCodexDays(user.id)]);
+  const [rows, codexDays, extras] = await Promise.all([
+    getSessionOutcomeRows(user.id),
+    getCodexDays(user.id),
+    getJournalExtras(user.id),
+  ]);
   const newestFirst = [...rows].reverse();
 
   return (
@@ -63,7 +67,7 @@ export default async function JournalPage() {
 
       <div className="relative mt-8">
         <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-white/50">Session History</h2>
-        <JournalClient rows={newestFirst} />
+        <JournalClient rows={newestFirst} userId={user.id} trims={extras.trims} screenshots={extras.screenshots} />
       </div>
     </div>
   );

@@ -16,6 +16,8 @@ import {
   type StopMode,
 } from "@/lib/xrill";
 import { DEFAULT_STOP_PERCENT, clampRiskPercent } from "@/lib/riskProfile";
+import StructurePicker from "@/components/session/StructurePicker";
+import { evaluateStructure, type Leg, type Structure } from "@/lib/structures";
 import { submitFastSession } from "@/app/session/actions";
 import Hint from "./Hint";
 
@@ -202,6 +204,9 @@ export default function XrillFastWizard({
     strike: "",
     expiration: "",
   });
+  const [structure, setStructure] = useState<Structure>("single");
+  const [legs, setLegs] = useState<Leg[]>([]);
+  const structureResult = evaluateStructure(structure, legs);
   const [planResult, setPlanResult] = useState<ReturnType<typeof evaluateTradePlan> | null>(null);
   const [planError, setPlanError] = useState<string | null>(null);
 
@@ -383,10 +388,32 @@ export default function XrillFastWizard({
             />
           </Field>
 
+          <Field label="Position Structure">
+            <StructurePicker
+              structure={structure}
+              legs={legs}
+              optionType={plan.optionType}
+              onChange={(next) => {
+                setStructure(next.structure);
+                setLegs(next.legs);
+                const legType = next.structure === "vertical" ? next.legs[0]?.type : undefined;
+                setPlan((prev) => ({
+                  ...prev,
+                  entryPremium: next.structure === "single" ? prev.entryPremium : next.netDebit !== null ? next.netDebit.toFixed(2) : "",
+                  optionType: legType ?? prev.optionType,
+                }));
+              }}
+            />
+          </Field>
+
           <div className="grid grid-cols-2 gap-3">
-            <Field label="Strike (optional)">
-              <NumberInput value={plan.strike} onChange={(v) => setPlan({ ...plan, strike: v })} />
-            </Field>
+            {structure === "single" ? (
+              <Field label="Strike (optional)">
+                <NumberInput value={plan.strike} onChange={(v) => setPlan({ ...plan, strike: v })} />
+              </Field>
+            ) : (
+              <div />
+            )}
             <Field label="Expiration (optional)">
               <input
                 type="date"
@@ -397,6 +424,7 @@ export default function XrillFastWizard({
             </Field>
           </div>
 
+          {structure === "single" && (
           <Field label="Option Type">
             <div className="flex gap-2">
               {(["CALL", "PUT"] as OptionType[]).map((t) => (
@@ -413,9 +441,16 @@ export default function XrillFastWizard({
               ))}
             </div>
           </Field>
+          )}
 
-          <Field label="Contract Premium (buy price)">
-            <NumberInput value={plan.entryPremium} onChange={(v) => setPlan({ ...plan, entryPremium: v })} />
+          <Field label={structure === "single" ? "Contract Premium (buy price)" : "Net Debit (calculated from your legs)"}>
+            {structure === "single" ? (
+              <NumberInput value={plan.entryPremium} onChange={(v) => setPlan({ ...plan, entryPremium: v })} />
+            ) : (
+              <div className="w-full rounded border border-white/10 bg-white/5 px-3 py-2 font-mono text-white/80">
+                {plan.entryPremium ? `$${plan.entryPremium}` : "Fill in both legs above"}
+              </div>
+            )}
             {hasEntry && contracts > 0 && (
               <p className="mt-1 text-xs text-white/40">
                 1 contract = ${entry.toFixed(2)} × 100 = ${(entry * OPTIONS_CONTRACT_MULTIPLIER).toFixed(2)} per
@@ -497,7 +532,12 @@ export default function XrillFastWizard({
         <NextButton
           label="Evaluate Trade Plan"
           onClick={() => {
+            if (structure !== "single" && !structureResult.valid) {
+              setPlanError(structureResult.error ?? "Check your legs.");
+              return;
+            }
             const r = evaluateTradePlan({
+              maxValue: structureResult.width,
               ticker: plan.ticker,
               optionType: plan.optionType,
               entryPremium: entry,
@@ -630,7 +670,9 @@ export default function XrillFastWizard({
                 stopPremium: plan.stopMode === "PRICE" ? parseFloat(plan.stopPremium) : undefined,
                 targetPremium: parseFloat(plan.targetPremium),
                 contracts: parseInt(plan.contracts, 10),
-                strike: plan.strike ? parseFloat(plan.strike) : null,
+                strike: structure === "single" && plan.strike ? parseFloat(plan.strike) : null,
+                structure,
+                legs: structure === "single" ? null : legs,
                 expiration: plan.expiration || null,
               },
               execution: execution as any,

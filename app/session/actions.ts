@@ -1,6 +1,8 @@
 "use server";
 
 import { createClient } from "@/lib/supabase/server";
+import { evaluateStructure, isStructure, type Leg, type Structure } from "@/lib/structures";
+import { AFTER_FACT_REASONS } from "@/lib/afterFact";
 import { getDailyLossStatus, getTradingDateET } from "@/lib/data/dailyLossLock";
 import { getTwoLossStatus } from "@/lib/data/twoLossLock";
 import { getOpenPositionsStatus } from "@/lib/data/openPositions";
@@ -33,6 +35,28 @@ function cleanContractDetails(strike?: number | null, expiration?: string | null
   return out;
 }
 
+// Multi-leg structures are re-derived from their legs here -- the server
+// never trusts a client-sent entry premium for a spread. The net debit
+// becomes the entry premium and, for a vertical, the strike width caps
+// the target, so every downstream gate sizes the structure as ONE position.
+type PlanInput = SubmitSessionInput["plan"];
+function normalizePlan(
+  p: PlanInput
+): { ok: true; plan: PlanInput & { maxValue?: number }; structure: Structure; legs: Leg[] | null } | { ok: false; error: string } {
+  const structure: Structure = isStructure(p.structure) ? p.structure : "single";
+  if (structure === "single") return { ok: true, plan: { ...p }, structure, legs: null };
+  const legs = Array.isArray(p.legs) ? p.legs : [];
+  const r = evaluateStructure(structure, legs);
+  if (!r.valid || r.netDebit === undefined) return { ok: false, error: r.error ?? "Invalid spread legs." };
+  const cleanLegs: Leg[] = legs.map((l) => ({ side: l.side, type: l.type, strike: l.strike, premium: l.premium }));
+  return {
+    ok: true,
+    plan: { ...p, entryPremium: r.netDebit, maxValue: r.width, optionType: cleanLegs[0].type },
+    structure,
+    legs: cleanLegs,
+  };
+}
+
 export interface SubmitSessionInput {
   daily: { sleep: boolean; focused: boolean; emotional: boolean; disciplined: boolean };
   gate: {
@@ -59,6 +83,8 @@ export interface SubmitSessionInput {
     contracts: number;
     strike?: number | null; // optional -- shown on the open-position card
     expiration?: string | null; // optional, YYYY-MM-DD
+    structure?: Structure; // single option (default), vertical spread, straddle/strangle
+    legs?: Leg[] | null; // required for multi-leg structures
   };
   execution: {
     confirmation: boolean;
@@ -127,7 +153,9 @@ export async function submitXrillSession(
   const setup = scoreSetup(input.setup);
   if (!setup.passed) return { success: false, error: "Setup Score too low — session not logged." };
 
-  const plan = evaluateTradePlan(input.plan);
+  const normalized = normalizePlan(input.plan);
+  if (!normalized.ok) return { success: false, error: normalized.error };
+  const plan = evaluateTradePlan(normalized.plan);
   if (!plan.valid) return { success: false, error: plan.error ?? "Invalid trade plan." };
   if (!plan.passed) return { success: false, error: "Risk/Reward below 2.0 — session not logged." };
 
@@ -172,11 +200,13 @@ export async function submitXrillSession(
       setup_score: setup.total,
       ticker: input.plan.ticker.toUpperCase(),
       direction: input.plan.optionType,
-      entry: input.plan.entryPremium,
+      entry: normalized.plan.entryPremium,
       stop: plan.effectiveStopPremium,
       target: input.plan.targetPremium,
       contracts: input.plan.contracts,
-      ...cleanContractDetails(input.plan.strike, input.plan.expiration),
+      ...cleanContractDetails(normalized.structure === "single" ? input.plan.strike : null, input.plan.expiration),
+      structure: normalized.structure,
+      legs: normalized.legs,
       point_value: OPTIONS_CONTRACT_MULTIPLIER,
       risk_points: plan.riskPerContractPoints,
       reward_points: plan.rewardPerContractPoints,
@@ -234,6 +264,8 @@ export interface SubmitFastSessionInput {
     contracts: number;
     strike?: number | null; // optional -- shown on the open-position card
     expiration?: string | null; // optional, YYYY-MM-DD
+    structure?: Structure; // single option (default), vertical spread, straddle/strangle
+    legs?: Leg[] | null; // required for multi-leg structures
   };
   execution: {
     confirmation: boolean;
@@ -299,7 +331,9 @@ export async function submitFastSession(
   const setup = scoreSetup(input.setup);
   if (!setup.passed) return { success: false, error: "Setup Score too low — session not logged." };
 
-  const plan = evaluateTradePlan(input.plan);
+  const normalized = normalizePlan(input.plan);
+  if (!normalized.ok) return { success: false, error: normalized.error };
+  const plan = evaluateTradePlan(normalized.plan);
   if (!plan.valid) return { success: false, error: plan.error ?? "Invalid trade plan." };
   if (!plan.passed) return { success: false, error: "Risk/Reward below 2.0 — session not logged." };
 
@@ -330,11 +364,13 @@ export async function submitFastSession(
       setup_score: setup.total,
       ticker: input.plan.ticker.toUpperCase(),
       direction: input.plan.optionType,
-      entry: input.plan.entryPremium,
+      entry: normalized.plan.entryPremium,
       stop: plan.effectiveStopPremium,
       target: input.plan.targetPremium,
       contracts: input.plan.contracts,
-      ...cleanContractDetails(input.plan.strike, input.plan.expiration),
+      ...cleanContractDetails(normalized.structure === "single" ? input.plan.strike : null, input.plan.expiration),
+      structure: normalized.structure,
+      legs: normalized.legs,
       point_value: OPTIONS_CONTRACT_MULTIPLIER,
       risk_points: plan.riskPerContractPoints,
       reward_points: plan.rewardPerContractPoints,
@@ -360,4 +396,103 @@ export async function submitFastSession(
     rejectionReason: auth.rejectionReason,
     sessionId: row.id,
   };
+}
+
+// ------------------------------------------------- After-the-fact log
+// EMERGENCY path for a trade that was already taken without running the
+// gates first (late, no stops/alerts set, no charts, outside hours...).
+// It is NOT an authorization: it skips straight to Trade Plan + Risk
+// Manager to get the trade on record. Deliberately:
+//   - stored with trade_authorized = false and logged_after = true, so it
+//     never pads the streak, authorization rate or XRILL score stats;
+//   - NOT blocked by the daily lock, Two-Loss Lockout or position cap --
+//     the trade already exists, and recording it beats hiding it. Those
+//     conditions come back as warnings instead;
+//   - still an open position afterwards, so it gets journaled and closed.
+export interface SubmitAfterFactInput {
+  reasons: string[];
+  otherReason?: string;
+  plan: SubmitSessionInput["plan"];
+}
+
+export interface SubmitAfterFactResult {
+  success: boolean;
+  error?: string;
+  sessionId?: number;
+  warnings?: string[];
+}
+
+export async function submitAfterFactSession(input: SubmitAfterFactInput): Promise<SubmitAfterFactResult> {
+  const supabase = createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return { success: false, error: "Not signed in." };
+
+  const reasons = (input.reasons ?? []).filter((r) => (AFTER_FACT_REASONS as readonly string[]).includes(r));
+  const other = input.otherReason?.trim().slice(0, 200);
+  if (other) reasons.push(`Other: ${other}`);
+  if (reasons.length === 0) return { success: false, error: "Pick at least one reason this trade wasn't logged first." };
+
+  const normalized = normalizePlan(input.plan);
+  if (!normalized.ok) return { success: false, error: normalized.error };
+  // R:R isn't enforced here (the trade is already on), but the numbers
+  // still have to make sense to be recorded.
+  const plan = evaluateTradePlan(normalized.plan);
+  if (!plan.valid) return { success: false, error: plan.error ?? "Invalid trade plan." };
+
+  const { data: account } = await supabase
+    .from("accounts")
+    .select("balance, risk_percent, stop_loss_percent")
+    .eq("user_id", user.id)
+    .maybeSingle();
+  const balance = account?.balance ?? 50000;
+  const riskPercent = account?.risk_percent ?? 1;
+  const risk = evaluateRisk(plan.tradeRisk!, input.plan.contracts, balance, riskPercent, plan.totalOutlay!, account?.stop_loss_percent ?? undefined);
+
+  const [dailyLoss, twoLoss, openPositions] = await Promise.all([
+    getDailyLossStatus(user.id),
+    getTwoLossStatus(user.id),
+    getOpenPositionsStatus(user.id),
+  ]);
+
+  const warnings: string[] = [];
+  if (!plan.passed) warnings.push(`R:R is ${plan.rr!.toFixed(2)}, below the 2.00 minimum.`);
+  if (!risk.passed) warnings.push(`Over your risk limits: max ${risk.maxContracts} contract${risk.maxContracts === 1 ? "" : "s"} allowed, $${risk.maxRisk.toFixed(2)} max risk.`);
+  if (dailyLoss.locked) warnings.push("Taken while your Daily Loss Limit was already hit.");
+  if (twoLoss.locked) warnings.push("Taken during a Two-Loss Lockout.");
+  if (openPositions.atLimit) warnings.push(`Over the ${openPositions.limit}-position limit.`);
+
+  const { data: row, error } = await supabase
+    .from("xrill_sessions")
+    .insert({
+      user_id: user.id,
+      ticker: input.plan.ticker.toUpperCase(),
+      direction: normalized.plan.optionType,
+      entry: normalized.plan.entryPremium,
+      stop: plan.effectiveStopPremium,
+      target: input.plan.targetPremium,
+      contracts: input.plan.contracts,
+      ...cleanContractDetails(normalized.structure === "single" ? input.plan.strike : null, input.plan.expiration),
+      structure: normalized.structure,
+      legs: normalized.legs,
+      point_value: OPTIONS_CONTRACT_MULTIPLIER,
+      risk_points: plan.riskPerContractPoints,
+      reward_points: plan.rewardPerContractPoints,
+      trade_risk: plan.tradeRisk,
+      trade_reward: plan.tradeReward,
+      rr: plan.rr,
+      max_risk: risk.maxRisk,
+      risk_approved: risk.passed,
+      trade_score: null,
+      trade_authorized: false,
+      logged_after: true,
+      after_fact_reasons: reasons,
+      rejection_reason: "Logged after the fact (emergency) — gates were skipped",
+      session_date: getTradingDateET(),
+    })
+    .select("id")
+    .single();
+
+  if (error) return { success: false, error: error.message };
+
+  return { success: true, sessionId: row.id, warnings };
 }

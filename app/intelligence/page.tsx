@@ -25,6 +25,8 @@ export default async function IntelligencePage() {
   const { data: sessions } = await supabase
     .from("xrill_sessions")
     .select("daily_score, trade_gate_score, setup_score, execution_score, trade_score, trade_authorized")
+    // after-the-fact logs skipped the gates; nothing to profile
+    .eq("logged_after", false)
     .eq("user_id", user.id);
 
   const profile = buildTradingProfile(sessions ?? []);

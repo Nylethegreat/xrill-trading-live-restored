@@ -1,5 +1,6 @@
 import Link from "next/link";
 import type { OpenPosition } from "@/lib/data/openPositions";
+import { structureLabel } from "@/lib/structures";
 
 // Shown for each real open position -- an authorized session with no
 // xrill_outcomes row yet (computed in lib/data/openPositions.ts, the
@@ -40,37 +41,63 @@ export default function OpenPositionCard({ session }: { session: OpenPosition })
   const opened = new Date(session.created_at);
   const openedLabel = opened.toLocaleString(undefined, { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" });
 
-  const contracts = session.contracts && session.contracts > 0 ? session.contracts : null;
+  const openedContracts = session.contracts && session.contracts > 0 ? session.contracts : null;
+  // After trims, size and risk reflect only what's still open.
+  const contracts = session.remainingContracts !== null && session.remainingContracts > 0 ? session.remainingContracts : openedContracts;
+  const spread = structureLabel(session.structure, session.legs);
   const side = session.direction === "PUT" ? "P" : session.direction === "CALL" ? "C" : null;
   const dte = session.expiration ? daysToExpiry(session.expiration) : null;
-  const perContractRisk = session.trade_risk !== null && contracts ? session.trade_risk / contracts : null;
+  const perContractRisk = session.trade_risk !== null && openedContracts ? session.trade_risk / openedContracts : null;
+  const openRisk = session.remainingRisk ?? session.trade_risk;
 
   const dteTone =
     dte === null ? "" : dte < 0 ? "border-loss/50 bg-loss/15 text-loss" : dte <= 1 ? "border-caution/50 bg-caution/15 text-caution" : "border-white/20 bg-white/5 text-white/70";
 
   return (
-    <div className="rounded border border-primary/30 bg-primary/10 p-4">
+    <div className={`rounded border p-4 ${session.logged_after ? "border-loss/50 bg-loss/10" : "border-primary/30 bg-primary/10"}`}>
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
-          <p className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-primary">
-            <span className="h-2 w-2 animate-pulse rounded-full bg-primary" /> Open Position
+          <p className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs font-semibold uppercase tracking-wide text-primary">
+            <span className="whitespace-nowrap">
+              <span className="mr-2 inline-block h-2 w-2 animate-pulse rounded-full bg-primary" />
+              Open Position
+            </span>
             {session.engine === "daytrade" && <span className="text-daytrade">⚡</span>}
+            {session.logged_after && (
+              <span className="whitespace-nowrap rounded-full border border-loss/60 bg-loss/20 px-1.5 py-0.5 text-[10px] font-bold text-loss">🚨 LOGGED AFTER</span>
+            )}
           </p>
 
-          {/* Ticket-style header: size, ticker, strike, side */}
+          {/* Ticket-style header: size, ticker, strike/structure, side */}
           <p className="mt-1.5 font-mono text-lg font-bold leading-tight text-white">
             {contracts && <span className="text-primary">{contracts}x </span>}
             {session.ticker ?? "—"}
-            {session.strike !== null && <span> {strikeLabel(session.strike)}</span>}
-            {side ? (
-              <span className={side === "C" ? " text-accent" : " text-loss"}> {session.strike !== null ? side : session.direction}</span>
-            ) : null}
+            {spread ? (
+              <span className="text-white/90"> {spread}</span>
+            ) : (
+              <>
+                {session.strike !== null && <span> {strikeLabel(session.strike)}</span>}
+                {side ? (
+                  <span className={side === "C" ? " text-accent" : " text-loss"}> {session.strike !== null ? side : session.direction}</span>
+                ) : null}
+              </>
+            )}
           </p>
 
           <div className="mt-2 flex flex-wrap items-center gap-1.5">
             {contracts && (
               <span className="rounded-full border border-primary/50 bg-primary/15 px-2 py-0.5 text-[11px] font-semibold text-blue-200">
-                Size: {contracts} {contracts === 1 ? "Contract" : "Contracts"}
+                Size: {contracts} {spread ? (contracts === 1 ? "Spread" : "Spreads") : contracts === 1 ? "Contract" : "Contracts"}
+                {session.trimmedContracts > 0 && openedContracts ? ` (of ${openedContracts})` : ""}
+              </span>
+            )}
+            {session.trimmedContracts > 0 && (
+              <span
+                className={`rounded-full border px-2 py-0.5 text-[11px] font-semibold ${
+                  session.trimProfitLoss >= 0 ? "border-accent/50 bg-accent/10 text-accent" : "border-loss/50 bg-loss/10 text-loss"
+                }`}
+              >
+                ✂️ {session.trimmedContracts} trimmed · {session.trimProfitLoss >= 0 ? "+" : "-"}${Math.abs(session.trimProfitLoss).toFixed(2)}
               </span>
             )}
             {session.expiration && dte !== null && (
@@ -88,16 +115,16 @@ export default function OpenPositionCard({ session }: { session: OpenPosition })
           </p>
         </div>
         <Link
-          href="/journal"
-          className="flex-none rounded bg-blue-500 px-4 py-2 text-sm font-semibold text-white shadow-[0_0_14px_3px_rgba(59,130,246,0.5)] hover:bg-blue-400"
+          href={`/journal#session-${session.id}`}
+          className="flex-none rounded bg-blue-500 px-3 py-2 text-center text-sm font-semibold text-white shadow-[0_0_14px_3px_rgba(59,130,246,0.5)] hover:bg-blue-400"
         >
-          Close
+          Close / Trim
         </Link>
       </div>
 
       <div className="mt-3 grid grid-cols-3 gap-2 border-t border-white/10 pt-3 text-center">
         <div>
-          <p className="text-[10px] uppercase tracking-wide text-white/40">Premium Paid</p>
+          <p className="text-[10px] uppercase tracking-wide text-white/40">{spread ? "Net Debit" : "Premium Paid"}</p>
           <p className="mt-0.5 font-mono text-sm text-white">{session.entry !== null ? money(session.entry) : "—"}</p>
         </div>
         <div>
@@ -110,14 +137,15 @@ export default function OpenPositionCard({ session }: { session: OpenPosition })
         </div>
       </div>
 
-      {session.trade_risk !== null && (
+      {openRisk !== null && (
         <div className="mt-3 rounded border border-white/10 bg-black/20 px-3 py-2 text-center">
           <p className="font-mono text-sm text-white">
-            Total Risk: <span className="font-bold text-loss">{money(session.trade_risk)}</span>
+            {session.trimmedContracts > 0 ? "Open Risk" : "Total Risk"}: <span className="font-bold text-loss">{money(openRisk)}</span>
           </p>
           {perContractRisk !== null && contracts && (
             <p className="mt-0.5 font-mono text-[11px] text-white/50">
-              ({money(perContractRisk)}/contract × {contracts} {contracts === 1 ? "contract" : "contracts"})
+              ({money(perContractRisk)}/{spread ? "spread" : "contract"} × {contracts} {spread ? (contracts === 1 ? "spread" : "spreads") : contracts === 1 ? "contract" : "contracts"}
+              {session.trimmedContracts > 0 ? " still open" : ""})
             </p>
           )}
         </div>

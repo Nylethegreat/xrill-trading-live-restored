@@ -65,15 +65,22 @@ export default async function DashboardPage() {
   const maxRisk = calculateMaxRisk(balance, riskPercent);
 
   const allSessions = sessions ?? [];
-  const last = allSessions[0] ?? null;
+  const latest = allSessions[0] ?? null;
+  // "Last Session" breaks down the gates, so it uses the last session that
+  // actually ran them (a logged-after trade has none).
+  const last = allSessions.find((s) => !s.logged_after) ?? null;
   const recent = allSessions.slice(0, 5);
 
   const total = allSessions.length;
   const authorized = allSessions.filter((s) => s.trade_authorized).length;
-  const blocked = total - authorized;
-  const avgScore = total > 0 ? allSessions.reduce((sum, s) => sum + (s.trade_score ?? 0), 0) / total : 0;
-  const highScore = total > 0 ? Math.max(...allSessions.map((s) => s.trade_score ?? 0)) : 0;
-  const lowScore = total > 0 ? Math.min(...allSessions.map((s) => s.trade_score ?? 0)) : 0;
+  const loggedAfter = allSessions.filter((s) => s.logged_after).length;
+  const blocked = total - authorized - loggedAfter;
+  // Logged-after trades skipped the gates, so they have no XRILL score to
+  // average -- score stats only cover sessions that ran the gates.
+  const gated = allSessions.filter((s) => !s.logged_after);
+  const avgScore = gated.length > 0 ? gated.reduce((sum, s) => sum + (s.trade_score ?? 0), 0) / gated.length : 0;
+  const highScore = gated.length > 0 ? Math.max(...gated.map((s) => s.trade_score ?? 0)) : 0;
+  const lowScore = gated.length > 0 ? Math.min(...gated.map((s) => s.trade_score ?? 0)) : 0;
 
   return (
     <div className="relative mx-auto max-w-3xl px-4 py-10">
@@ -90,7 +97,9 @@ export default async function DashboardPage() {
       </div>
 
       <div className="mt-3 rounded border border-white/10 bg-white/5 p-4">
-        {!last ? (
+        {latest?.logged_after ? (
+          <p className="text-loss">🚨 LAST TRADE LOGGED AFTER THE FACT — gates were skipped. Journal it and run XRILL first next time.</p>
+        ) : !last ? (
           <p className="text-white/60">🟡 SYSTEM READY — no sessions yet. Start one when you're ready.</p>
         ) : (
           <p className={last.trade_authorized ? "text-accent" : "text-blocked"}>
@@ -174,9 +183,10 @@ export default async function DashboardPage() {
           <Stat label="Total Sessions" value={String(total)} />
           <Stat label="Authorized" value={String(authorized)} />
           <Stat label="Blocked" value={String(blocked)} />
+          {loggedAfter > 0 && <Stat label="Logged After" value={String(loggedAfter)} />}
           <Stat label="Authorization Rate" value={total > 0 ? `${((authorized / total) * 100).toFixed(1)}%` : "—"} />
-          <Stat label="Average Score" value={total > 0 ? `${avgScore.toFixed(1)}/100` : "—"} />
-          <Stat label="Highest / Lowest" value={total > 0 ? `${highScore} / ${lowScore}` : "—"} />
+          <Stat label="Average Score" value={gated.length > 0 ? `${avgScore.toFixed(1)}/100` : "—"} />
+          <Stat label="Highest / Lowest" value={gated.length > 0 ? `${highScore} / ${lowScore}` : "—"} />
         </Grid>
       </Section>
 
@@ -194,9 +204,9 @@ export default async function DashboardPage() {
                   #{s.id} <span className="text-white/60">{s.ticker} {s.direction}</span>
                   {s.engine === "daytrade" && <span className="ml-1.5 text-daytrade">⚡</span>}
                 </span>
-                <span className="text-white/60">{s.engine === "daytrade" ? "Daytrade" : `Score: ${s.trade_score}`}</span>
-                <span className={s.trade_authorized ? "text-accent" : "text-blocked"}>
-                  {s.trade_authorized ? "🟢 AUTHORIZED" : "🟣 BLOCKED"}
+                <span className="text-white/60">{s.logged_after ? "No gates" : s.engine === "daytrade" ? "Daytrade" : `Score: ${s.trade_score}`}</span>
+                <span className={s.logged_after ? "text-loss" : s.trade_authorized ? "text-accent" : "text-blocked"}>
+                  {s.logged_after ? "🚨 LOGGED AFTER" : s.trade_authorized ? "🟢 AUTHORIZED" : "🟣 BLOCKED"}
                 </span>
               </div>
             ))}

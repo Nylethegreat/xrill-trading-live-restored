@@ -37,11 +37,16 @@ export async function getDailyLossStatus(userId: string): Promise<DailyLossStatu
   const supabase = createClient();
   const tradingDate = getTradingDateET();
 
-  const [{ data: account }, { data: outcomes }] = await Promise.all([
+  const [{ data: account }, { data: outcomes }, { data: trims }] = await Promise.all([
     supabase.from("accounts").select("balance, risk_percent, stop_loss_percent, daily_loss_limit").eq("user_id", userId).maybeSingle(),
     supabase
       .from("xrill_outcomes")
-      .select("profit_loss, xrill_sessions!inner(session_date)")
+      .select("session_id, profit_loss, xrill_sessions!inner(session_date)")
+      .eq("user_id", userId)
+      .eq("xrill_sessions.session_date", tradingDate),
+    supabase
+      .from("xrill_trims")
+      .select("session_id, profit_loss, xrill_sessions!inner(session_date)")
       .eq("user_id", userId)
       .eq("xrill_sessions.session_date", tradingDate),
   ]);
@@ -50,7 +55,16 @@ export async function getDailyLossStatus(userId: string): Promise<DailyLossStatu
   // before the hierarchy rules, or left behind by a balance change) can
   // never lock the day below 1.5x one Max Trade Loss.
   const limit = account ? effectiveDailyLossLimit(account) : 1000;
-  const netPnl = (outcomes ?? []).reduce((sum, row) => sum + (row.profit_loss ?? 0), 0);
+
+  // A closed trade's outcome already includes its trims (saveTradeOutcome
+  // stores the trade's total P/L), so trims only count separately while
+  // their trade is still open -- realized the moment you trim, never twice.
+  const closedIds = new Set((outcomes ?? []).map((o) => o.session_id));
+  const closedPnl = (outcomes ?? []).reduce((sum, row) => sum + Number(row.profit_loss ?? 0), 0);
+  const openTrimPnl = (trims ?? [])
+    .filter((t) => !closedIds.has(t.session_id))
+    .reduce((sum, t) => sum + Number(t.profit_loss ?? 0), 0);
+  const netPnl = closedPnl + openTrimPnl;
 
   return {
     locked: limit > 0 && netPnl <= -limit,

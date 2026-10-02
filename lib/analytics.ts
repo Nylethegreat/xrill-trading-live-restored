@@ -43,6 +43,15 @@ export interface SessionOutcomeRow {
   risk_multiple: number | null;
   mfe: number | null;
   mae: number | null;
+  // After-the-fact (emergency) logs and multi-leg structures
+  logged_after: boolean;
+  after_fact_reasons: string[] | null;
+  structure: string | null;
+  legs: unknown;
+  strike: number | null;
+  expiration: string | null;
+  mishaps: string[] | null;
+  mishap_note: string | null;
 }
 
 export interface GroupStats {

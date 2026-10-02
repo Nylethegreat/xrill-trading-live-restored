@@ -16,9 +16,10 @@ export async function getSessionOutcomeRows(userId: string): Promise<SessionOutc
        risk_points, reward_points, trade_risk, trade_reward, rr, max_risk,
        daily_score, trade_gate_score, setup_score, risk_approved,
        execution_score, trade_score, trade_authorized, rejection_reason, engine,
+       logged_after, after_fact_reasons, structure, legs, strike, expiration,
        xrill_outcomes ( profit_loss, followed_plan, followed_exit_rules,
          emotion, lesson, exit_price, holding_minutes, risk_multiple,
-         max_favorable_excursion, max_adverse_excursion )`
+         max_favorable_excursion, max_adverse_excursion, mishaps, mishap_note )`
     )
     .eq("user_id", userId)
     .order("created_at", { ascending: true });
@@ -69,6 +70,63 @@ export async function getSessionOutcomeRows(userId: string): Promise<SessionOutc
       risk_multiple: outcome?.risk_multiple ?? null,
       mfe: outcome?.max_favorable_excursion ?? null,
       mae: outcome?.max_adverse_excursion ?? null,
+      logged_after: !!row.logged_after,
+      after_fact_reasons: row.after_fact_reasons ?? null,
+      structure: row.structure ?? null,
+      legs: row.legs ?? null,
+      strike: row.strike ?? null,
+      expiration: row.expiration ?? null,
+      mishaps: outcome?.mishaps ?? null,
+      mishap_note: outcome?.mishap_note ?? null,
     };
   });
+}
+
+
+// Journal extras: trims (partial closes) and screenshots per session. The
+// screenshot bucket is private, so each image gets a short-lived signed URL
+// generated server-side for this page view.
+export interface TrimRow {
+  id: number;
+  session_id: number;
+  contracts: number;
+  exit_price: number | null;
+  profit_loss: number;
+  note: string | null;
+  created_at: string;
+}
+
+export interface ScreenshotRow {
+  id: number;
+  session_id: number;
+  caption: string | null;
+  url: string | null;
+}
+
+export async function getJournalExtras(userId: string): Promise<{ trims: TrimRow[]; screenshots: ScreenshotRow[] }> {
+  const supabase = createClient();
+  const [{ data: trims }, { data: shots }] = await Promise.all([
+    supabase
+      .from("xrill_trims")
+      .select("id, session_id, contracts, exit_price, profit_loss, note, created_at")
+      .eq("user_id", userId)
+      .order("created_at", { ascending: true }),
+    supabase
+      .from("xrill_screenshots")
+      .select("id, session_id, path, caption")
+      .eq("user_id", userId)
+      .order("created_at", { ascending: true }),
+  ]);
+
+  const paths = (shots ?? []).map((s) => s.path);
+  const urlByPath = new Map<string, string>();
+  if (paths.length > 0) {
+    const { data: signed } = await supabase.storage.from("trade-screenshots").createSignedUrls(paths, 60 * 60);
+    for (const s of signed ?? []) if (s.path && s.signedUrl) urlByPath.set(s.path, s.signedUrl);
+  }
+
+  return {
+    trims: (trims ?? []).map((t) => ({ ...t, profit_loss: Number(t.profit_loss), exit_price: t.exit_price === null ? null : Number(t.exit_price) })),
+    screenshots: (shots ?? []).map((s) => ({ id: s.id, session_id: s.session_id, caption: s.caption, url: urlByPath.get(s.path) ?? null })),
+  };
 }
