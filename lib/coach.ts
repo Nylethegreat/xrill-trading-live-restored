@@ -60,3 +60,66 @@ export function scoreCoachCheckIn(input: CoachInput): CoachResult {
     guidance: "Step away and reset before participating.",
   };
 }
+
+// ---------------------------------------------------------------------------
+// Position check-ins (Intelligence). The same four 1-10 dimensions, but
+// tied to a specific position and taken twice: "before" (right after the
+// gate clears, at entry) and "after" (once the trade is closed, or while
+// you're holding it). The point is the gap between the two — how you felt
+// going in vs how you feel coming out is the emotional fingerprint of the
+// trade, and it's easy to rewrite the "before" in hindsight if you don't
+// capture it first.
+// ---------------------------------------------------------------------------
+
+export type CheckInPhase = "before" | "after";
+
+export const AFTER_GUIDANCE: Record<CoachStatus, { headline: string; guidance: string }> = {
+  ELITE: {
+    headline: "You're coming out of this trade steady.",
+    guidance: "Note what kept you calm — that's the state to repeat, win or lose.",
+  },
+  READY: {
+    headline: "You held it together.",
+    guidance: "Journal the outcome while it's fresh, then decide if there's a next trade — not before.",
+  },
+  CAUTION: {
+    headline: "This trade moved you.",
+    guidance: "Shrink size or stop for the session. A rattled trader's next entry is usually a revenge entry.",
+  },
+  "NOT READY": {
+    headline: "Done for now.",
+    guidance: "Close the platform. Write down what you feel and why, then step away before the next idea looks good.",
+  },
+};
+
+export const CHECKIN_DIMENSIONS = [
+  { key: "confidence", label: "Confidence" },
+  { key: "discipline", label: "Discipline" },
+  { key: "emotionalControl", label: "Emotional control" },
+  { key: "patience", label: "Patience" },
+] as const;
+
+export type CheckInDimension = (typeof CHECKIN_DIMENSIONS)[number]["key"];
+
+export function compareCheckIns(before: CoachInput, after: CoachInput) {
+  const deltas = CHECKIN_DIMENSIONS.map((d) => ({
+    key: d.key,
+    label: d.label,
+    before: before[d.key],
+    after: after[d.key],
+    delta: after[d.key] - before[d.key],
+  }));
+  const total = deltas.reduce((s, d) => s + d.delta, 0);
+  const biggestDrop = deltas.reduce((min, d) => (d.delta < min.delta ? d : min), deltas[0]);
+  const biggestRise = deltas.reduce((max, d) => (d.delta > max.delta ? d : max), deltas[0]);
+
+  let summary: string;
+  if (Math.abs(total) <= 2) {
+    summary = "Your state barely moved from entry to exit — that's the goal. The trade didn't run you.";
+  } else if (total < 0) {
+    summary = `You came out ${Math.abs(total)} points lower than you went in, mostly in ${biggestDrop.label.toLowerCase()}. Write down what in the trade caused that.`;
+  } else {
+    summary = `You came out ${total} points higher than you went in, mostly in ${biggestRise.label.toLowerCase()}. Good — but watch for overconfidence on the next entry.`;
+  }
+  return { deltas, total, summary };
+}

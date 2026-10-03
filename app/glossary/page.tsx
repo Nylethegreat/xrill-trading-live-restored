@@ -18,6 +18,8 @@ type Category = {
   terms: Term[];
 };
 
+const OTHER_SIDE = "Who’s on the Other Side";
+
 const CATEGORIES: Category[] = [
   {
     name: "Risk & Money Management",
@@ -198,6 +200,52 @@ const CATEGORIES: Category[] = [
     ],
   },
   {
+    name: OTHER_SIDE,
+    terms: [
+      {
+        term: "Market Maker",
+        short: "\"The House\"",
+        definition:
+          "The firm quoting the bid and ask on almost every option you trade, and usually the one that sells you the contract. They mostly aren't betting against your direction — they hedge with shares and earn the spread. You pay the house on every trade through that spread, win or lose; when an option you bought expires worthless, the premium you paid is what they keep.",
+      },
+      {
+        term: "Short Sellers",
+        definition:
+          "Traders who borrowed shares and sold them, betting price falls. When your call or long stock rips, part of that fuel is shorts being forced to buy back (a short squeeze) — their loss is your gain. When your puts pay, you're on the same side as them.",
+      },
+      {
+        term: "The Other Buyers",
+        short: "Retail & late money",
+        definition:
+          "In stocks, your profit is paid by the next person willing to pay a higher price than you did. Your loss usually means you were that next person — the late buyer who chased. If you can't name who buys after you, you might be the exit liquidity.",
+      },
+      {
+        term: "Quantitative Hedge Funds",
+        short: "The algorithms",
+        definition:
+          "Funds running computer models that trade thousands of times a day on tiny, repeatable edges: spreads, order flow, and predictable human behavior like chasing breakouts and stops clustered at obvious levels. Slippage, stop runs and fake-outs are often where they collect from retail.",
+      },
+      {
+        term: "Option Sellers",
+        short: "Premium sellers",
+        definition:
+          "Anyone who writes (sells) options to collect premium — funds, market makers and some retail. Time decay works for them and against you as a buyer: every day your trade goes nowhere, theta moves money from your contract to the seller.",
+      },
+      {
+        term: "Zero-Sum",
+        short: "Where every dollar comes from",
+        definition:
+          "Options are zero-sum before fees: every dollar one side makes, the other side loses — then the house takes its cut on top. Short-term stock trading is close to the same. So every win came out of someone else's mistake, and every loss went to someone with a better plan. XRILL's gates exist to keep you off the paying side.",
+      },
+      {
+        term: "Bid-Ask Spread",
+        short: "The house's cut",
+        definition:
+          "The gap between what buyers pay (ask) and sellers get (bid). Buy at the ask and sell at the bid immediately, and you lose the spread instantly. On thin options that gap can be 10%+ of the premium — a cost you pay before the trade even moves.",
+      },
+    ],
+  },
+  {
     name: "Psychology",
     terms: [
       {
@@ -265,6 +313,7 @@ const ACCENTS: Record<string, string> = {
   "XRILL System": "168 85 247", // blocked purple
   "Progress & Levels": "234 179 8", // caution yellow
   Psychology: "244 114 182", // pink-400
+  [OTHER_SIDE]: "239 68 68", // red-500 -- the counterparty
   "The Greeks": "192 38 211", // secondary magenta
   "Trading Styles by Holding Time": "251 146 60", // orange-400
   "Strategy Library": "45 212 191", // teal-400
@@ -279,6 +328,7 @@ const PILL_LABELS: Record<string, string> = {
   "XRILL System": "XRILL System",
   "Progress & Levels": "Progress",
   Psychology: "Psychology",
+  [OTHER_SIDE]: "Other Side",
   "The Greeks": "Greeks",
   "Trading Styles by Holding Time": "Trading Styles",
   "Strategy Library": "Strategies",
@@ -399,6 +449,22 @@ export default function GlossaryPage() {
       <p className="relative mt-1 text-sm text-white/50">
         Plain-language definitions for the terms XRILL and trading in general throw around.
       </p>
+
+      <button
+        type="button"
+        onClick={() => {
+          setQuery("");
+          setActive(OTHER_SIDE);
+        }}
+        style={{ "--acc": accentFor(OTHER_SIDE) } as React.CSSProperties}
+        className="relative mt-5 block w-full rounded border border-[rgb(var(--acc)/0.35)] bg-[rgb(var(--acc)/0.06)] p-3 text-left transition-shadow hover:shadow-[0_0_16px_-4px_rgb(var(--acc)/0.7)]"
+      >
+        <span className="text-sm font-semibold text-[rgb(var(--acc))]">Won or lost on a trade? Ask where the money came from.</span>
+        <span className="mt-0.5 block text-xs text-white/60">
+          Every dollar you make is paid by someone on the other side — the house, short sellers, other buyers, the
+          algorithms. Every dollar you lose goes to one of them. Tap to meet them →
+        </span>
+      </button>
 
       <input
         value={query}

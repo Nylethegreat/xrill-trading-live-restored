@@ -21,6 +21,12 @@ import { evaluateStructure, type Leg, type Structure } from "@/lib/structures";
 import { submitFastSession } from "@/app/session/actions";
 import Hint from "./Hint";
 
+// Shared tooltip copy for the Trade Gate.
+const PSYCH_HINT =
+  "Calm, rested, not chasing a loss? Once you clear the gate, run the Before check-in for this position on the Intelligence page — then run the After check-in when you're out. How you feel going in and coming out are two different things; keep them separate.";
+const NEWS_DETAIL =
+  "No high-impact macro reports (CPI, FOMC) or earnings in the next 30 minutes — or, if you're deliberately trading the news, you've journaled which event.";
+
 // The Daytrade Engine -- a 4-step fast pass through the same underlying
 // gates.ts/lib/xrill.ts math as the standard 8-gate wizard (XrillWizard.tsx,
 // left completely untouched), for someone who wants speed on a riskier,
@@ -218,7 +224,7 @@ export default function XrillFastWizard({
     emotional: null as boolean | null,
   });
 
-  const [result, setResult] = useState<{ authorized: boolean; rejectionReason: string | null } | null>(null);
+  const [result, setResult] = useState<{ authorized: boolean; rejectionReason: string | null; sessionId: number | null } | null>(null);
 
   if (step === "beware") {
     return (
@@ -261,6 +267,7 @@ export default function XrillFastWizard({
       <Shell title="Step 1/4 — Trade Gate (Fast)" step="gate" accountBalance={accountBalance}>
         <YesNo
           label="Psychologically allowed to trade?"
+          hint={PSYCH_HINT}
           value={gate.mentallyAllowed}
           onChange={(v) => setGate({ ...gate, mentallyAllowed: v })}
         />
@@ -321,7 +328,7 @@ export default function XrillFastWizard({
           />
           <CheckItem
             label="News & Event Clear"
-            detail="No high-impact macro reports (CPI, FOMC) or earnings scheduled in the next 30 minutes?"
+            detail={NEWS_DETAIL}
             checked={setup.newsClear}
             onChange={(v) => setSetup({ ...setup, newsClear: v })}
           />
@@ -688,6 +695,7 @@ export default function XrillFastWizard({
             setResult({
               authorized: res.authorized!,
               rejectionReason: res.rejectionReason ?? null,
+              sessionId: res.sessionId ?? null,
             });
             setStep("result");
           }}
@@ -721,6 +729,22 @@ export default function XrillFastWizard({
             ? "Daytrade Engine conditions satisfied. You are cleared to execute the trade."
             : "Do not execute this trade — conditions were not satisfied."}
         </p>
+        {result.authorized && (
+          <div className="mt-4 rounded border border-cyan-400/30 bg-cyan-400/5 p-3 text-sm text-white/80">
+            <p className="font-medium text-white">Next: run your Before check-in.</p>
+            <p className="mt-1 text-white/60">
+              Log how you feel going into this trade now, then run the After check-in once you're out. Feeling before and
+              after a trade are two different things — don't let the result rewrite the first one.
+            </p>
+            <button
+              type="button"
+              onClick={() => router.push(result.sessionId ? `/intelligence?position=${result.sessionId}` : "/intelligence")}
+              className="mt-3 rounded border border-cyan-400/50 px-3 py-1.5 text-xs font-medium uppercase tracking-wide text-cyan-300 hover:bg-cyan-400/10"
+            >
+              Open Intelligence check-in →
+            </button>
+          </div>
+        )}
         <button
           onClick={() => router.push("/dashboard")}
           className="mt-6 rounded bg-daytrade px-4 py-2 text-sm font-medium text-black hover:opacity-90"
