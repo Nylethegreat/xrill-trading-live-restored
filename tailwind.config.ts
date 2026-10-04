@@ -10,6 +10,7 @@ const config: Config = {
   content: ["./app/**/*.{ts,tsx}", "./components/**/*.{ts,tsx}", "./lib/**/*.{ts,tsx}"],
   theme: {
     extend: {
+      gridTemplateColumns: { 13: "repeat(13, minmax(0, 1fr))" },
       colors: {
         background: "#07080f",
         surface: "#0f1220",

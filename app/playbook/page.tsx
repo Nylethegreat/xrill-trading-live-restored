@@ -11,6 +11,8 @@ import HeaderText from "@/components/HeaderText";
 import RelicIcon from "@/components/visuals/RelicIcon";
 import RelicRoll from "@/components/RelicRoll";
 import { RELICS } from "@/lib/data/relics";
+import PlaybookBackdrop from "@/components/playbook/PlaybookBackdrop";
+import VisionBoard, { type VisionItem } from "@/components/playbook/VisionBoard";
 
 // Queries Supabase for the real balance behind the Star Unlocks section --
 // force dynamic so `next build` doesn't attempt to prerender this.
@@ -61,6 +63,25 @@ export default async function PlaybookPage() {
     : { data: null };
   const balance = account?.balance ?? 0;
 
+  // Vision board pictures live in a private bucket; hand the page short-lived
+  // signed URLs (1h) for this user's own files only.
+  let visionItems: VisionItem[] = [];
+  if (user) {
+    const { data: rows } = await supabase
+      .from("vision_board_items")
+      .select("id, path, caption")
+      .eq("user_id", user.id)
+      .order("created_at", { ascending: true });
+    if (rows && rows.length > 0) {
+      const { data: signed } = await supabase.storage.from("vision-board").createSignedUrls(
+        rows.map((r) => r.path),
+        60 * 60
+      );
+      const urlByPath = new Map((signed ?? []).map((s) => [s.path, s.signedUrl]));
+      visionItems = rows.map((r) => ({ id: r.id, caption: r.caption, url: urlByPath.get(r.path) ?? null }));
+    }
+  }
+
   return (
     <div className="relative mx-auto max-w-5xl px-4 py-10">
       <SuperStar />
@@ -74,6 +95,9 @@ export default async function PlaybookPage() {
         <WhizzingBanner className="h-full w-full" />
       </div>
       <BouncingStarsToggle />
+      <div className="relative mt-3">
+        <PlaybookBackdrop />
+      </div>
 
       <div id="risk-tiering" className="mt-6 scroll-mt-6">
         <Section
@@ -87,6 +111,12 @@ export default async function PlaybookPage() {
       <div className="mt-10">
         <Section title="⭐ Star Unlocks" subtitle="Real balance milestones — no shortcuts, just growth">
           <StarUnlocks balance={balance} />
+        </Section>
+      </div>
+
+      <div className="mt-10">
+        <Section title="🌠 My Vision Board" subtitle="Private to you — the pictures that remind you what all this is for">
+          <VisionBoard items={visionItems} userId={user?.id ?? null} />
         </Section>
       </div>
 

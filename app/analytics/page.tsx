@@ -4,6 +4,7 @@ import { getSessionOutcomeRows } from "@/lib/data/xrill-analytics-data";
 import AnalyticsClient from "@/components/analytics/AnalyticsClient";
 import PulseChart from "@/components/visuals/PulseChart";
 import HeaderText from "@/components/HeaderText";
+import HappyCheck from "@/components/analytics/HappyCheck";
 import { LeavesBackdropControl, OrbsBackdropControl } from "@/components/visuals/BackdropControls";
 
 // Queries Supabase (via cookies()) on every request - force dynamic
@@ -32,6 +33,9 @@ export default async function AnalyticsPage() {
           </div>
         </div>
         <PulseChart className="hidden h-20 w-48 flex-none sm:block" />
+      </div>
+      <div className="relative mt-5">
+        <HappyCheck />
       </div>
       <div className="relative">
         <AnalyticsClient rows={rows} />

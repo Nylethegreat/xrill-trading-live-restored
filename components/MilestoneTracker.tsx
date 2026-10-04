@@ -14,6 +14,12 @@ function crossedMilestones(from: number, to: number) {
   return MILESTONES.filter((m) => from < m && to >= m);
 }
 
+function shortMoney(v: number) {
+  if (v >= 1_000_000) return `$${v / 1_000_000}M`;
+  if (v >= 1_000) return `$${v / 1_000}K`;
+  return `$${v}`;
+}
+
 function ExpBar({ balance, compact = false }: { balance: number; compact?: boolean }) {
   const { lower, upper, stagePercent, lvl, maxed } = levelInfo(balance);
 
@@ -166,21 +172,20 @@ export default function MilestoneTracker({ initialBalance }: { initialBalance: n
 
       <div className="mt-4">
         <ExpBar balance={balance} />
-        <div className="mt-3 flex items-start justify-between">
+        {/* 13 checkpoints (12 levels) — short labels so they fit on a phone */}
+        <div className="mt-3 grid grid-cols-7 gap-y-2 sm:grid-cols-13">
           {MILESTONES.map((m) => {
             const reached = balance >= m;
             return (
               <div key={m} className="flex flex-col items-center gap-1">
                 <div
-                  className={`flex h-6 w-6 items-center justify-center rounded-full border text-[10px] ${
+                  className={`flex h-5 w-5 items-center justify-center rounded-full border text-[9px] ${
                     reached ? "border-yellow-400 bg-yellow-400/20 text-yellow-300" : "border-white/20 text-white/40"
                   }`}
                 >
                   {reached ? "✓" : ""}
                 </div>
-                <span className={`text-[10px] ${reached ? "text-yellow-300" : "text-white/40"}`}>
-                  ${m.toLocaleString()}
-                </span>
+                <span className={`font-mono text-[9px] ${reached ? "text-yellow-300" : "text-white/40"}`}>{shortMoney(m)}</span>
               </div>
             );
           })}

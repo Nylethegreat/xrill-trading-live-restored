@@ -28,6 +28,7 @@ import TraderDeskTexture from "@/components/visuals/textures/TraderDeskTexture";
 import SummerHazeTexture from "@/components/visuals/textures/SummerHazeTexture";
 import MarketPulseTexture from "@/components/visuals/textures/MarketPulseTexture";
 import RetroRoomTexture from "@/components/visuals/textures/RetroRoomTexture";
+import BearBullTexture from "@/components/visuals/textures/BearBullTexture";
 import { isDashboardTheme, type DashboardTheme } from "@/lib/data/dashboardThemes";
 
 // Queries Supabase (via cookies()) on every request - force dynamic
@@ -238,6 +239,7 @@ function DashboardBackdrop({ theme }: { theme: DashboardTheme }) {
       {theme === "summer_haze" && <SummerHazeTexture className="opacity-60" />}
       {theme === "market_pulse" && <MarketPulseTexture className="opacity-75" />}
       {theme === "retro_room" && <RetroRoomTexture className="opacity-65" />}
+      {theme === "bear_bull" && <BearBullTexture className="opacity-60" />}
     </div>
   );
 }

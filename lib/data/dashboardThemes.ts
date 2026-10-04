@@ -13,7 +13,8 @@ export type DashboardTheme =
   | "trader_desk"
   | "retro_room"
   | "summer_haze"
-  | "market_pulse";
+  | "market_pulse"
+  | "bear_bull";
 
 export const DASHBOARD_THEMES: { key: DashboardTheme; label: string }[] = [
   { key: "classic", label: "Classic" },
@@ -25,6 +26,7 @@ export const DASHBOARD_THEMES: { key: DashboardTheme; label: string }[] = [
   { key: "retro_room", label: "Retro Room" },
   { key: "summer_haze", label: "Summer Haze" },
   { key: "market_pulse", label: "Market Pulse" },
+  { key: "bear_bull", label: "Bear vs Bull" },
 ];
 
 export function isDashboardTheme(value: string): value is DashboardTheme {

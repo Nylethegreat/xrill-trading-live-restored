@@ -8,6 +8,7 @@ import TraderDeskTexture from "@/components/visuals/textures/TraderDeskTexture";
 import SummerHazeTexture from "@/components/visuals/textures/SummerHazeTexture";
 import MarketPulseTexture from "@/components/visuals/textures/MarketPulseTexture";
 import RetroRoomTexture from "@/components/visuals/textures/RetroRoomTexture";
+import BearBullTexture from "@/components/visuals/textures/BearBullTexture";
 
 // Same one-form-per-swatch, works-without-JS pattern as the Account page's
 // BackgroundThemePicker. Each preview gets its own SVG id prefix so its
@@ -30,6 +31,8 @@ function Preview({ theme }: { theme: DashboardTheme }) {
       return <MarketPulseTexture idPrefix="pulse-swatch" />;
     case "retro_room":
       return <RetroRoomTexture idPrefix="room-swatch" />;
+    case "bear_bull":
+      return <BearBullTexture idPrefix="bb-swatch" still />;
     default:
       return (
         <div className="absolute inset-0 flex items-center justify-center font-mono text-[10px] font-bold tracking-widest text-accent [text-shadow:0_0_6px_currentColor]">

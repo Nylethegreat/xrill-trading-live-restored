@@ -8,6 +8,7 @@ import PsychAnchor from "@/components/journal/PsychAnchor";
 import CandlestickGlow from "@/components/visuals/CandlestickGlow";
 import HoloBookFlip from "@/components/visuals/HoloBookFlip";
 import HeaderText from "@/components/HeaderText";
+import JournalSurface from "@/components/journal/JournalSurface";
 
 // Queries Supabase (via cookies()) on every request - force dynamic
 // rendering so `next build` doesn't waste time attempting (and timing
@@ -49,7 +50,8 @@ export default async function JournalPage() {
         Every XRILL session, in order. Record the real outcome on any session that doesn't have one yet.
       </p>
 
-      <div className="relative mt-8">
+      <JournalSurface>
+      <div className="relative mt-2">
         <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-white/50">📖 Codex</h2>
         <p className="mb-3 text-xs text-white/40">
           A running, dated log of where your head's at — separate from trade sessions. The{" "}
@@ -69,6 +71,7 @@ export default async function JournalPage() {
         <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-white/50">Session History</h2>
         <JournalClient rows={newestFirst} userId={user.id} trims={extras.trims} screenshots={extras.screenshots} />
       </div>
+      </JournalSurface>
     </div>
   );
 }
