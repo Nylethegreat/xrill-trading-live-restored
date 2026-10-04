@@ -36,14 +36,29 @@ const SIZE: Record<Variant, { width: number; height: number; step: number; strok
   banner: { width: 900, height: 220, step: 60, strokeW: 8, wickW: 2.5 },
 };
 
+// "red" is the reality-check palette used by RedRealityBand at the bottom
+// of every page — same candles, same glow, just in loss colors.
+type Palette = "default" | "red";
+const PALETTES: Record<Palette, { up: [string, string]; down: [string, string]; vignette: [string, string]; grid: string; text: string }> = {
+  default: { up: ["#5eead4", "#22c55e"], down: ["#67e8f9", "#3b82f6"], vignette: ["#22d3ee", "#3b82f6"], grid: "#22d3ee", text: "#5eead4" },
+  red: { up: ["#fda4af", "#f43f5e"], down: ["#fb7185", "#b91c1c"], vignette: ["#f43f5e", "#7f1d1d"], grid: "#f43f5e", text: "#fb7185" },
+};
+
 export default function CandlestickGlow({
   variant = "backdrop",
+  palette = "default",
+  showReadout = true,
   className = "",
 }: {
   variant?: Variant;
+  palette?: Palette;
+  showReadout?: boolean;
   className?: string;
 }) {
   const { width, height, step, strokeW, wickW } = SIZE[variant];
+  const pal = PALETTES[palette];
+  // unique per variant+palette so two instances on one page never share gradient ids
+  const uid = `${variant}-${palette}`;
   const scaleY = (height - 40) / 70;
   const y = (v: number) => 20 + v * scaleY;
 
@@ -59,20 +74,20 @@ export default function CandlestickGlow({
       aria-hidden="true"
     >
       <defs>
-        <linearGradient id={`glowUp-${variant}`} x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor="#5eead4" />
-          <stop offset="100%" stopColor="#22c55e" />
+        <linearGradient id={`glowUp-${uid}`} x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor={pal.up[0]} />
+          <stop offset="100%" stopColor={pal.up[1]} />
         </linearGradient>
-        <linearGradient id={`glowDown-${variant}`} x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor="#67e8f9" />
-          <stop offset="100%" stopColor="#3b82f6" />
+        <linearGradient id={`glowDown-${uid}`} x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor={pal.down[0]} />
+          <stop offset="100%" stopColor={pal.down[1]} />
         </linearGradient>
-        <radialGradient id={`vignette-${variant}`} cx="30%" cy="35%" r="75%">
-          <stop offset="0%" stopColor="#22d3ee" stopOpacity="0.16" />
-          <stop offset="55%" stopColor="#3b82f6" stopOpacity="0.05" />
+        <radialGradient id={`vignette-${uid}`} cx="30%" cy="35%" r="75%">
+          <stop offset="0%" stopColor={pal.vignette[0]} stopOpacity="0.16" />
+          <stop offset="55%" stopColor={pal.vignette[1]} stopOpacity="0.05" />
           <stop offset="100%" stopColor="#07080f" stopOpacity="0" />
         </radialGradient>
-        <filter id={`glow-${variant}`} x="-60%" y="-60%" width="220%" height="220%">
+        <filter id={`glow-${uid}`} x="-60%" y="-60%" width="220%" height="220%">
           <feGaussianBlur stdDeviation={variant === "backdrop" ? 6 : 4} result="blur" />
           <feMerge>
             <feMergeNode in="blur" />
@@ -81,10 +96,10 @@ export default function CandlestickGlow({
         </filter>
       </defs>
 
-      <rect width={width} height={height} fill={`url(#vignette-${variant})`} />
+      <rect width={width} height={height} fill={`url(#vignette-${uid})`} />
 
       {/* faint graph-paper grid */}
-      <g stroke="#22d3ee" strokeOpacity="0.08" strokeWidth="1">
+      <g stroke={pal.grid} strokeOpacity="0.08" strokeWidth="1">
         {Array.from({ length: gridLines }).map((_, i) => (
           <line key={`h-${i}`} x1={0} y1={(height / gridLines) * i} x2={width} y2={(height / gridLines) * i} />
         ))}
@@ -96,13 +111,13 @@ export default function CandlestickGlow({
       {/* candlesticks — the whole series drifts a few px side to side, and
           each bar breathes (opacity + scaleY) on its own staggered delay so
           the pulse rolls down the line rather than blinking in unison */}
-      <g filter={`url(#glow-${variant})`} className="animate-candle-drift">
+      <g filter={`url(#glow-${uid})`} className="animate-candle-drift">
         {CANDLES.map((c, i) => {
           const cx = 40 + c.x * step;
           const up = c.close < c.open; // svg y grows downward; "up" candle = close higher = smaller y
           const bodyTop = y(Math.min(c.open, c.close));
           const bodyBottom = y(Math.max(c.open, c.close));
-          const fill = up ? `url(#glowUp-${variant})` : `url(#glowDown-${variant})`;
+          const fill = up ? `url(#glowUp-${uid})` : `url(#glowDown-${uid})`;
           if (cx > width + 40) return null;
           return (
             <g
@@ -129,11 +144,13 @@ export default function CandlestickGlow({
       </g>
 
       {/* ticker readout, top-right */}
-      <g fontFamily="ui-monospace, SFMono-Regular, monospace" fill="#5eead4" fillOpacity="0.35">
-        <text x={width - 20} y={28} textAnchor="end" fontSize={variant === "hero" ? 20 : 14} letterSpacing="2">
-          XRILL // LIVE
-        </text>
-      </g>
+      {showReadout && (
+        <g fontFamily="ui-monospace, SFMono-Regular, monospace" fill={pal.text} fillOpacity="0.35">
+          <text x={width - 20} y={28} textAnchor="end" fontSize={variant === "hero" ? 20 : 14} letterSpacing="2">
+            XRILL // LIVE
+          </text>
+        </g>
+      )}
     </svg>
   );
 }

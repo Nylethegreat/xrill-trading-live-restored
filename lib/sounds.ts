@@ -60,3 +60,15 @@ export const SOUND_PACKS: { id: SoundPack; label: string }[] = [
   { id: "chime", label: "Chime Pop" },
   { id: "8bit", label: "8-Bit Thud" },
 ];
+
+// Star "boop" — a soft two-note rising pop for unlocked stars, a dull low
+// thud for locked ones. Always a direct response to a click, so it's
+// allowed to play without the site-wide click-sound toggle being on.
+export function playBoop(unlocked: boolean) {
+  if (unlocked) {
+    playTone(520, 880, 90, "sine", 0.08);
+    window.setTimeout(() => playTone(880, 1320, 110, "sine", 0.06), 80);
+  } else {
+    playTone(150, 90, 110, "triangle", 0.07);
+  }
+}

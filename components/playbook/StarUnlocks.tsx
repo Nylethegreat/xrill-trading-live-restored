@@ -1,3 +1,8 @@
+"use client";
+
+import { useState } from "react";
+import { playBoop } from "@/lib/sounds";
+
 // Real balance-gated star unlocks -- thresholds Nyle asked for directly
 // ($100k, $250k, $1M), independent of the $250-$5,000 Double-Up Ladder
 // (lib/data/milestones.ts) and the 12-stage Compound Scaling Roadmap on
@@ -9,16 +14,19 @@ interface StarTier {
   blurb: string;
 }
 
-const STAR_TIERS: StarTier[] = [
+export const STAR_TIERS: StarTier[] = [
   { threshold: 100_000, label: "Purple Star", blurb: "Six-figure account." },
   { threshold: 250_000, label: "Rainbow Star", blurb: "Quarter-million milestone." },
   { threshold: 1_000_000, label: "Prismatic Star", blurb: "Seven figures. The one everyone's chasing." },
 ];
 
-function StarIcon({ tier, unlocked }: { tier: "purple" | "rainbow" | "prismatic"; unlocked: boolean }) {
-  const gradientId = `star-grad-${tier}`;
+type StarKind = "purple" | "rainbow" | "prismatic";
+export const starKind = (i: number): StarKind => (i === 0 ? "purple" : i === 1 ? "rainbow" : "prismatic");
+
+export function StarIcon({ tier, unlocked, size = 44, idSuffix = "" }: { tier: StarKind; unlocked: boolean; size?: number; idSuffix?: string }) {
+  const gradientId = `star-grad-${tier}${idSuffix}`;
   return (
-    <svg viewBox="0 0 24 24" width={44} height={44} className={unlocked ? "motion-safe:animate-star-spin" : ""}>
+    <svg viewBox="0 0 24 24" width={size} height={size} className={unlocked ? "motion-safe:animate-star-spin" : ""}>
       <defs>
         <linearGradient id={gradientId} x1="0%" y1="0%" x2="100%" y2="100%">
           {tier === "purple" && (
@@ -59,10 +67,48 @@ function StarIcon({ tier, unlocked }: { tier: "purple" | "rainbow" | "prismatic"
   );
 }
 
-export default function StarUnlocks({ balance }: { balance: number }) {
-  const iconKind = (i: number): "purple" | "rainbow" | "prismatic" =>
-    i === 0 ? "purple" : i === 1 ? "rainbow" : "prismatic";
+// One clickable star: plays the boop (a pop if unlocked, a thud if not)
+// and replays a squash-and-pop animation by remounting on a counter key.
+export function BoopStar({ index, balance, size = 44, idSuffix = "" }: { index: number; balance: number; size?: number; idSuffix?: string }) {
+  const tier = STAR_TIERS[index];
+  const unlocked = balance >= tier.threshold;
+  const [boops, setBoops] = useState(0);
+  return (
+    <button
+      type="button"
+      onClick={() => {
+        playBoop(unlocked);
+        setBoops((n) => n + 1);
+      }}
+      title={unlocked ? `${tier.label} — unlocked` : `${tier.label} — unlocks at $${tier.threshold.toLocaleString()}`}
+      aria-label={`${tier.label}${unlocked ? " (unlocked)" : " (locked)"}`}
+      className={`rounded-full outline-none focus-visible:ring-2 focus-visible:ring-white/40 ${unlocked ? "drop-shadow-[0_0_10px_rgba(255,255,255,0.5)]" : ""}`}
+    >
+      <span key={boops} className={`block ${boops > 0 ? "motion-safe:animate-star-boop" : ""}`}>
+        <StarIcon tier={starKind(index)} unlocked={unlocked} size={size} idSuffix={idSuffix} />
+      </span>
+    </button>
+  );
+}
 
+// Compact row of the three stars for the dashboard account card.
+export function StarRow({ balance }: { balance: number }) {
+  const count = STAR_TIERS.filter((t) => balance >= t.threshold).length;
+  return (
+    <div className="flex items-center justify-between gap-3">
+      <span className="text-[10px] uppercase tracking-wide text-white/40">
+        Stars <span className="font-mono text-yellow-300/80">{count}/3</span>
+      </span>
+      <div className="flex items-center gap-2">
+        {STAR_TIERS.map((t, i) => (
+          <BoopStar key={t.threshold} index={i} balance={balance} size={28} idSuffix="-mini" />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+export default function StarUnlocks({ balance }: { balance: number }) {
   return (
     <div className="grid gap-3 sm:grid-cols-3">
       {STAR_TIERS.map((tier, i) => {
@@ -74,13 +120,11 @@ export default function StarUnlocks({ balance }: { balance: number }) {
               unlocked ? "border-white/20 bg-white/5" : "border-white/10 bg-black/20"
             }`}
           >
-            <div className={unlocked ? "drop-shadow-[0_0_10px_rgba(255,255,255,0.5)]" : ""}>
-              <StarIcon tier={iconKind(i)} unlocked={unlocked} />
-            </div>
+            <BoopStar index={i} balance={balance} />
             <p className={`text-sm font-semibold ${unlocked ? "text-white" : "text-white/40"}`}>{tier.label}</p>
             <p className="text-[11px] text-white/40">{tier.blurb}</p>
             <p className={`text-[10px] font-mono ${unlocked ? "text-accent" : "text-white/30"}`}>
-              {unlocked ? "UNLOCKED" : `Unlocks at $${tier.threshold.toLocaleString()}`}
+              {unlocked ? "UNLOCKED · tap me" : `Unlocks at $${tier.threshold.toLocaleString()}`}
             </p>
           </div>
         );

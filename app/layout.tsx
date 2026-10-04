@@ -4,6 +4,7 @@ import Footer from "@/components/Footer";
 import TerminalBackdrop from "@/components/visuals/TerminalBackdrop";
 import RealtimeAlertsFeed from "@/components/RealtimeAlertsFeed";
 import SoundToggle from "@/components/SoundToggle";
+import RedRealityBand from "@/components/visuals/RedRealityBand";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -17,6 +18,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body className="min-h-screen bg-background text-foreground">
         <TerminalBackdrop />
         <div className="relative z-10">
+          <RedRealityBand />
           <NavBar />
           <main>{children}</main>
           <Footer />

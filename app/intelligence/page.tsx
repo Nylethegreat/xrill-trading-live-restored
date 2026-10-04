@@ -8,6 +8,7 @@ import Link from "next/link";
 import PulseBrain from "@/components/visuals/PulseBrain";
 import HeaderText from "@/components/HeaderText";
 import { NeuronBackdropControl } from "@/components/visuals/BackdropControls";
+import MindsetCheck from "@/components/intelligence/MindsetCheck";
 
 // Queries Supabase (via cookies()) on every request - force dynamic
 // rendering so `next build` doesn't waste time attempting (and timing
@@ -47,7 +48,7 @@ export default async function IntelligencePage({ searchParams }: { searchParams?
   // Positions to check in on: everything still open, plus trades closed in
   // the last 7 days (so the "after" snapshot can be taken once you're out).
   const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
-  const [openStatus, { data: recentOutcomes }] = await Promise.all([
+  const [openStatus, { data: recentOutcomes }, { data: account }] = await Promise.all([
     getOpenPositionsStatus(user.id),
     supabase
       .from("xrill_outcomes")
@@ -55,6 +56,7 @@ export default async function IntelligencePage({ searchParams }: { searchParams?
       .eq("user_id", user.id)
       .gte("created_at", sevenDaysAgo)
       .order("created_at", { ascending: false }),
+    supabase.from("accounts").select("balance").eq("user_id", user.id).maybeSingle(),
   ]);
 
   const checkInPositions: CheckInPosition[] = [
@@ -103,6 +105,12 @@ export default async function IntelligencePage({ searchParams }: { searchParams?
         </div>
         <PulseBrain className="hidden h-24 w-24 flex-none sm:block" />
       </div>
+      <Section
+        title="🌈 Mindset Check"
+        subtitle="Body, mind, money, spirit, people, feelings, habits and self — before you put money on the line"
+      >
+        <MindsetCheck balance={Number(account?.balance ?? 0)} />
+      </Section>
       <Section title="🤖 XRILL Coach" subtitle="Position check-in — before and after every trade">
         <p className="mb-3 text-xs text-white/50">
           Cleared the gate? Log how you feel going in. Out of the trade? Log it again. How you feel before a trade and

@@ -26,6 +26,19 @@ const config: Config = {
         daytrade: "#22d3ee",
       },
       keyframes: {
+        // Stage-relic strip under the EXP bar — list is doubled, so -50%
+        // loops seamlessly.
+        "relic-roll": {
+          "0%": { transform: "translateX(0)" },
+          "100%": { transform: "translateX(-50%)" },
+        },
+        // Star "boop" on click — squash, pop, settle.
+        "star-boop": {
+          "0%": { transform: "scale(1)" },
+          "30%": { transform: "scale(0.82)" },
+          "60%": { transform: "scale(1.22) rotate(-8deg)" },
+          "100%": { transform: "scale(1)" },
+        },
         "ekg-scroll": {
           "0%": { transform: "translateX(0)" },
           "100%": { transform: "translateX(-50%)" },
@@ -151,6 +164,8 @@ const config: Config = {
         },
       },
       animation: {
+        "relic-roll": "relic-roll 40s linear infinite",
+        "star-boop": "star-boop 0.45s ease-out",
         // EKG heartbeat line — the SVG polyline is duplicated end-to-end,
         // so a seamless -50% scroll loops it forever.
         "ekg-scroll": "ekg-scroll 2.4s linear infinite",

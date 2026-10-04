@@ -5,6 +5,8 @@ import { useRouter } from "next/navigation";
 import { updateBalance } from "@/app/dashboard/actions";
 import { levelInfo } from "@/lib/levelInfo";
 import { MILESTONES } from "@/lib/data/milestones";
+import RelicRoll from "@/components/RelicRoll";
+import { StarRow } from "@/components/playbook/StarUnlocks";
 
 // Which (if any) milestone thresholds were newly crossed going from `from`
 // to `to` — drives the transient "LEVEL UP" flash on save.
@@ -182,6 +184,12 @@ export default function MilestoneTracker({ initialBalance }: { initialBalance: n
               </div>
             );
           })}
+        </div>
+        <div className="mt-4 border-t border-white/10 pt-3">
+          <RelicRoll balance={balance} />
+        </div>
+        <div className="mt-3 border-t border-white/10 pt-3">
+          <StarRow balance={balance} />
         </div>
       </div>
     </div>

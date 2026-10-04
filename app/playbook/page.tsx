@@ -8,6 +8,9 @@ import WhizzingBanner from "@/components/visuals/WhizzingBanner";
 import { SCALING_PRINCIPAL, WEEKLY_RATE_PLANS } from "@/lib/data/scaling";
 import { createClient } from "@/lib/supabase/server";
 import HeaderText from "@/components/HeaderText";
+import RelicIcon from "@/components/visuals/RelicIcon";
+import RelicRoll from "@/components/RelicRoll";
+import { RELICS } from "@/lib/data/relics";
 
 // Queries Supabase for the real balance behind the Star Unlocks section --
 // force dynamic so `next build` doesn't attempt to prerender this.
@@ -126,6 +129,9 @@ export default async function PlaybookPage() {
       </Section>
 
       <Section title="Twelve-Stage Progressive Compounding Roadmap">
+        <div className="mb-4 rounded border border-white/10 bg-white/5 p-3">
+          <RelicRoll balance={balance} />
+        </div>
         {/* Mobile: every field stacked as a card, so nothing requires
             horizontal micro-scrolling on a phone. Desktop/tablet keeps
             the table -- same data, just laid out differently per
@@ -134,7 +140,10 @@ export default async function PlaybookPage() {
           {STAGES.map((s) => (
             <div key={s.stage} className="rounded border border-white/10 bg-surface p-3 text-sm">
               <div className="flex items-center justify-between">
-                <span className="font-mono text-xs text-white/40">STAGE {s.stage}</span>
+                <span className="flex items-center gap-2 font-mono text-xs text-white/40">
+                  <RelicIcon id={RELICS[s.stage - 1].id} unlocked={balance >= s.end} size={26} glow={RELICS[s.stage - 1].color} />
+                  STAGE {s.stage}
+                </span>
                 <span className="font-mono text-xs text-accent">{money(s.start)} → {money(s.end)}</span>
               </div>
               <div className="mt-2 grid grid-cols-2 gap-y-1 text-xs">
@@ -165,7 +174,12 @@ export default async function PlaybookPage() {
             <tbody>
               {STAGES.map((s) => (
                 <tr key={s.stage} className="border-t border-white/10">
-                  <Td>{s.stage}</Td>
+                  <Td>
+                    <span className="flex items-center gap-2" title={balance >= s.end ? RELICS[s.stage - 1].name : `Locked — clear stage ${s.stage}`}>
+                      <RelicIcon id={RELICS[s.stage - 1].id} unlocked={balance >= s.end} size={28} glow={RELICS[s.stage - 1].color} />
+                      {s.stage}
+                    </span>
+                  </Td>
                   <Td>{money(s.start)}</Td>
                   <Td>{money(s.alloc)}</Td>
                   <Td>{money(s.idle)}</Td>
