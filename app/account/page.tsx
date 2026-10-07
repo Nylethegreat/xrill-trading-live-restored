@@ -158,7 +158,7 @@ export default async function AccountPage({
 
   const { data: profile } = await supabase
     .from("profiles")
-    .select("display_name, discord_user_id, tier, background_theme, header_style")
+    .select("display_name, discord_user_id, tier, background_theme, header_style, show_name_on_ladder")
     .eq("user_id", user.id)
     .maybeSingle();
 
@@ -298,13 +298,22 @@ export default async function AccountPage({
 
       <form action={saveAccountSettings} className="relative mt-8 space-y-4">
         <div>
-          <label className="block text-sm text-white/70">Display name (shown on leaderboard)</label>
+          <label className="block text-sm text-white/70">Display name (shown on the leaderboard and your ladder)</label>
           <input
             name="display_name"
             defaultValue={profile?.display_name ?? ""}
             placeholder="e.g. TraderX"
             className="mt-1 w-full rounded border border-white/20 bg-transparent px-3 py-2 outline-none focus:border-accent"
           />
+          <label className="mt-2 flex items-center gap-2 text-xs text-white/60">
+            <input
+              type="checkbox"
+              name="show_name_on_ladder"
+              defaultChecked={profile?.show_name_on_ladder !== false}
+              className="h-4 w-4 accent-yellow-400"
+            />
+            Show my name on my Double-Up Ladder
+          </label>
         </div>
         <div>
           <label className="flex items-center gap-2 text-sm text-white/70">

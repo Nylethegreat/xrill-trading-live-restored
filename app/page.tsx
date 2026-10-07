@@ -57,7 +57,7 @@ export default function HomePage() {
           </Link>
         </div>
 
-        <div className="mx-auto mt-10 max-w-xs text-left">
+        <div className="mx-auto mt-10 max-w-xl text-left">
           <MilestoneTrackerPreview />
         </div>
       </div>

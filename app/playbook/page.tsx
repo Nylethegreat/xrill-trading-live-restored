@@ -33,6 +33,18 @@ const STAGES = [
   { stage: 12, start: 532000, alloc: 319200, idle: 212800, strategy: "Final Macro Expansion Breakout Campaign", end: 1000000 },
 ];
 
+// Stage 0.5 — the warm-up rung for $100 challenge accounts, before the
+// 12 relic stages begin at $250. Same 60/40 split. At the default 22% risk
+// a $100 account can lose $22 per trade, and a -40% stop on a premium of
+// $0.55 or less ($55 per contract) keeps that loss inside $22.
+const WARMUP_STAGE = {
+  start: 100,
+  alloc: 60,
+  idle: 40,
+  strategy: "1 contract max, premium ≤ $0.55 so the −40% stop stays inside the $22 max trade risk. A+ setups only — prove the process, not the payout.",
+  end: 250,
+};
+
 const SHEET_COLUMNS = [
   { col: "A", header: "Trade #", formula: "1, 2, 3, 4...", rule: "Sequential trade number" },
   { col: "B", header: "Ticker & Expiry", formula: "Text Input (e.g. MRNA 35DTE)", rule: "Underlying ticker, target delta & expiration date" },
@@ -158,7 +170,10 @@ export default async function PlaybookPage() {
         <CompoundScalingRoadmap />
       </Section>
 
-      <Section title="Twelve-Stage Progressive Compounding Roadmap">
+      <Section
+        title="Twelve-Stage Progressive Compounding Roadmap"
+        subtitle="Starting under $250? Stage 0.5 is the warm-up: $100 → $250 before Stage 1 begins"
+      >
         <div className="mb-4 rounded border border-white/10 bg-white/5 p-3">
           <RelicRoll balance={balance} />
         </div>
@@ -167,6 +182,19 @@ export default async function PlaybookPage() {
             the table -- same data, just laid out differently per
             breakpoint (sm: 640px). */}
         <div className="space-y-2 sm:hidden">
+          <div className="rounded border border-dashed border-yellow-400/30 bg-yellow-400/5 p-3 text-sm">
+            <div className="flex items-center justify-between">
+              <span className="font-mono text-xs text-yellow-300/80">STAGE 0.5 · WARM-UP</span>
+              <span className="font-mono text-xs text-accent">{money(WARMUP_STAGE.start)} → {money(WARMUP_STAGE.end)}</span>
+            </div>
+            <div className="mt-2 grid grid-cols-2 gap-y-1 text-xs">
+              <span className="text-white/40">Trade Alloc (60%)</span>
+              <span className="text-right text-white">{money(WARMUP_STAGE.alloc)}</span>
+              <span className="text-white/40">Cash Idle (40%)</span>
+              <span className="text-right text-white">{money(WARMUP_STAGE.idle)}</span>
+            </div>
+            <p className="mt-2 border-t border-white/10 pt-2 text-xs leading-relaxed text-white/70">{WARMUP_STAGE.strategy}</p>
+          </div>
           {STAGES.map((s) => (
             <div key={s.stage} className="rounded border border-white/10 bg-surface p-3 text-sm">
               <div className="flex items-center justify-between">
@@ -202,6 +230,19 @@ export default async function PlaybookPage() {
               </tr>
             </thead>
             <tbody>
+              <tr className="border-t border-white/10 bg-yellow-400/5">
+                <Td>
+                  <span className="flex items-center gap-2 font-mono text-yellow-300/80" title="Warm-up stage — no relic">
+                    <span className="flex h-7 w-7 items-center justify-center rounded-full border border-dashed border-yellow-400/40 text-[10px]">½</span>
+                    0.5
+                  </span>
+                </Td>
+                <Td>{money(WARMUP_STAGE.start)}</Td>
+                <Td>{money(WARMUP_STAGE.alloc)}</Td>
+                <Td>{money(WARMUP_STAGE.idle)}</Td>
+                <Td className="max-w-xs text-white/70">{WARMUP_STAGE.strategy}</Td>
+                <Td className="font-medium text-accent">{money(WARMUP_STAGE.end)}</Td>
+              </tr>
               {STAGES.map((s) => (
                 <tr key={s.stage} className="border-t border-white/10">
                   <Td>

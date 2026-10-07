@@ -95,6 +95,8 @@ export async function saveAccountSettings(formData: FormData) {
   const profilePayload: Record<string, unknown> = {
     user_id: user.id,
     discord_user_id: discord_user_id || null,
+    // Unchecked checkboxes aren't submitted at all, so absence = off.
+    show_name_on_ladder: formData.get("show_name_on_ladder") === "on",
   };
   if (display_name) profilePayload.display_name = display_name;
 

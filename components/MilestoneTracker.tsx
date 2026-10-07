@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { updateBalance } from "@/app/dashboard/actions";
 import { levelInfo } from "@/lib/levelInfo";
-import { MILESTONES } from "@/lib/data/milestones";
+import { MILESTONES, WARMUP_FLOOR } from "@/lib/data/milestones";
 import RelicRoll from "@/components/RelicRoll";
 import { StarRow } from "@/components/playbook/StarUnlocks";
 
@@ -21,13 +21,14 @@ function shortMoney(v: number) {
 }
 
 function ExpBar({ balance, compact = false }: { balance: number; compact?: boolean }) {
-  const { lower, upper, stagePercent, lvl, maxed } = levelInfo(balance);
+  const { lower, upper, stagePercent, lvl, maxed, warmup } = levelInfo(balance);
 
   return (
     <div>
       <div className="flex items-baseline justify-between gap-2">
         <span className={`font-mono font-bold text-yellow-300 ${compact ? "text-xs" : "text-sm"}`}>
           LVL {lvl}
+          {warmup && <span className="ml-2 font-normal text-yellow-200/60">Warm-up</span>}
         </span>
         {maxed && (
           <span className="rounded-full border border-yellow-400/40 bg-yellow-400/10 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-yellow-300">
@@ -36,34 +37,36 @@ function ExpBar({ balance, compact = false }: { balance: number; compact?: boole
         )}
       </div>
 
-      {/* Recessed EXP track — wrapped in a pulsing gold glow (animate-exp-glow,
-          tailwind.config.ts) purely for retention/reward feel. The
-          stagePercent math driving the fill width above is untouched. */}
-      <div
-        className={`relative mt-1 w-full overflow-hidden rounded-sm border-2 border-black/60 bg-black/70 shadow-[inset_0_2px_4px_rgba(0,0,0,0.8)] motion-safe:animate-exp-glow ${
-          compact ? "h-3" : "h-4"
-        }`}
-      >
-        {/* Fill */}
-        <div
-          className="relative h-full bg-gradient-to-r from-yellow-700 via-yellow-400 to-yellow-200 transition-all duration-700 ease-out"
-          style={{ width: `${stagePercent}%` }}
-        >
-          {/* Glossy highlight */}
-          <div className="absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/50 to-transparent" />
+      {/* Recessed EXP track. The gold breathing glow (animate-exp-glow) lives on
+          an OUTER wrapper, not on the overflow-hidden track itself: animating
+          box-shadow on a rounded overflow-hidden element made some browsers
+          (Safari especially) skip painting the fill, so the bar looked empty
+          on some machines/accounts and full on others. `isolate` +
+          `transform-gpu` give the track its own layer so the fill always paints. */}
+      <div className={`mt-1 rounded-sm motion-safe:animate-exp-glow ${compact ? "h-3" : "h-4"}`}>
+        <div className="relative isolate h-full w-full transform-gpu overflow-hidden rounded-sm border-2 border-black/60 bg-black/70 shadow-[inset_0_2px_4px_rgba(0,0,0,0.8)]">
+          {/* Fill — never narrower than a sliver once there's any balance, so a
+              fresh account still shows a lit bar */}
+          <div
+            className="relative h-full bg-gradient-to-r from-yellow-700 via-yellow-400 to-yellow-200 transition-[width] duration-700 ease-out"
+            style={{ width: `${balance > 0 ? Math.max(2, stagePercent) : 0}%` }}
+          >
+            {/* Glossy highlight */}
+            <div className="absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/50 to-transparent" />
+          </div>
+          {/* Segment ticks */}
+          <div
+            className="pointer-events-none absolute inset-0"
+            style={{
+              backgroundImage:
+                "repeating-linear-gradient(90deg, rgba(0,0,0,0.35) 0, rgba(0,0,0,0.35) 1px, transparent 1px, transparent 10%)",
+            }}
+          />
         </div>
-        {/* Segment ticks */}
-        <div
-          className="pointer-events-none absolute inset-0"
-          style={{
-            backgroundImage:
-              "repeating-linear-gradient(90deg, rgba(0,0,0,0.35) 0, rgba(0,0,0,0.35) 1px, transparent 1px, transparent 10%)",
-          }}
-        />
       </div>
 
       <p className={`mt-1 font-mono text-white/60 ${compact ? "text-[10px]" : "text-xs"}`}>
-        LVL {lvl} [Stage: ${lower.toLocaleString()} → ${upper.toLocaleString()}] — EXP: $
+        LVL {lvl} [Stage{warmup ? " 0.5" : ""}: ${lower.toLocaleString()} → ${upper.toLocaleString()}] — EXP: $
         {balance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} / $
         {upper.toLocaleString()}.00 [{stagePercent.toFixed(2)}%]
       </p>
@@ -71,7 +74,50 @@ function ExpBar({ balance, compact = false }: { balance: number; compact?: boole
   );
 }
 
-export default function MilestoneTracker({ initialBalance }: { initialBalance: number }) {
+// 14 checkpoints: the $100 warm-up floor (Stage 0.5) + the 13 ladder
+// milestones. Short labels so they fit on a phone.
+const CHECKPOINTS = [WARMUP_FLOOR, ...MILESTONES];
+
+function Checkpoints({ balance }: { balance: number }) {
+  return (
+    <div className="mt-3 grid grid-cols-7 gap-y-2 sm:grid-cols-14">
+      {CHECKPOINTS.map((m) => {
+        const reached = balance >= m;
+        return (
+          <div key={m} className="flex flex-col items-center gap-1">
+            <div
+              className={`flex h-5 w-5 items-center justify-center rounded-full border text-[9px] ${
+                reached ? "border-yellow-400 bg-yellow-400/20 text-yellow-300" : "border-white/20 text-white/40"
+              }`}
+            >
+              {reached ? "✓" : ""}
+            </div>
+            <span className={`font-mono text-[9px] ${reached ? "text-yellow-300" : "text-white/40"}`}>{shortMoney(m)}</span>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+// Trader name pill on the ladder card (profiles.display_name). Hidden when
+// the trader turned "Show my name on my ladder" off on /account.
+function NamePill({ name }: { name: string }) {
+  return (
+    <span className="inline-flex max-w-[60%] items-center gap-1.5 truncate rounded-full border border-yellow-400/30 bg-yellow-400/10 px-2.5 py-0.5 font-mono text-[11px] font-semibold text-yellow-200">
+      <span className="text-yellow-300/70">●</span>
+      <span className="truncate">{name}</span>
+    </span>
+  );
+}
+
+export default function MilestoneTracker({
+  initialBalance,
+  displayName = null,
+}: {
+  initialBalance: number;
+  displayName?: string | null;
+}) {
   const router = useRouter();
   const [balance, setBalance] = useState(initialBalance);
   const [editing, setEditing] = useState(false);
@@ -166,30 +212,14 @@ export default function MilestoneTracker({ initialBalance }: { initialBalance: n
             </button>
           )}
         </div>
+        {displayName && <NamePill name={displayName} />}
       </div>
 
       {error && <p className="mt-2 text-sm text-blocked">{error}</p>}
 
       <div className="mt-4">
         <ExpBar balance={balance} />
-        {/* 13 checkpoints (12 levels) — short labels so they fit on a phone */}
-        <div className="mt-3 grid grid-cols-7 gap-y-2 sm:grid-cols-13">
-          {MILESTONES.map((m) => {
-            const reached = balance >= m;
-            return (
-              <div key={m} className="flex flex-col items-center gap-1">
-                <div
-                  className={`flex h-5 w-5 items-center justify-center rounded-full border text-[9px] ${
-                    reached ? "border-yellow-400 bg-yellow-400/20 text-yellow-300" : "border-white/20 text-white/40"
-                  }`}
-                >
-                  {reached ? "✓" : ""}
-                </div>
-                <span className={`font-mono text-[9px] ${reached ? "text-yellow-300" : "text-white/40"}`}>{shortMoney(m)}</span>
-              </div>
-            );
-          })}
-        </div>
+        <Checkpoints balance={balance} />
         <div className="mt-4 border-t border-white/10 pt-3">
           <RelicRoll balance={balance} />
         </div>
@@ -201,17 +231,35 @@ export default function MilestoneTracker({ initialBalance }: { initialBalance: n
   );
 }
 
-// Compact, read-only EXP bar for the landing-page hero — no account
-// required, so it renders an illustrative example rather than real user
-// data (clearly labeled as such).
-export function MilestoneTrackerPreview({ balance = 510 }: { balance?: number }) {
+// Read-only ladder for the landing page. Same card as the dashboard's
+// Double-Up Ladder (balance, EXP bar, checkpoints, rolling relics) so the
+// homepage and the app look like one product. No account required: it's an
+// illustrative balance, clearly labeled EXAMPLE. $700 sits mid-way through
+// LVL 2 so visitors see a lit, glowing bar rather than an empty one.
+export function MilestoneTrackerPreview({ balance = 700 }: { balance?: number }) {
   return (
-    <div className="rounded border border-white/10 bg-white/5 p-3">
-      <div className="flex items-center justify-between">
-        <span className="text-[10px] uppercase tracking-wide text-white/40">Double-Up Ladder (example)</span>
+    <div className="rounded border border-white/10 bg-white/5 p-4 backdrop-blur-sm">
+      <div className="flex items-start justify-between gap-3">
+        <div>
+          <div className="text-xs font-semibold uppercase tracking-wide text-white/60">Double-Up Ladder</div>
+          <div className="mt-0.5 font-mono text-[10px] text-white/35">$100 → $250 → $500 → … → $1M</div>
+        </div>
+        <span className="rounded-full border border-white/15 px-2 py-0.5 text-[9px] font-semibold uppercase tracking-widest text-white/40">
+          Example
+        </span>
       </div>
-      <div className="mt-1.5">
-        <ExpBar balance={balance} compact />
+
+      <div className="mt-3 text-xs text-white/50">Current balance</div>
+      <div className="font-mono text-lg font-semibold text-white">
+        ${balance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+      </div>
+
+      <div className="mt-3">
+        <ExpBar balance={balance} />
+        <Checkpoints balance={balance} />
+        <div className="mt-4 border-t border-white/10 pt-3">
+          <RelicRoll balance={balance} compact />
+        </div>
       </div>
     </div>
   );

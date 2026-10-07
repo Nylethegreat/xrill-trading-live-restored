@@ -55,7 +55,7 @@ export default async function DashboardPage() {
     getDailyLossStatus(user!.id),
     getTwoLossStatus(user!.id),
     getOpenPositionsStatus(user!.id),
-    supabase.from("profiles").select("dashboard_theme").eq("user_id", user!.id).maybeSingle(),
+    supabase.from("profiles").select("dashboard_theme, display_name, show_name_on_ladder").eq("user_id", user!.id).maybeSingle(),
   ]);
 
   const dashboardTheme: DashboardTheme =
@@ -139,8 +139,11 @@ export default async function DashboardPage() {
         <RedDayCard />
       </div>
 
-      <Section title="Double-Up Ladder" subtitle="$250 → $500 → $1,000 → $2,000 → $5,000">
-        <MilestoneTracker initialBalance={balance} />
+      <Section title="Double-Up Ladder" subtitle="$100 → $250 → $500 → $1,000 → … → $1M">
+        <MilestoneTracker
+          initialBalance={balance}
+          displayName={profile?.show_name_on_ladder !== false ? profile?.display_name?.trim() || null : null}
+        />
       </Section>
 
       {last && (
