@@ -29,8 +29,8 @@ const STAGES = [
   { stage: 8, start: 32000, alloc: 19200, idle: 12800, strategy: "High-Volume Expansion Entries (Donchian trigger)", end: 64000 },
   { stage: 9, start: 64000, alloc: 38400, idle: 25600, strategy: "Multi-lot Tiered Trimming (Preserve base capital)", end: 128000 },
   { stage: 10, start: 128000, alloc: 76800, idle: 51200, strategy: "Asymmetric Convexity Setups (High Vega/Gamma)", end: 256000 },
-  { stage: 11, start: 256000, alloc: 153600, idle: 102400, strategy: "Core Swing Position Architecture (Pure Desktop)", end: 532000 },
-  { stage: 12, start: 532000, alloc: 319200, idle: 212800, strategy: "Final Macro Expansion Breakout Campaign", end: 1000000 },
+  { stage: 11, start: 256000, alloc: 153600, idle: 102400, strategy: "Core Swing Position Architecture (Pure Desktop)", end: 512000 },
+  { stage: 12, start: 512000, alloc: 307200, idle: 204800, strategy: "Final Macro Expansion Breakout Campaign", end: 1000000 },
 ];
 
 // Stage 0.5 — the warm-up rung for $100 challenge accounts, before the

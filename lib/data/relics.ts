@@ -42,6 +42,6 @@ export const RELICS: Relic[] = [
   { id: "sundisk", stage: 8, unlockAt: 64_000, name: "Winged Sun of Life", realm: "spiritual", color: "#facc15", lore: "The reason behind the reason. Gratitude, purpose, light." },
   { id: "energy", stage: 9, unlockAt: 128_000, name: "Energy Capsule", realm: "physical", color: "#fb923c", lore: "Stored power for long campaigns. Rested traders last." },
   { id: "timecapsule", stage: 10, unlockAt: 256_000, name: "Time Capsule", realm: "mental", color: "#c084fc", lore: "Patience made solid. Multi-week swings, sealed and left alone." },
-  { id: "jewel", stage: 11, unlockAt: 532_000, name: "Prism Jewel", realm: "self", color: "#f0abfc", lore: "Every realm refracted into one clear self." },
+  { id: "jewel", stage: 11, unlockAt: 512_000, name: "Prism Jewel", realm: "self", color: "#f0abfc", lore: "Every realm refracted into one clear self." },
   { id: "anubis", stage: 12, unlockAt: 1_000_000, name: "Golden Anubis", realm: "all", color: "#fbbf24", lore: "Guardian of the scales. Seven figures, weighed and earned." },
 ];

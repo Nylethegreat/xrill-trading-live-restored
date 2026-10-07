@@ -143,6 +143,12 @@ const config: Config = {
         },
         // Daytrade Engine chrome -- a cyan box-shadow breathing in and out,
         // same technique as exp-glow but in the engine's own neon color.
+        // Blocked screens -- same breathing box-shadow as daytrade-glow, in
+        // red, so a rejected session reads as loud as an authorized one.
+        "blocked-glow": {
+          "0%, 100%": { boxShadow: "0 0 8px 1px rgba(239,68,68,0.35)" },
+          "50%": { boxShadow: "0 0 22px 6px rgba(239,68,68,0.85)" },
+        },
         "daytrade-glow": {
           "0%, 100%": { boxShadow: "0 0 8px 1px rgba(34,211,238,0.35)" },
           "50%": { boxShadow: "0 0 20px 5px rgba(34,211,238,0.8)" },
@@ -191,6 +197,7 @@ const config: Config = {
         "book-page-turn": "book-page-turn 9s ease-in-out infinite",
         "holo-sheen": "holo-sheen 5s ease-in-out infinite",
         "daytrade-glow": "daytrade-glow 2.2s ease-in-out infinite",
+        "blocked-glow": "blocked-glow 1.8s ease-in-out infinite",
         "perf-glow-accent": "perf-glow-accent 2.2s ease-in-out infinite",
         "perf-glow-caution": "perf-glow-caution 2.2s ease-in-out infinite",
         "vein-flow": "vein-flow 1.6s linear infinite",

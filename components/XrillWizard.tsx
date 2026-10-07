@@ -677,7 +677,7 @@ export default function XrillWizard({
 
   if (step === "blocked") {
     return (
-      <Shell title="🟣 Session Blocked" accountBalance={accountBalance}>
+      <Shell title="🔴 Session Blocked" blocked accountBalance={accountBalance}>
         <p className="text-white/80">{blockedReason}</p>
         <button
           onClick={() => router.push("/dashboard")}
@@ -691,7 +691,7 @@ export default function XrillWizard({
 
   if (step === "result" && result) {
     return (
-      <Shell title={result.authorized ? "🟢 Trade Authorized" : "🟣 Trade Blocked"} accountBalance={accountBalance}>
+      <Shell title={result.authorized ? "🟢 Trade Authorized" : "🔴 Trade Blocked"} blocked={!result.authorized} accountBalance={accountBalance}>
         {result.authorized && <SuperStar className="right-2 top-0 h-10 w-10" />}
         <Row label="XRILL Score" value={`${result.tradeScore}/100`} />
         {!result.authorized && result.rejectionReason && (
@@ -734,11 +734,13 @@ export default function XrillWizard({
 function Shell({
   title,
   step,
+  blocked,
   accountBalance,
   children,
 }: {
   title: string;
   step?: string;
+  blocked?: boolean;
   accountBalance?: number;
   children: React.ReactNode;
 }) {
@@ -747,7 +749,7 @@ function Shell({
       {step && <StepTracker current={step} />}
       <div className="mt-6 grid gap-6 lg:grid-cols-[1fr_260px]">
         <div className="relative max-w-2xl">
-          <h1 className="mb-6 flex items-center gap-2 text-xl font-semibold">
+          <h1 className={`mb-6 flex items-center gap-2 text-xl font-semibold ${blocked ? "text-red-400 [text-shadow:0_0_4px_currentColor,0_0_11px_currentColor,0_0_19px_currentColor]" : ""}`}>
             {step === "daily" && (
               <span aria-hidden="true" className="inline-block motion-safe:animate-bounce text-2xl">
                 🚀
@@ -755,7 +757,7 @@ function Shell({
             )}
             {title}
           </h1>
-          {children}
+          {blocked ? <div className="rounded border border-red-500/50 bg-red-500/5 p-4 motion-safe:animate-blocked-glow">{children}</div> : children}
         </div>
         {typeof accountBalance === "number" && (
           <div className="lg:sticky lg:top-6 lg:self-start">
