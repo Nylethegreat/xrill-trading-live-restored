@@ -67,8 +67,13 @@ const config: Config = {
         // EXP bar retention glow — a gold box-shadow breathing in and out
         // around the track, independent of the fill width itself.
         "exp-glow": {
-          "0%, 100%": { boxShadow: "0 0 6px 1px rgba(250,204,21,0.35)" },
-          "50%": { boxShadow: "0 0 16px 4px rgba(250,204,21,0.75)" },
+          "0%, 100%": { boxShadow: "0 0 6px 1px rgb(var(--exp-glow, 250 204 21) / 0.35)" },
+          "50%": { boxShadow: "0 0 16px 4px rgb(var(--exp-glow, 250 204 21) / 0.75)" },
+        },
+        // Rainbow EXP fill drifts sideways (background is 200% wide).
+        "exp-shimmer": {
+          "0%": { backgroundPosition: "0% 50%" },
+          "100%": { backgroundPosition: "200% 50%" },
         },
         // Neon sign flicker for status text — mostly steady, with two
         // quick dips per cycle so it reads as "electric" rather than a
@@ -174,6 +179,7 @@ const config: Config = {
         "candle-drift": "candle-drift 18s ease-in-out infinite",
         "wins-scroll-y": "wins-scroll-y 26s linear infinite",
         "exp-glow": "exp-glow 2.2s ease-in-out infinite",
+        "exp-shimmer": "exp-shimmer 6s linear infinite",
         "neon-flicker": "neon-flicker 4.5s linear infinite",
         "star-drift": "star-drift 14s ease-in-out infinite",
         "star-spin": "star-spin 6s linear infinite",

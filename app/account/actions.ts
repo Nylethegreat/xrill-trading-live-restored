@@ -53,6 +53,20 @@ export async function signUpFromAccount(formData: FormData) {
   redirect("/account?message=Check your email to confirm your account");
 }
 
+function parseHobbies(raw: string): string[] {
+  const seen = new Set<string>();
+  const out: string[] = [];
+  for (const part of raw.split(",")) {
+    const h = part.trim().replace(/\s+/g, " ").slice(0, 40);
+    if (h && !seen.has(h.toLowerCase())) {
+      seen.add(h.toLowerCase());
+      out.push(h);
+    }
+    if (out.length === 8) break;
+  }
+  return out;
+}
+
 export async function saveAccountSettings(formData: FormData) {
   const supabase = createClient();
   const { data: { user } } = await supabase.auth.getUser();
@@ -97,6 +111,9 @@ export async function saveAccountSettings(formData: FormData) {
     discord_user_id: discord_user_id || null,
     // Unchecked checkboxes aren't submitted at all, so absence = off.
     show_name_on_ladder: formData.get("show_name_on_ladder") === "on",
+    // Comma-separated in the form; up to 8, each trimmed to 40 chars. Feeds
+    // the "We suggest you…" cards in the Journal Codex. Empty clears it.
+    hobbies: parseHobbies(String(formData.get("hobbies") ?? "")),
   };
   if (display_name) profilePayload.display_name = display_name;
 

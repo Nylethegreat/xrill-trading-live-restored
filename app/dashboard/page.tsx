@@ -6,6 +6,7 @@ import Badge from "@/components/Badge";
 import CandlestickGlow from "@/components/visuals/CandlestickGlow";
 import PreTradeChecklist from "@/components/PreTradeChecklist";
 import MilestoneTracker from "@/components/MilestoneTracker";
+import { isExpColor, isExpStyle } from "@/lib/expBar";
 import NeonText from "@/components/visuals/NeonText";
 import SuperStar from "@/components/visuals/SuperStar";
 import RetroHud from "@/components/RetroHud";
@@ -55,7 +56,7 @@ export default async function DashboardPage() {
     getDailyLossStatus(user!.id),
     getTwoLossStatus(user!.id),
     getOpenPositionsStatus(user!.id),
-    supabase.from("profiles").select("dashboard_theme, display_name, show_name_on_ladder").eq("user_id", user!.id).maybeSingle(),
+    supabase.from("profiles").select("dashboard_theme, display_name, show_name_on_ladder, exp_bar_style, exp_bar_color").eq("user_id", user!.id).maybeSingle(),
   ]);
 
   const dashboardTheme: DashboardTheme =
@@ -143,6 +144,8 @@ export default async function DashboardPage() {
         <MilestoneTracker
           initialBalance={balance}
           displayName={profile?.show_name_on_ladder !== false ? profile?.display_name?.trim() || null : null}
+          initialStyle={isExpStyle(profile?.exp_bar_style) ? profile.exp_bar_style : "classic"}
+          initialColor={isExpColor(profile?.exp_bar_color) ? profile.exp_bar_color : "gold"}
         />
       </Section>
 

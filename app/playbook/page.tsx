@@ -45,22 +45,6 @@ const WARMUP_STAGE = {
   end: 250,
 };
 
-const SHEET_COLUMNS = [
-  { col: "A", header: "Trade #", formula: "1, 2, 3, 4...", rule: "Sequential trade number" },
-  { col: "B", header: "Ticker & Expiry", formula: "Text Input (e.g. MRNA 35DTE)", rule: "Underlying ticker, target delta & expiration date" },
-  { col: "C", header: "Starting Balance", formula: "=250.00 (Initial) or =L1", rule: "Current available account cash prior to execution" },
-  { col: "D", header: "Max Allocation ($)", formula: "=C2*0.60", rule: "Enforces the 40% idle buying power cash reserve rule" },
-  { col: "E", header: "Entry Premium ($)", formula: "Contract fill price (e.g. 1.45)", rule: "Actual premium paid per contract share" },
-  { col: "F", header: "Contract Quantity", formula: "=INT(D2/(E2*100))", rule: "Automated sizing to prevent over-leveraging" },
-  { col: "G", header: "Hard Stop ($)", formula: "=E2*0.60", rule: "Strict -40% position stop loss trigger level" },
-  { col: "H", header: "Trim 1 Level (+100%)", formula: "=E2*2.00", rule: "Take trade risk-free: Sell 50% lot to cover initial basis" },
-  { col: "I", header: "Runner Target (+300%)", formula: "=E2*4.00", rule: "Asymmetric expansion exit level for remaining contracts" },
-  { col: "J", header: "Actual Exit Premium", formula: "Average Fill Price (e.g. 4.80)", rule: "Realized blended exit price across trims & runner" },
-  { col: "K", header: "Trade Net P&L ($)", formula: "=(J2-E2)*F2*100", rule: "Realized dollar profit or loss for the trade" },
-  { col: "L", header: "Ending Account Balance", formula: "=C2+K2", rule: "New account balance fed directly to next stage" },
-  { col: "M", header: "Bank Sweep (60% Profit)", formula: "=IF(K2>0, K2*0.60, 0)", rule: "Routes weekly realized gains to main account (WF 6333)" },
-];
-
 function money(v: number) {
   return `$${v.toLocaleString()}`;
 }
@@ -263,41 +247,6 @@ export default async function PlaybookPage() {
         </div>
       </Section>
 
-      <Section title="Real-Time Execution Tracking Sheet Schema">
-        <p className="mb-3 text-xs leading-relaxed text-white/50">
-          This is a template for a spreadsheet you build yourself (Excel or Google Sheets) to log real trades — it's
-          not a feature inside the app. "Row 2" means your first actual trade row: every formula below is written in
-          terms of row 2's own cells (C2, E2, and so on) and copies straight down as you add rows, so row 3
-          recalculates from row 3's own numbers, row 4 from row 4's, etc. A couple of the less obvious ones spelled
-          out: column F, <span className="font-mono text-primary">=INT(D2/(E2*100))</span>, is how many contracts
-          you can afford — your allocated capital (D) divided by the cost of one contract (entry premium × 100
-          shares), rounded down so you never round up into a position you can't pay for. Column M,{" "}
-          <span className="font-mono text-primary">=IF(K2&gt;0, K2*0.60, 0)</span>, only sweeps money on a winning
-          trade (K2&gt;0) — a loss sweeps nothing.
-        </p>
-        <div className="overflow-x-auto rounded border border-white/10">
-          <table className="w-full text-left text-sm">
-            <thead className="bg-surface text-white/50">
-              <tr>
-                <Th>Col</Th>
-                <Th>Column Header</Th>
-                <Th>Formula (Row 2)</Th>
-                <Th>Rule & Mechanics</Th>
-              </tr>
-            </thead>
-            <tbody>
-              {SHEET_COLUMNS.map((c) => (
-                <tr key={c.col} className="border-t border-white/10">
-                  <Td>{c.col}</Td>
-                  <Td className="font-medium">{c.header}</Td>
-                  <Td className="font-mono text-xs text-primary">{c.formula}</Td>
-                  <Td className="text-white/70">{c.rule}</Td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </Section>
 
       <div className="mt-10 rounded-xl border-2 border-blocked/40 bg-blocked/10 p-5">
         <p className="text-center text-sm font-bold uppercase tracking-wide text-blocked sm:text-base">

@@ -2,6 +2,8 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { getJournalExtras, getSessionOutcomeRows } from "@/lib/data/xrill-analytics-data";
 import { getCodexDays } from "@/lib/data/journalCodex";
+import { getDailyLossStatus } from "@/lib/data/dailyLossLock";
+import { getTwoLossStatus } from "@/lib/data/twoLossLock";
 import JournalClient from "@/components/journal/JournalClient";
 import CodexClient from "@/components/journal/CodexClient";
 import PsychAnchor from "@/components/journal/PsychAnchor";
@@ -28,11 +30,22 @@ export default async function JournalPage() {
   } = await supabase.auth.getUser();
   if (!user) redirect("/login");
 
-  const [rows, codexDays, extras] = await Promise.all([
+  const [rows, codexDays, extras, dailyLoss, twoLoss, { data: profile }] = await Promise.all([
     getSessionOutcomeRows(user.id),
     getCodexDays(user.id),
     getJournalExtras(user.id),
+    getDailyLossStatus(user.id),
+    getTwoLossStatus(user.id),
+    supabase.from("profiles").select("hobbies").eq("user_id", user.id).maybeSingle(),
   ]);
+  // Red Day Mode in the Codex: a journaled net loss today (Eastern trading
+  // day) or the Two-Loss Lockout tripped.
+  const redDay = {
+    active: dailyLoss.netPnl < 0 || twoLoss.locked,
+    netPnl: dailyLoss.netPnl,
+    lockedOut: twoLoss.locked,
+  };
+  const hobbies: string[] = Array.isArray(profile?.hobbies) ? profile.hobbies : [];
   const newestFirst = [...rows].reverse();
 
   return (
@@ -60,7 +73,7 @@ export default async function JournalPage() {
           </a>{" "}
           links straight here.
         </p>
-        <CodexClient days={codexDays} />
+        <CodexClient days={codexDays} hobbies={hobbies} redDay={redDay} seed={dailyLoss.tradingDate} />
       </div>
 
       <div className="relative mt-8">

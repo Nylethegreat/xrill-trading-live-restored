@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { isDashboardTheme } from "@/lib/data/dashboardThemes";
+import { isExpColor, isExpStyle, type ExpColor, type ExpStyle } from "@/lib/expBar";
 
 export interface UpdateBalanceResult {
   success: boolean;
@@ -59,4 +60,23 @@ export async function saveDashboardTheme(formData: FormData) {
 
   revalidatePath("/dashboard");
   redirect("/dashboard");
+}
+
+// EXP bar look (Classic/Segmented + one of six colors) from the Double-Up
+// Ladder card. Called optimistically: the bar has already changed on
+// screen, this just remembers the choice. Validated here and by the
+// profiles CHECK constraints.
+export async function updateExpBarLook(input: { style: ExpStyle; color: ExpColor }): Promise<UpdateBalanceResult> {
+  const supabase = createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return { success: false, error: "You must be signed in." };
+  if (!isExpStyle(input?.style) || !isExpColor(input?.color)) return { success: false, error: "Unknown bar look." };
+
+  const { error } = await supabase
+    .from("profiles")
+    .upsert({ user_id: user.id, exp_bar_style: input.style, exp_bar_color: input.color });
+  if (error) return { success: false, error: error.message };
+  return { success: true };
 }

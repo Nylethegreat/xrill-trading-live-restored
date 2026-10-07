@@ -158,7 +158,7 @@ export default async function AccountPage({
 
   const { data: profile } = await supabase
     .from("profiles")
-    .select("display_name, discord_user_id, tier, background_theme, header_style, show_name_on_ladder")
+    .select("display_name, discord_user_id, tier, background_theme, header_style, show_name_on_ladder, hobbies")
     .eq("user_id", user.id)
     .maybeSingle();
 
@@ -314,6 +314,20 @@ export default async function AccountPage({
             />
             Show my name on my Double-Up Ladder
           </label>
+        </div>
+        <div>
+          <label className="block text-sm text-white/70">Hobbies & things that reset you</label>
+          <input
+            name="hobbies"
+            defaultValue={(profile?.hobbies ?? []).join(", ")}
+            placeholder="e.g. basketball, gym, guitar, MapleStory, cooking"
+            maxLength={400}
+            className="mt-1 w-full rounded border border-white/20 bg-transparent px-3 py-2 outline-none focus:border-accent"
+          />
+          <p className="mt-1 text-xs text-white/40">
+            Comma-separated, up to 8. On a red day the Journal Codex uses these to suggest something that actually
+            gets you off the charts.
+          </p>
         </div>
         <div>
           <label className="flex items-center gap-2 text-sm text-white/70">
