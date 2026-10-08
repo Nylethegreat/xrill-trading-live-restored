@@ -74,6 +74,9 @@ export const AUDIT_WINS: AuditWin[] = [
   { date: "Sep 8, 2026", ticker: "MSFT", setup: "$485 Put 9/9", gainPct: 201.37 },
   { date: "Sep 14, 2026", ticker: "MU", setup: "$825 Put 9/18", gainPct: 248.96 },
   { date: "Sep 15, 2026", ticker: "SMCI", setup: "$36 Put 9/18", gainPct: 70.18 },
+  { date: "Sep 22, 2026", ticker: "DKS", setup: "$130 Call 9/25", gainPct: 920.0 },
+  { date: "Oct 1, 2026", ticker: "ADBE", setup: "$252.5 Call 10/2", gainPct: 250.0 },
+  { date: "Oct 7, 2026", ticker: "GOOGL", setup: "$327.5 Put 10/7", gainPct: 173.81 },
   { date: "Oct 8, 2026", ticker: "QQQ", setup: "$750 Put 10/8", gainPct: 141.94 },
-  { date: "Oct 8, 2026", ticker: "IWM", setup: "$277 Call 10/8", gainPct: 535.71 },
+  { date: "Oct 8, 2026", ticker: "IWM", setup: "$276 Call 10/8", gainPct: 535.71 },
 ];
