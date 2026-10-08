@@ -40,7 +40,7 @@ export async function signUpFromAccount(formData: FormData) {
   const password = String(formData.get("password"));
 
   const supabase = createClient();
-  const { error } = await supabase.auth.signUp({
+  const { data, error } = await supabase.auth.signUp({
     email,
     password,
     options: { emailRedirectTo: `${SITE_URL}/auth/callback` },
@@ -48,6 +48,14 @@ export async function signUpFromAccount(formData: FormData) {
 
   if (error) {
     redirect(`/account?error=${encodeURIComponent(error.message)}`);
+  }
+
+  // Supabase doesn't error on an already-registered email (so attackers
+  // can't probe which emails exist) -- it returns a user with no
+  // identities and sends NO email. Without this check the person sees
+  // "check your email" and waits for a message that never comes.
+  if (data.user && data.user.identities?.length === 0) {
+    redirect(`/account?error=${encodeURIComponent("An account with this email already exists. Sign in, or use Forgot password to reset it.")}`);
   }
 
   redirect("/account?message=Check your email to confirm your account");
