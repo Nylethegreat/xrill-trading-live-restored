@@ -4,7 +4,7 @@ import { NextResponse, type NextRequest } from "next/server";
 // /account is intentionally NOT protected: it renders a public split-view
 // (login/signup + a "Member Access Perks" showcase) for signed-out visitors,
 // and the full settings UI for signed-in users. See app/account/page.tsx.
-const PROTECTED_PREFIXES = ["/dashboard", "/session", "/playbook", "/admin"];
+const PROTECTED_PREFIXES = ["/dashboard", "/session", "/playbook", "/admin", "/passport"];
 
 const SUPABASE_URL =
   process.env.NEXT_PUBLIC_SUPABASE_URL ?? "https://bwcxahaboouxxvjgjyou.supabase.co";

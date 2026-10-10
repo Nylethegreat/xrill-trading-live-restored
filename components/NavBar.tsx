@@ -38,7 +38,10 @@ export default async function NavBar() {
               <Link href="/playbook" className="hover:text-white">Playbook</Link>
               <Link href="/account" className="hover:text-white">Account</Link>
               {isAdmin && (
-                <Link href="/admin/alerts" className="text-accent hover:text-accent/80">Dispatch Alert</Link>
+                <>
+                  <Link href="/passport" className="hover:text-white">Passport</Link>
+                  <Link href="/admin/alerts" className="text-accent hover:text-accent/80">Dispatch Alert</Link>
+                </>
               )}
               <span className="hidden text-white/40 sm:inline">{user.email}</span>
               <SignOutButton />
