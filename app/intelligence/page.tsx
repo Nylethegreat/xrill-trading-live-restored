@@ -1,3 +1,4 @@
+import SectorLinks from "@/components/SectorLinks";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { Section, Grid, Stat } from "@/components/Layout";
@@ -193,6 +194,7 @@ export default async function IntelligencePage({ searchParams }: { searchParams?
           </p>
         </>
       )}
+      <SectorLinks current="intelligence" className="relative mt-10" />
     </div>
   );
 }

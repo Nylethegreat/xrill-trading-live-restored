@@ -51,6 +51,25 @@ body { background: #07080f; color: #e8eaf5; }
   .xr-breathe, .xr-breathe-alt, .xr-bolt, .xr-dye-shift, .xr-dye-glow, .xr-dye-sheen { animation: none !important; }
 }
 
+
+/* ── Playbook backdrops: neon smoke, penthouse, bamboo rain, quest map; analytics aurora ── */
+@keyframes xr-smoke { 0% { transform: translate(0,0) scale(1); opacity:.55; } 50% { transform: translate(-40px,-60px) scale(1.12); opacity:.85; } 100% { transform: translate(0,0) scale(1); opacity:.55; } }
+.xr-smoke { animation: xr-smoke 22s ease-in-out infinite; transform-box: fill-box; transform-origin: center; }
+@keyframes xr-neon-hum { 0%, 100% { opacity: .9; } 47% { opacity: .9; } 48% { opacity: .55; } 50% { opacity: .95; } 92% { opacity: .8; } }
+.xr-neon-hum { animation: xr-neon-hum 6s linear infinite; }
+@keyframes xr-rain { from { transform: translateY(-1000px); } to { transform: translateY(0); } }
+.xr-rain { animation: xr-rain 1.6s linear infinite; }
+@keyframes xr-ripple { 0% { transform: scale(.2); opacity: .7; } 100% { transform: scale(1.6); opacity: 0; } }
+.xr-ripple { animation: xr-ripple 2.4s ease-out infinite; transform-box: fill-box; transform-origin: center; }
+@keyframes xr-marker { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-14px); } }
+.xr-marker { animation: xr-marker 2.2s ease-in-out infinite; }
+@keyframes xr-aurora { 0% { transform: translateX(-6%) skewX(-6deg); } 50% { transform: translateX(6%) skewX(6deg); } 100% { transform: translateX(-6%) skewX(-6deg); } }
+.xr-aurora { animation: xr-aurora 26s ease-in-out infinite; transform-box: fill-box; transform-origin: center; }
+.xr-aurora-slow { animation: xr-aurora 40s ease-in-out infinite reverse; transform-box: fill-box; transform-origin: center; }
+@media (prefers-reduced-motion: reduce) {
+  .xr-smoke, .xr-neon-hum, .xr-rain, .xr-ripple, .xr-marker, .xr-aurora, .xr-aurora-slow { animation: none !important; }
+}
+
 /* ── Journal paper themes: flip the dark UI to ink-on-paper inside .paper-ink ── */
 .paper-ink { color: rgb(43, 30, 16); --ink: 43, 30, 16; }
 .paper-ink [class~="text-white"]:not([class*="bg-primary"]):not([class*="bg-accent"]):not([class*="bg-loss"]):not([class*="bg-caution"]):not([class*="bg-blocked"]),

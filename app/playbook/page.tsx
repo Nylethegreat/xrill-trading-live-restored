@@ -12,7 +12,9 @@ import RelicIcon from "@/components/visuals/RelicIcon";
 import RelicRoll from "@/components/RelicRoll";
 import { RELICS } from "@/lib/data/relics";
 import PlaybookBackdrop from "@/components/playbook/PlaybookBackdrop";
-import VisionBoard, { type VisionItem } from "@/components/playbook/VisionBoard";
+import VisionBoard from "@/components/playbook/VisionBoard";
+import { getVisionItems } from "@/lib/visionBoard";
+import FireworksCelebration from "@/components/visuals/FireworksCelebration";
 
 // Queries Supabase for the real balance behind the Star Unlocks section --
 // force dynamic so `next build` doesn't attempt to prerender this.
@@ -59,24 +61,9 @@ export default async function PlaybookPage() {
     : { data: null };
   const balance = account?.balance ?? 0;
 
-  // Vision board pictures live in a private bucket; hand the page short-lived
-  // signed URLs (1h) for this user's own files only.
-  let visionItems: VisionItem[] = [];
-  if (user) {
-    const { data: rows } = await supabase
-      .from("vision_board_items")
-      .select("id, path, caption")
-      .eq("user_id", user.id)
-      .order("created_at", { ascending: true });
-    if (rows && rows.length > 0) {
-      const { data: signed } = await supabase.storage.from("vision-board").createSignedUrls(
-        rows.map((r) => r.path),
-        60 * 60
-      );
-      const urlByPath = new Map((signed ?? []).map((s) => [s.path, s.signedUrl]));
-      visionItems = rows.map((r) => ({ id: r.id, caption: r.caption, url: urlByPath.get(r.path) ?? null }));
-    }
-  }
+  // Vision board pictures: short-lived signed URLs for this user's own files.
+  const visionItems = await getVisionItems(supabase, user?.id ?? null);
+
 
   return (
     <div className="relative mx-auto max-w-5xl px-4 py-10">
@@ -160,6 +147,7 @@ export default async function PlaybookPage() {
       >
         <div className="mb-4 rounded border border-white/10 bg-white/5 p-3">
           <RelicRoll balance={balance} />
+          <FireworksCelebration balance={balance} className="mt-3" />
         </div>
         {/* Mobile: every field stacked as a card, so nothing requires
             horizontal micro-scrolling on a phone. Desktop/tablet keeps

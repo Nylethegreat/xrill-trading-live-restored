@@ -8,12 +8,17 @@ import FogCityTexture from "@/components/visuals/textures/FogCityTexture";
 import ScrollTexture from "@/components/visuals/textures/ScrollTexture";
 import SunsetPalmsTexture from "@/components/visuals/textures/SunsetPalmsTexture";
 import HometownTexture from "@/components/visuals/textures/HometownTexture";
+import NeonSmokeTexture from "@/components/visuals/textures/NeonSmokeTexture";
+import PenthouseTexture from "@/components/visuals/textures/PenthouseTexture";
+import BambooRainTexture from "@/components/visuals/textures/BambooRainTexture";
+import QuestMapTexture from "@/components/visuals/textures/QuestMapTexture";
 
 // Per-visitor Playbook backdrop (remembered in this browser): the default
 // star field, a moving jellyfish bloom, Fog City, Sunset Palms, Hometown,
-// or the dyed scroll.
-type PlaybookBg = "stars" | "jellyfish" | "fog_city" | "sunset_palms" | "hometown" | "scroll";
-const IDS: readonly PlaybookBg[] = ["stars", "jellyfish", "fog_city", "sunset_palms", "hometown", "scroll"];
+// the dyed scroll, or the four studio sets: Neon Smoke, Penthouse,
+// Bamboo Rain and the Quest Map save point.
+type PlaybookBg = "stars" | "jellyfish" | "fog_city" | "sunset_palms" | "hometown" | "scroll" | "neon_smoke" | "penthouse" | "bamboo_rain" | "quest_map";
+const IDS: readonly PlaybookBg[] = ["stars", "jellyfish", "fog_city", "sunset_palms", "hometown", "scroll", "neon_smoke", "penthouse", "bamboo_rain", "quest_map"];
 
 const OPTIONS: BackdropOption<PlaybookBg>[] = [
   { id: "stars", label: "Star Field", swatch: "radial-gradient(circle,#fde68a,#1e1b4b 70%)" },
@@ -22,6 +27,10 @@ const OPTIONS: BackdropOption<PlaybookBg>[] = [
   { id: "sunset_palms", label: "Sunset Palms", swatch: "radial-gradient(circle at 50% 60%,#fffbea,#f59e42 35%,#7a2f1c 75%)" },
   { id: "hometown", label: "Hometown", swatch: "linear-gradient(160deg,#2a1e4a,#4b2a5e 45%,#a35a4c)" },
   { id: "scroll", label: "Ancient Scroll", swatch: "linear-gradient(135deg,#b88a4f,#2e2112)" },
+  { id: "neon_smoke", label: "Neon Smoke", swatch: "radial-gradient(circle at 40% 60%,#d946ef,#2563eb 45%,#0a0518 80%)" },
+  { id: "penthouse", label: "Penthouse", swatch: "linear-gradient(160deg,#ff3b3b 0 12%,#07070b 12% 55%,#1b2a66)" },
+  { id: "bamboo_rain", label: "Bamboo Rain", swatch: "radial-gradient(circle at 50% 55%,#7fb89a,#2f6b4c 35%,#04110a 80%)" },
+  { id: "quest_map", label: "Quest Map", swatch: "radial-gradient(circle,#bfdbfe 0 12%,#2563eb 30%,#0f172a 70%)" },
 ];
 
 export default function PlaybookBackdrop() {
@@ -37,6 +46,10 @@ export default function PlaybookBackdrop() {
           {bg === "sunset_palms" && <SunsetPalmsTexture className="opacity-80" />}
           {bg === "hometown" && <HometownTexture className="opacity-90" />}
           {bg === "scroll" && <ScrollTexture colorId={dye} />}
+          {bg === "neon_smoke" && <NeonSmokeTexture className="opacity-90" />}
+          {bg === "penthouse" && <PenthouseTexture className="opacity-90" />}
+          {bg === "bamboo_rain" && <BambooRainTexture className="opacity-85" />}
+          {bg === "quest_map" && <QuestMapTexture className="opacity-90" />}
           {/* keep text legible over the brighter backdrops */}
           {bg !== "scroll" && <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-black/35 to-black/55" />}
         </div>

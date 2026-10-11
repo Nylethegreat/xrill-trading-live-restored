@@ -1,3 +1,4 @@
+import SectorLinks from "@/components/SectorLinks";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { getJournalExtras, getSessionOutcomeRows } from "@/lib/data/xrill-analytics-data";
@@ -84,6 +85,7 @@ export default async function JournalPage() {
         <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-white/50">Session History</h2>
         <JournalClient rows={newestFirst} userId={user.id} trims={extras.trims} screenshots={extras.screenshots} />
       </div>
+      <SectorLinks current="journal" className="relative mt-8" />
       </JournalSurface>
     </div>
   );

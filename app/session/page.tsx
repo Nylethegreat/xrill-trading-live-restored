@@ -1,3 +1,4 @@
+import SectorLinks from "@/components/SectorLinks";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { getDailyLossStatus } from "@/lib/data/dailyLossLock";
@@ -96,13 +97,20 @@ export default async function SessionPage({
 
   const initialEngine = searchParams.engine === "daytrade" ? "daytrade" : searchParams.engine === "swing" ? "swing" : undefined;
 
-  return <EngineSelector
-      accountBalance={balance}
-      riskPercent={riskPercent}
-      stopPercent={account?.stop_loss_percent ?? undefined}
-      initialEngine={initialEngine}
-      openCount={openPositions.count}
-      openLimit={openPositions.limit}
-      recommendedOpen={openPositions.recommended}
-    />;
+  return (
+    <>
+      <EngineSelector
+        accountBalance={balance}
+        riskPercent={riskPercent}
+        stopPercent={account?.stop_loss_percent ?? undefined}
+        initialEngine={initialEngine}
+        openCount={openPositions.count}
+        openLimit={openPositions.limit}
+        recommendedOpen={openPositions.recommended}
+      />
+      <div className="mx-auto max-w-5xl px-4 pb-10">
+        <SectorLinks current="session" />
+      </div>
+    </>
+  );
 }

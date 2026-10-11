@@ -6,6 +6,7 @@ import FallingLeaves, { type LeafDensity } from "@/components/visuals/FallingLea
 import SegmentedToggle from "@/components/visuals/SegmentedToggle";
 import NightDriveTexture from "@/components/visuals/textures/NightDriveTexture";
 import SynthwaveTexture from "@/components/visuals/textures/SynthwaveTexture";
+import AuroraTexture from "@/components/visuals/textures/AuroraTexture";
 import { usePersistentChoice } from "@/lib/usePersistentChoice";
 
 const NEURON_OPTIONS = ["off", "slight", "normal"] as const;
@@ -128,6 +129,37 @@ export function PricingBackdropControl({ className = "" }: { className?: string 
           { key: "off", label: "Off" },
           { key: "night_drive", label: "Night Drive" },
           { key: "synthwave", label: "Synthwave" },
+        ]}
+      />
+    </>
+  );
+}
+
+const AURORA_OPTIONS = ["off", "soft", "full"] as const;
+type AuroraChoice = (typeof AURORA_OPTIONS)[number];
+
+// Analytics page: northern lights rolling behind the numbers. Soft keeps
+// it to a faint glow; Full is the whole sky. Remembered per visitor.
+export function AuroraBackdropControl({ className = "" }: { className?: string }) {
+  const [choice, setChoice, hydrated] = usePersistentChoice<AuroraChoice>("xrill-aurora", AURORA_OPTIONS, "soft");
+  return (
+    <>
+      {hydrated && choice !== "off" && (
+        <div aria-hidden="true" className="pointer-events-none fixed inset-0 -z-20">
+          <AuroraTexture idPrefix="aurora-analytics" className={choice === "full" ? "opacity-80" : "opacity-40"} />
+          <div className="absolute inset-0 bg-gradient-to-b from-black/10 via-black/30 to-black/60" />
+        </div>
+      )}
+      <SegmentedToggle
+        label="🌌 Aurora"
+        value={choice}
+        onChange={setChoice}
+        className={className}
+        activeClass="bg-gradient-to-r from-lime-400/25 to-violet-500/25 text-white [text-shadow:0_0_8px_rgba(74,222,128,0.8)]"
+        options={[
+          { key: "off", label: "Off" },
+          { key: "soft", label: "Soft" },
+          { key: "full", label: "Full" },
         ]}
       />
     </>

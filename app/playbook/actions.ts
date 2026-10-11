@@ -35,6 +35,7 @@ export async function addVisionItem(input: { path: string; caption?: string }): 
     return { success: false, error: error.message };
   }
   revalidatePath("/playbook");
+  revalidatePath("/blueprint");
   return { success: true };
 }
 
@@ -51,6 +52,7 @@ export async function updateVisionCaption(id: number, caption: string): Promise<
     .eq("user_id", user.id);
   if (error) return { success: false, error: error.message };
   revalidatePath("/playbook");
+  revalidatePath("/blueprint");
   return { success: true };
 }
 
@@ -66,5 +68,6 @@ export async function deleteVisionItem(id: number): Promise<Result> {
   const { error } = await supabase.from("vision_board_items").delete().eq("id", id).eq("user_id", user.id);
   if (error) return { success: false, error: error.message };
   revalidatePath("/playbook");
+  revalidatePath("/blueprint");
   return { success: true };
 }

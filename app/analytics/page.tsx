@@ -5,7 +5,8 @@ import AnalyticsClient from "@/components/analytics/AnalyticsClient";
 import PulseChart from "@/components/visuals/PulseChart";
 import HeaderText from "@/components/HeaderText";
 import HappyCheck from "@/components/analytics/HappyCheck";
-import { LeavesBackdropControl, OrbsBackdropControl } from "@/components/visuals/BackdropControls";
+import { AuroraBackdropControl, LeavesBackdropControl, OrbsBackdropControl } from "@/components/visuals/BackdropControls";
+import SectorLinks from "@/components/SectorLinks";
 
 // Queries Supabase (via cookies()) on every request - force dynamic
 // rendering so `next build` doesn't waste time attempting (and timing
@@ -28,6 +29,7 @@ export default async function AnalyticsPage() {
           <HeaderText className="font-mono text-xl font-bold tracking-widest">📈 XRILL ANALYTICS</HeaderText>
           <p className="mt-1 text-sm text-white/50">Command center for your recorded sessions.</p>
           <div className="mt-3 flex flex-wrap gap-3">
+            <AuroraBackdropControl />
             <LeavesBackdropControl />
             <OrbsBackdropControl />
           </div>
@@ -40,6 +42,7 @@ export default async function AnalyticsPage() {
       <div className="relative">
         <AnalyticsClient rows={rows} />
       </div>
+      <SectorLinks current="analytics" className="relative mt-10" />
     </div>
   );
 }

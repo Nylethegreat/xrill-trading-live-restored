@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import SectorLinks from "@/components/SectorLinks";
 
 const TABS = [
   { href: "/playbook", label: "Roadmap" },
@@ -9,6 +10,8 @@ const TABS = [
   { href: "/playbook/exits", label: "Exits" },
   { href: "/playbook/strategies", label: "20 Strategies" },
   { href: "/playbook/prop-firm", label: "Prop Firm" },
+  { href: "/playbook/relics", label: "Relic Codex" },
+  { href: "/blueprint", label: "My Blueprint ↗" },
 ];
 
 export default function PlaybookLayout({ children }: { children: React.ReactNode }) {
@@ -37,6 +40,9 @@ export default function PlaybookLayout({ children }: { children: React.ReactNode
         </nav>
       </div>
       {children}
+      <div className="mx-auto max-w-5xl px-4 pb-10">
+        <SectorLinks current="playbook" />
+      </div>
     </div>
   );
 }

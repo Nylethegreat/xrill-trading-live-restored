@@ -36,6 +36,7 @@ export default async function NavBar() {
               <Link href="/analytics" className="hover:text-white">Analytics</Link>
               <Link href="/intelligence" className="hover:text-white">Intelligence</Link>
               <Link href="/playbook" className="hover:text-white">Playbook</Link>
+              <Link href="/blueprint" className="hover:text-white">Blueprint</Link>
               <Link href="/account" className="hover:text-white">Account</Link>
               {isAdmin && (
                 <>
