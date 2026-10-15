@@ -4,6 +4,10 @@ import { usePersistentChoice } from "@/lib/usePersistentChoice";
 import { SCROLL_COLOR_IDS, type ScrollColorId } from "@/lib/data/scrollColors";
 import BackdropChooser, { type BackdropOption } from "@/components/visuals/BackdropChooser";
 import ScrollTexture from "@/components/visuals/textures/ScrollTexture";
+import GlowMossTexture from "@/components/visuals/textures/GlowMossTexture";
+import CloudForestTexture from "@/components/visuals/textures/CloudForestTexture";
+import GlassAuroraTexture from "@/components/visuals/textures/GlassAuroraTexture";
+import RainGlassTexture from "@/components/visuals/textures/RainGlassTexture";
 
 // The journal's writing surface (remembered per browser):
 //  - Midnight: the original dark journal
@@ -11,17 +15,24 @@ import ScrollTexture from "@/components/visuals/textures/ScrollTexture";
 //  - Parchment: bleached, age-yellowed historical sheet with burnt, ragged
 //    edges and ornate corners
 //  - Scroll: the dyed scroll (8 colors) behind the whole page
+//  - Scenes: Glow Moss, Cloud Forest, Glass Aurora and Rain Glass — full
+//    backdrops behind a dark frosted-glass sheet so entries stay legible
 // Paper themes wrap the content in .paper-ink (globals.css), which flips the
 // site's white-on-dark classes to ink-on-paper inside the sheet only.
 
-type JournalBg = "midnight" | "notebook" | "parchment" | "scroll";
-const IDS: readonly JournalBg[] = ["midnight", "notebook", "parchment", "scroll"];
+type JournalBg = "midnight" | "notebook" | "parchment" | "scroll" | "glow_moss" | "cloud_forest" | "glass_aurora" | "rain_glass";
+const IDS: readonly JournalBg[] = ["midnight", "notebook", "parchment", "scroll", "glow_moss", "cloud_forest", "glass_aurora", "rain_glass"];
+const SCENES: readonly JournalBg[] = ["glow_moss", "cloud_forest", "glass_aurora", "rain_glass"];
 
 const OPTIONS: BackdropOption<JournalBg>[] = [
   { id: "midnight", label: "Midnight", swatch: "#0d0f1a" },
   { id: "notebook", label: "Notebook Paper", swatch: "repeating-linear-gradient(180deg,#f2f0e6 0 3px,#94a3b8 3px 4px)" },
   { id: "parchment", label: "Aged Parchment", swatch: "radial-gradient(circle,#f3e2b3,#b8894a)" },
   { id: "scroll", label: "Ancient Scroll", swatch: "linear-gradient(135deg,#b88a4f,#2e2112)" },
+  { id: "glow_moss", label: "Glow Moss", swatch: "radial-gradient(circle at 40% 40%,#cffafe 0 10%,#22d3ee 18%,#14532d 45%,#020b08 80%)" },
+  { id: "cloud_forest", label: "Cloud Forest", swatch: "linear-gradient(160deg,#f6b85a,#3c6464 55%,#082224)" },
+  { id: "glass_aurora", label: "Glass Aurora", swatch: "linear-gradient(135deg,#22d3ee,#8b5cf6 50%,#fcd34d)" },
+  { id: "rain_glass", label: "Rain Glass", swatch: "radial-gradient(circle at 35% 40%,#fbbf24 0 18%,#0a1530 40%,#10b981 80%)" },
 ];
 
 function mulberry32(seed: number) {
@@ -133,6 +144,25 @@ export default function JournalSurface({ children }: { children: React.ReactNode
             <Flourish className="bottom-2 left-2 -scale-y-100 sm:bottom-3 sm:left-3" />
             <Flourish className="bottom-2 right-2 -scale-100 sm:bottom-3 sm:right-3" />
             <div className="relative">{children}</div>
+        </div>
+      </>
+    );
+  }
+
+  if (SCENES.includes(theme)) {
+    return (
+      <>
+        <div aria-hidden="true" className="pointer-events-none fixed inset-0 -z-20">
+          {theme === "glow_moss" && <GlowMossTexture className="opacity-90" />}
+          {theme === "cloud_forest" && <CloudForestTexture className="opacity-85" />}
+          {theme === "glass_aurora" && <GlassAuroraTexture className="opacity-95" />}
+          {theme === "rain_glass" && <RainGlassTexture className="opacity-95" />}
+          <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-black/35 to-black/55" />
+        </div>
+        {chooser}
+        {/* dark frosted glass so text reads cleanly over the brighter scenes */}
+        <div className="relative mt-6 rounded-2xl border border-white/10 bg-[#070a14]/70 p-4 shadow-[0_20px_60px_rgba(0,0,0,0.55)] backdrop-blur-md sm:p-6">
+          {children}
         </div>
       </>
     );

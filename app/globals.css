@@ -70,6 +70,24 @@ body { background: #07080f; color: #e8eaf5; }
   .xr-smoke, .xr-neon-hum, .xr-rain, .xr-ripple, .xr-marker, .xr-aurora, .xr-aurora-slow { animation: none !important; }
 }
 
+/* ── Playbook: coral reef + campus palms; Journal: glow moss, cloud forest, glass aurora, rain glass ── */
+@keyframes xr-reef-school { 0%, 100% { transform: translate(0, 0); } 50% { transform: translate(-90px, 18px); } }
+.xr-reef-school { animation: xr-reef-school 24s ease-in-out infinite; }
+@keyframes xr-reef-bubble { from { transform: translateY(0); opacity: 0; } 10% { opacity: 1; } to { transform: translateY(-1060px); opacity: 0.2; } }
+.xr-reef-bubble { animation: xr-reef-bubble 16s linear infinite; }
+@keyframes xr-sway { 0%, 100% { transform: rotate(-2deg); } 50% { transform: rotate(2deg); } }
+.xr-reef-sway { animation: xr-sway 9s ease-in-out infinite; transform-box: view-box; }
+.xr-palm-sway { animation: xr-sway 6s ease-in-out infinite; transform-box: view-box; }
+@keyframes xr-moss-flow { from { stroke-dashoffset: 0; } to { stroke-dashoffset: -600; } }
+.xr-moss-flow { animation: xr-moss-flow 12s linear infinite; }
+@keyframes xr-moss-twinkle { 0%, 100% { opacity: 0.35; } 50% { opacity: 1; } }
+.xr-moss-twinkle { animation: xr-moss-twinkle 4s ease-in-out infinite; }
+@keyframes xr-rain-slide { 0% { transform: translateY(-80px); } 100% { transform: translateY(1150px); } }
+.xr-rain-slide { animation: xr-rain-slide 12s cubic-bezier(.55,.05,.85,.5) infinite; }
+@media (prefers-reduced-motion: reduce) {
+  .xr-reef-school, .xr-reef-bubble, .xr-reef-sway, .xr-palm-sway, .xr-moss-flow, .xr-moss-twinkle, .xr-rain-slide { animation: none !important; }
+}
+
 /* ── Journal paper themes: flip the dark UI to ink-on-paper inside .paper-ink ── */
 .paper-ink { color: rgb(43, 30, 16); --ink: 43, 30, 16; }
 .paper-ink [class~="text-white"]:not([class*="bg-primary"]):not([class*="bg-accent"]):not([class*="bg-loss"]):not([class*="bg-caution"]):not([class*="bg-blocked"]),
