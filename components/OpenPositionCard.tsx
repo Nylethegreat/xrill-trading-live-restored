@@ -122,6 +122,20 @@ export default function OpenPositionCard({ session }: { session: OpenPosition })
         </Link>
       </div>
 
+      {(session.thesis || session.invalidation || session.setup_type) && (
+        <div className="mt-3 rounded border border-white/10 bg-black/20 px-3 py-2 text-sm">
+          <p className="text-[10px] font-semibold uppercase tracking-wide text-white/40">
+            Why you&apos;re in{session.setup_type ? ` · ${session.setup_type}` : ""}
+          </p>
+          {session.thesis && <p className="mt-0.5 text-white/85">&ldquo;{session.thesis}&rdquo;</p>}
+          {session.invalidation && (
+            <p className="mt-1 text-xs text-white/60">
+              <span className="text-loss">Wrong if:</span> {session.invalidation}
+            </p>
+          )}
+        </div>
+      )}
+
       <div className="mt-3 grid grid-cols-3 gap-2 border-t border-white/10 pt-3 text-center">
         <div>
           <p className="text-[10px] uppercase tracking-wide text-white/40">{spread ? "Net Debit" : "Premium Paid"}</p>

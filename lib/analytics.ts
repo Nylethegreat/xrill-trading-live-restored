@@ -50,6 +50,16 @@ export interface SessionOutcomeRow {
   legs: unknown;
   strike: number | null;
   expiration: string | null;
+  // Trade thesis + review (all optional)
+  thesis: string | null;
+  invalidation: string | null;
+  confidence_pre: number | null;
+  delta: number | null;
+  theta: number | null;
+  volume_state: string | null;
+  confidence_post: number | null;
+  thesis_result: string | null;
+  exit_reason: string | null;
   mishaps: string[] | null;
   mishap_note: string | null;
 }

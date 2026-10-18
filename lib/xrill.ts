@@ -99,13 +99,19 @@ export interface SetupChecklist {
   riskReward: boolean; // target offers at least 2x the defined stop loss
 }
 
-export function scoreSetup(a: SetupChecklist) {
-  const total =
-    (a.trendAlignment ? 5 : 0) +
-    (a.keyLevelReaction ? 5 : 0) +
-    (a.momentumVolume ? 5 : 0) +
-    (a.newsClear ? 5 : 0) +
-    (a.riskReward ? 5 : 0);
+// Volume rule: for strategies that don't depend on volume (pullbacks,
+// reclaims, retests, reversion -- see `volumeRequired` in
+// lib/data/strategies.ts), a quiet tape is neutral, not a deduction: the
+// other four checks are scaled up to the 25-point scale instead. So 4/4
+// with no volume is still an A+ setup, while volume that IS there still
+// counts. For volume-dependent setups (and when no strategy is picked)
+// the original rule stands: no volume, no 5 points.
+export function scoreSetup(a: SetupChecklist, opts: { volumeRequired?: boolean } = {}) {
+  const volumeRequired = opts.volumeRequired ?? true;
+  const others =
+    (a.trendAlignment ? 5 : 0) + (a.keyLevelReaction ? 5 : 0) + (a.newsClear ? 5 : 0) + (a.riskReward ? 5 : 0);
+  const volumeWaived = !volumeRequired && !a.momentumVolume;
+  const total = volumeWaived ? Math.round((others / 20) * 25) : others + (a.momentumVolume ? 5 : 0);
 
   let grade: string;
   if (total >= 25) grade = "A+ SETUP";
@@ -113,7 +119,7 @@ export function scoreSetup(a: SetupChecklist) {
   else grade = "BLOCKED";
 
   const passed = total >= 20;
-  return { total, grade, passed };
+  return { total, grade, passed, volumeWaived };
 }
 
 export interface TradePlanInput {

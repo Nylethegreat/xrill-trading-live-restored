@@ -8,6 +8,110 @@ import type { SessionOutcomeRow } from "@/lib/analytics";
 import type { ScreenshotRow, TrimRow } from "@/lib/data/xrill-analytics-data";
 import { structureLabel } from "@/lib/structures";
 import { MishapChecklist, ScreenshotStrip, TrimPanel } from "@/components/journal/TradeExtras";
+import TradeCardStrip, { type TradeCardData } from "@/components/session/TradeCardStrip";
+import { EXIT_REASONS, THESIS_RESULTS, type ExitReason, type ThesisResult } from "@/lib/thesis";
+
+function toCard(r: SessionOutcomeRow): TradeCardData {
+  return {
+    ticker: r.ticker,
+    sideLabel: structureLabel(r.structure, r.legs) ?? r.direction,
+    engine: r.engine,
+    strategy: r.setup_type,
+    thesis: r.thesis,
+    invalidation: r.invalidation,
+    confidencePre: r.confidence_pre,
+    setupScore: r.setup_score,
+    volumeState: r.volume_state,
+    entry: r.entry,
+    stop: r.stop,
+    target: r.target,
+    rr: r.rr,
+    contracts: r.contracts,
+    delta: r.delta,
+    theta: r.theta,
+    tradeRisk: r.trade_risk,
+    confidencePost: r.confidence_post,
+    thesisResult: r.thesis_result,
+    exitReason: r.exit_reason,
+    profitLoss: r.profit_loss,
+  };
+}
+
+// Post-trade review: optional, but it's what lets Intelligence show you
+// whether your exits follow your thesis or your nerves.
+function ReviewFields({
+  invalidation,
+  confidencePost,
+  setConfidencePost,
+  thesisResult,
+  setThesisResult,
+  exitReason,
+  setExitReason,
+}: {
+  invalidation: string | null;
+  confidencePost: number | null;
+  setConfidencePost: (v: number | null) => void;
+  thesisResult: ThesisResult | null;
+  setThesisResult: (v: ThesisResult | null) => void;
+  exitReason: ExitReason | null;
+  setExitReason: (v: ExitReason | null) => void;
+}) {
+  const pill = (on: boolean) =>
+    `rounded-full border px-2.5 py-1 text-xs ${on ? "border-accent bg-accent/15 text-accent" : "border-white/20 text-white/60 hover:border-white/40"}`;
+  return (
+    <div className="mt-3 space-y-3 rounded border border-white/10 bg-black/20 p-3">
+      <p className="text-xs font-semibold uppercase tracking-wide text-white/50">Thesis check (optional)</p>
+      {invalidation && (
+        <p className="text-xs text-white/60">
+          You said you'd be wrong if: <span className="text-white/85">{invalidation}</span>
+        </p>
+      )}
+      <div>
+        <p className="mb-1 text-xs text-white/60">Did your thesis play out?</p>
+        <div className="flex flex-wrap gap-1.5">
+          {THESIS_RESULTS.map((r) => (
+            <button key={r.key} type="button" className={pill(thesisResult === r.key)} onClick={() => setThesisResult(thesisResult === r.key ? null : r.key)}>
+              {r.label}
+            </button>
+          ))}
+        </div>
+      </div>
+      <div>
+        <p className="mb-1 text-xs text-white/60">Why did you actually exit?</p>
+        <div className="flex flex-wrap gap-1.5">
+          {EXIT_REASONS.map((r) => (
+            <button
+              key={r.key}
+              type="button"
+              title={r.hint}
+              className={pill(exitReason === r.key)}
+              onClick={() => setExitReason(exitReason === r.key ? null : r.key)}
+            >
+              {r.label}
+            </button>
+          ))}
+        </div>
+      </div>
+      <div>
+        <p className="mb-1 text-xs text-white/60">Confidence now (1–10)</p>
+        <div className="flex flex-wrap gap-1">
+          {Array.from({ length: 10 }, (_, i) => i + 1).map((n) => (
+            <button
+              key={n}
+              type="button"
+              onClick={() => setConfidencePost(confidencePost === n ? null : n)}
+              className={`h-7 w-7 rounded border font-mono text-xs ${
+                confidencePost === n ? "border-accent bg-accent text-black" : "border-white/20 text-white/60"
+              }`}
+            >
+              {n}
+            </button>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
 
 function money(v: number | null | undefined) {
   if (v === null || v === undefined) return "—";
@@ -45,13 +149,20 @@ function OutcomeForm({
   remaining,
   trimPl,
   screenshots,
+  card,
+  invalidation,
 }: {
   sessionId: number;
   onSaved: () => void;
   remaining: number | null;
   trimPl: number;
   screenshots?: React.ReactNode;
+  card?: React.ReactNode;
+  invalidation?: string | null;
 }) {
+  const [confidencePost, setConfidencePost] = useState<number | null>(null);
+  const [thesisResult, setThesisResult] = useState<ThesisResult | null>(null);
+  const [exitReason, setExitReason] = useState<ExitReason | null>(null);
   const [pl, setPl] = useState("");
   const [followedPlan, setFollowedPlan] = useState<boolean | null>(null);
   const [followedExitRules, setFollowedExitRules] = useState<boolean | null>(null);
@@ -67,6 +178,12 @@ function OutcomeForm({
 
   return (
     <div className="mt-3 rounded border border-white/10 bg-white/5 p-3">
+      {card && (
+        <div className="mb-3">
+          <p className="mb-1 text-xs font-semibold uppercase tracking-wide text-white/50">What you planned</p>
+          {card}
+        </div>
+      )}
       <p className="mb-2 text-xs text-white/50">
         Log what actually happened — closes the loop from XRILL's authorization back to a real result, so Analytics
         has something to measure.
@@ -125,6 +242,16 @@ function OutcomeForm({
         />
       </label>
 
+      <ReviewFields
+        invalidation={invalidation ?? null}
+        confidencePost={confidencePost}
+        setConfidencePost={setConfidencePost}
+        thesisResult={thesisResult}
+        setThesisResult={setThesisResult}
+        exitReason={exitReason}
+        setExitReason={setExitReason}
+      />
+
       {screenshots && <div className="mt-3 rounded border border-white/10 bg-black/20 p-3">{screenshots}</div>}
       <MishapChecklist value={mishaps} onChange={setMishaps} note={mishapNote} onNote={setMishapNote} />
 
@@ -146,6 +273,9 @@ function OutcomeForm({
             exitPrice: exitPrice.trim() ? parseFloat(exitPrice) : null,
             mishaps,
             mishapNote,
+            confidencePost,
+            thesisResult,
+            exitReason,
           });
           setSubmitting(false);
           if (!res.success) {
@@ -192,6 +322,7 @@ export default function JournalClient({
 }) {
   const router = useRouter();
   const [openId, setOpenId] = useState<number | null>(null);
+  const [cardId, setCardId] = useState<number | null>(null);
   const [filter, setFilter] = useState<Filter>("all");
 
   if (rows.length === 0) {
@@ -301,6 +432,37 @@ export default function JournalClient({
                   <p className="mt-2 text-[11px] text-loss/80">Logged after the fact: {r.after_fact_reasons.join(" · ")}</p>
                 )}
 
+                {executed && !hasOutcome && (r.thesis || r.invalidation || r.setup_type) && (
+                  <div className="mt-3 rounded border border-primary/30 bg-primary/10 p-3 text-sm">
+                    <p className="text-[11px] font-semibold uppercase tracking-wide text-primary">
+                      Why you're in{r.setup_type ? ` · ${r.setup_type}` : ""}
+                    </p>
+                    {r.thesis && <p className="mt-1 text-white/85">&ldquo;{r.thesis}&rdquo;</p>}
+                    {r.invalidation && (
+                      <p className="mt-1 text-xs text-white/60">
+                        <span className="text-loss">Wrong if:</span> {r.invalidation}. Hasn't happened? Then it's still your trade.
+                      </p>
+                    )}
+                  </div>
+                )}
+
+                {executed && openId !== r.session_id && (
+                  <div className="mt-3">
+                    <button
+                      type="button"
+                      onClick={() => setCardId(cardId === r.session_id ? null : r.session_id)}
+                      className="text-xs text-white/50 underline hover:text-white/80"
+                    >
+                      {cardId === r.session_id ? "Hide trade card" : hasOutcome ? "🃏 Planned vs what happened" : "🃏 Trade card"}
+                    </button>
+                    {cardId === r.session_id && (
+                      <div className="mt-2">
+                        <TradeCardStrip data={toCard(r)} />
+                      </div>
+                    )}
+                  </div>
+                )}
+
                 {hasOutcome ? (
                   <div className="mt-3 rounded border border-white/10 bg-white/5 p-3 text-sm">
                     <div className="flex flex-wrap items-center gap-3">
@@ -314,6 +476,17 @@ export default function JournalClient({
                         {r.followed_exit_rules ? "Followed Exit Rules" : "Broke Exit Rules"}
                       </Badge>
                     </div>
+                    {(r.thesis_result || r.exit_reason || r.confidence_post) && (
+                      <p className="mt-2 text-xs text-white/60">
+                        {[
+                          r.thesis_result && `Thesis: ${THESIS_RESULTS.find((x) => x.key === r.thesis_result)?.label ?? r.thesis_result}`,
+                          r.exit_reason && `Exit: ${EXIT_REASONS.find((x) => x.key === r.exit_reason)?.label ?? r.exit_reason}`,
+                          (r.confidence_pre || r.confidence_post) && `Confidence ${r.confidence_pre ?? "—"} → ${r.confidence_post ?? "—"}`,
+                        ]
+                          .filter(Boolean)
+                          .join(" · ")}
+                      </p>
+                    )}
                     {r.emotion && <p className="mt-2 text-white/70">Emotion: {r.emotion}</p>}
                     {r.lesson && <p className="text-white/70">Lesson: {r.lesson}</p>}
                     {rowTrims.length > 0 && (
@@ -337,6 +510,8 @@ export default function JournalClient({
                     sessionId={r.session_id}
                     remaining={remaining}
                     trimPl={trimPl}
+                    card={<TradeCardStrip data={toCard(r)} />}
+                    invalidation={r.invalidation}
                     screenshots={<ScreenshotStrip userId={userId} sessionId={r.session_id} shots={rowShots} />}
                     onSaved={() => {
                       setOpenId(null);

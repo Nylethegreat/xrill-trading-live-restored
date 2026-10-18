@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { AFTER_FACT_REASONS } from "@/lib/afterFact";
+import { cleanReview } from "@/lib/thesis";
 
 const MAX_SCREENSHOTS_PER_SESSION = 6;
 
@@ -22,6 +23,11 @@ export interface SaveOutcomeInput {
   exitPrice?: number | null;
   mishaps?: string[]; // real-life disruptions (see lib/afterFact.ts)
   mishapNote?: string;
+  // Post-trade review (optional): conviction coming out, whether the
+  // thesis actually played out, and the honest reason for the exit.
+  confidencePost?: number | null;
+  thesisResult?: string | null;
+  exitReason?: string | null;
 }
 
 export interface SaveOutcomeResult {
@@ -116,6 +122,7 @@ export async function saveTradeOutcome(input: SaveOutcomeInput): Promise<SaveOut
       exit_price: input.exitPrice ?? null,
       mishaps: (input.mishaps ?? []).filter((m) => (AFTER_FACT_REASONS as readonly string[]).includes(m)),
       mishap_note: input.mishapNote?.trim().slice(0, 300) || null,
+      ...cleanReview(input),
     },
     { onConflict: "session_id" }
   );

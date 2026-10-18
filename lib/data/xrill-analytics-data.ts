@@ -17,9 +17,11 @@ export async function getSessionOutcomeRows(userId: string): Promise<SessionOutc
        daily_score, trade_gate_score, setup_score, risk_approved,
        execution_score, trade_score, trade_authorized, rejection_reason, engine,
        logged_after, after_fact_reasons, structure, legs, strike, expiration,
+       thesis, invalidation, confidence_pre, delta, theta, volume_state,
        xrill_outcomes ( profit_loss, followed_plan, followed_exit_rules,
          emotion, lesson, exit_price, holding_minutes, risk_multiple,
-         max_favorable_excursion, max_adverse_excursion, mishaps, mishap_note )`
+         max_favorable_excursion, max_adverse_excursion, mishaps, mishap_note,
+         confidence_post, thesis_result, exit_reason )`
     )
     .eq("user_id", userId)
     .order("created_at", { ascending: true });
@@ -78,6 +80,15 @@ export async function getSessionOutcomeRows(userId: string): Promise<SessionOutc
       expiration: row.expiration ?? null,
       mishaps: outcome?.mishaps ?? null,
       mishap_note: outcome?.mishap_note ?? null,
+      thesis: row.thesis ?? null,
+      invalidation: row.invalidation ?? null,
+      confidence_pre: row.confidence_pre ?? null,
+      delta: row.delta !== null && row.delta !== undefined ? Number(row.delta) : null,
+      theta: row.theta !== null && row.theta !== undefined ? Number(row.theta) : null,
+      volume_state: row.volume_state ?? null,
+      confidence_post: outcome?.confidence_post ?? null,
+      thesis_result: outcome?.thesis_result ?? null,
+      exit_reason: outcome?.exit_reason ?? null,
     };
   });
 }

@@ -10,6 +10,9 @@ import PulseBrain from "@/components/visuals/PulseBrain";
 import HeaderText from "@/components/HeaderText";
 import { NeuronBackdropControl } from "@/components/visuals/BackdropControls";
 import MindsetCheck from "@/components/intelligence/MindsetCheck";
+import ThesisReviewPanel from "@/components/intelligence/ThesisReviewPanel";
+import { buildThesisReview } from "@/lib/thesisReview";
+import { getSessionOutcomeRows } from "@/lib/data/xrill-analytics-data";
 
 // Queries Supabase (via cookies()) on every request - force dynamic
 // rendering so `next build` doesn't waste time attempting (and timing
@@ -49,7 +52,7 @@ export default async function IntelligencePage({ searchParams }: { searchParams?
   // Positions to check in on: everything still open, plus trades closed in
   // the last 7 days (so the "after" snapshot can be taken once you're out).
   const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
-  const [openStatus, { data: recentOutcomes }, { data: account }] = await Promise.all([
+  const [openStatus, { data: recentOutcomes }, { data: account }, outcomeRows] = await Promise.all([
     getOpenPositionsStatus(user.id),
     supabase
       .from("xrill_outcomes")
@@ -58,7 +61,9 @@ export default async function IntelligencePage({ searchParams }: { searchParams?
       .gte("created_at", sevenDaysAgo)
       .order("created_at", { ascending: false }),
     supabase.from("accounts").select("balance").eq("user_id", user.id).maybeSingle(),
+    getSessionOutcomeRows(user.id),
   ]);
+  const thesisReview = buildThesisReview(outcomeRows);
 
   const checkInPositions: CheckInPosition[] = [
     ...openStatus.positions.map((p) => ({ id: p.id, label: positionLabel(p), status: "open" as const })),
@@ -119,6 +124,13 @@ export default async function IntelligencePage({ searchParams }: { searchParams?
           do to you, instead of letting the result rewrite how you remember feeling.
         </p>
         <PositionCheckIn positions={checkInPositions} checkIns={checkIns} initialPositionId={initialPositionId} />
+      </Section>
+
+      <Section
+        title="🎯 Thesis Review"
+        subtitle="Did you trade your thesis or your nerves? Built from what you wrote in the engine and the journal"
+      >
+        <ThesisReviewPanel review={thesisReview} />
       </Section>
 
       {!profile ? (

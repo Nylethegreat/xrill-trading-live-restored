@@ -6,6 +6,7 @@ import { AFTER_FACT_REASONS } from "@/lib/afterFact";
 import { getDailyLossStatus, getTradingDateET } from "@/lib/data/dailyLossLock";
 import { getTwoLossStatus } from "@/lib/data/twoLossLock";
 import { getOpenPositionsStatus } from "@/lib/data/openPositions";
+import { cleanGreeks, cleanThesis, strategyNeedsVolume, type GreeksInput, type ThesisInput } from "@/lib/thesis";
 import {
   scoreDailyCheckIn,
   scoreTradeGate,
@@ -93,6 +94,10 @@ export interface SubmitSessionInput {
     riskLimit: boolean;
     emotional: boolean;
   };
+  // Optional: strategy, thesis, "wrong if", confidence before entry, and
+  // contract greeks. Never gate the trade; cleaned server-side.
+  thesis?: ThesisInput | null;
+  greeks?: GreeksInput | null;
 }
 
 export interface SubmitSessionResult {
@@ -150,7 +155,9 @@ export async function submitXrillSession(
   const gate = scoreTradeGate(input.gate);
   if (!gate.passed) return { success: false, error: "Trade Gate failed — session not logged." };
 
-  const setup = scoreSetup(input.setup);
+  // Volume rule comes from the strategy name, re-derived here -- never a
+  // client-sent flag.
+  const setup = scoreSetup(input.setup, { volumeRequired: strategyNeedsVolume(input.thesis?.strategy) });
   if (!setup.passed) return { success: false, error: "Setup Score too low — session not logged." };
 
   const normalized = normalizePlan(input.plan);
@@ -198,6 +205,9 @@ export async function submitXrillSession(
       daily_score: daily.score,
       trade_gate_score: gate.score,
       setup_score: setup.total,
+      ...cleanThesis(input.thesis),
+      ...cleanGreeks(input.greeks),
+      volume_state: input.setup.momentumVolume ? "confirming" : "absent",
       ticker: input.plan.ticker.toUpperCase(),
       direction: input.plan.optionType,
       entry: normalized.plan.entryPremium,
@@ -274,6 +284,10 @@ export interface SubmitFastSessionInput {
     riskLimit: boolean;
     emotional: boolean;
   };
+  // Optional: strategy, thesis, "wrong if", confidence before entry, and
+  // contract greeks. Never gate the trade; cleaned server-side.
+  thesis?: ThesisInput | null;
+  greeks?: GreeksInput | null;
 }
 
 export interface SubmitFastSessionResult {
@@ -328,7 +342,9 @@ export async function submitFastSession(
   // 5 -- see scoreSetup's `passed` in lib/xrill.ts). Previously
   // informational-only; a fast pass shouldn't mean a free pass on setup
   // quality.
-  const setup = scoreSetup(input.setup);
+  // Volume rule comes from the strategy name, re-derived here -- never a
+  // client-sent flag.
+  const setup = scoreSetup(input.setup, { volumeRequired: strategyNeedsVolume(input.thesis?.strategy) });
   if (!setup.passed) return { success: false, error: "Setup Score too low — session not logged." };
 
   const normalized = normalizePlan(input.plan);
@@ -362,6 +378,9 @@ export async function submitFastSession(
       daily_score: null,
       trade_gate_score: gate.score,
       setup_score: setup.total,
+      ...cleanThesis(input.thesis),
+      ...cleanGreeks(input.greeks),
+      volume_state: input.setup.momentumVolume ? "confirming" : "absent",
       ticker: input.plan.ticker.toUpperCase(),
       direction: input.plan.optionType,
       entry: normalized.plan.entryPremium,

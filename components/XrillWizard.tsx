@@ -19,7 +19,11 @@ import {
 } from "@/lib/xrill";
 import { DEFAULT_STOP_PERCENT, clampRiskPercent } from "@/lib/riskProfile";
 import StructurePicker from "@/components/session/StructurePicker";
-import { evaluateStructure, type Leg, type Structure } from "@/lib/structures";
+import { evaluateStructure, structureLabel, type Leg, type Structure } from "@/lib/structures";
+import ThesisFields, { EMPTY_THESIS, type ThesisState } from "@/components/session/ThesisFields";
+import GreeksFields from "@/components/session/GreeksFields";
+import TradeCardStrip from "@/components/session/TradeCardStrip";
+import { strategyNeedsVolume } from "@/lib/data/strategies";
 import { submitXrillSession } from "@/app/session/actions";
 import StepTracker from "./StepTracker";
 import Hint from "./Hint";
@@ -162,6 +166,13 @@ export default function XrillWizard({
     riskReward: false,
   });
 
+  // The "why" behind the trade + optional greeks -- all optional, none of
+  // it gates the trade. Carried to the Journal so the position never
+  // outlives its reason.
+  const [thesis, setThesis] = useState<ThesisState>(EMPTY_THESIS);
+  const [greeks, setGreeks] = useState({ delta: "", theta: "" });
+  const volumeRequired = strategyNeedsVolume(thesis.strategy);
+
   const [plan, setPlan] = useState({
     ticker: "",
     optionType: "CALL" as OptionType,
@@ -264,12 +275,7 @@ export default function XrillWizard({
   }
 
   if (step === "setup") {
-    const total =
-      (setup.trendAlignment ? 5 : 0) +
-      (setup.keyLevelReaction ? 5 : 0) +
-      (setup.momentumVolume ? 5 : 0) +
-      (setup.newsClear ? 5 : 0) +
-      (setup.riskReward ? 5 : 0);
+    const { total, volumeWaived } = scoreSetup(setup, { volumeRequired });
     const badge = total >= 25 ? { text: "A+ SETUP", tone: "good" as const } : total >= 20 ? { text: "GOOD SETUP", tone: "good" as const } : { text: "BLOCKED", tone: "blocked" as const };
 
     return (
@@ -278,6 +284,7 @@ export default function XrillWizard({
           Five plain-language checks, 5 points each. You need 20/25 to continue — a system that authorizes
           everything isn't disciplined, it's just permissive.
         </p>
+        <ThesisFields value={thesis} onChange={setThesis} tone="accent" />
         <div className="space-y-2">
           <CheckItem
             label="Trend Alignment"
@@ -293,7 +300,11 @@ export default function XrillWizard({
           />
           <CheckItem
             label="Momentum & Volume"
-            detail="Is there clean volume expansion on the entry candle?"
+            detail={
+              volumeRequired
+                ? "Is there clean volume expansion on the entry candle?"
+                : "Bonus for this strategy. Quiet volume won't count against you, and it's still worth 5 if it's there."
+            }
             checked={setup.momentumVolume}
             onChange={(v) => setSetup({ ...setup, momentumVolume: v })}
           />
@@ -315,10 +326,15 @@ export default function XrillWizard({
           <span className="font-mono text-sm text-white">{total}/25</span>
           <Badge tone={badge.tone}>{badge.text}</Badge>
         </div>
+        {volumeWaived && (
+          <p className="mt-1 text-xs text-white/45">
+            No volume, but this setup doesn't need it, so your other four checks are scaled to the full 25.
+          </p>
+        )}
 
         <NextButton
           onClick={() => {
-            const r = scoreSetup(setup);
+            const r = scoreSetup(setup, { volumeRequired });
             if (!r.passed) {
               setBlockedReason(`Setup Score: ${r.total}/25 — GRADE: ${r.grade}. Session not logged.`);
               setStep("blocked");
@@ -488,6 +504,17 @@ export default function XrillWizard({
             <NumberInput value={plan.contracts} onChange={(v) => setPlan({ ...plan, contracts: v })} />
           </Field>
 
+          <GreeksFields
+            delta={greeks.delta}
+            theta={greeks.theta}
+            onChange={setGreeks}
+            contracts={contracts}
+            entryPremium={hasEntry ? entry : null}
+            ticker={plan.ticker}
+            multiLeg={structure !== "single"}
+            tone="accent"
+          />
+
           {maxContracts !== null && (
             <p className={`text-xs ${exceedsMax ? "text-blocked" : "text-white/40"}`}>
               Maximum allowed: {maxContracts} contract{maxContracts === 1 ? "" : "s"} — whichever is more
@@ -607,6 +634,34 @@ export default function XrillWizard({
     const allAnswered = executionValues.every((v) => v !== null);
     return (
       <Shell title="Step 6/6 — Execution Check" step="execution" accountBalance={accountBalance}>
+        {planResult && (
+          <div className="mb-5">
+            <TradeCardStrip
+              title="Last look before you click buy"
+              data={{
+                ticker: plan.ticker || null,
+                sideLabel: structureLabel(structure, legs) ?? plan.optionType,
+                engine: "standard",
+                strategy: thesis.strategy || null,
+                thesis: thesis.thesis.trim() || null,
+                invalidation: thesis.invalidation.trim() || null,
+                confidencePre: thesis.confidencePre,
+                setupScore: scoreSetup(setup, { volumeRequired }).total,
+                volumeState: setup.momentumVolume ? "confirming" : "absent",
+                entry: parseFloat(plan.entryPremium) || null,
+                stop: planResult.effectiveStopPremium ?? null,
+                target: parseFloat(plan.targetPremium) || null,
+                rr: planResult.rr ?? null,
+                contracts: parseInt(plan.contracts, 10) || null,
+                delta: optionalNumber(greeks.delta),
+                theta: optionalNumber(greeks.theta),
+                tradeRisk: planResult.tradeRisk ?? null,
+                accountBalance,
+              }}
+            />
+          </div>
+        )}
+
         <YesNo
           label="Did you wait for confirmation?"
           hint="Wait for the candle to close before acting — chasing a spike mid-candle is how you buy the top of the move instead of the start of it."
@@ -653,6 +708,13 @@ export default function XrillWizard({
                 expiration: plan.expiration || null,
               },
               execution: execution as any,
+              thesis: {
+                strategy: thesis.strategy || null,
+                thesis: thesis.thesis,
+                invalidation: thesis.invalidation,
+                confidencePre: thesis.confidencePre,
+              },
+              greeks: { delta: optionalNumber(greeks.delta), theta: optionalNumber(greeks.theta) },
             });
 
             setSubmitting(false);
@@ -844,4 +906,11 @@ function Badge({ tone, children }: { tone: "good" | "blocked"; children: React.R
       {children}
     </span>
   );
+}
+
+// Blank or non-numeric optional fields go to the server as null.
+function optionalNumber(v: string): number | null {
+  if (v.trim() === "") return null;
+  const n = parseFloat(v);
+  return Number.isFinite(n) ? n : null;
 }
