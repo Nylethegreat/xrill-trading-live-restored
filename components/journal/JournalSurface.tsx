@@ -8,6 +8,7 @@ import GlowMossTexture from "@/components/visuals/textures/GlowMossTexture";
 import CloudForestTexture from "@/components/visuals/textures/CloudForestTexture";
 import GlassAuroraTexture from "@/components/visuals/textures/GlassAuroraTexture";
 import RainGlassTexture from "@/components/visuals/textures/RainGlassTexture";
+import CamoTexture from "@/components/visuals/textures/CamoTexture";
 
 // The journal's writing surface (remembered per browser):
 //  - Midnight: the original dark journal
@@ -17,12 +18,14 @@ import RainGlassTexture from "@/components/visuals/textures/RainGlassTexture";
 //  - Scroll: the dyed scroll (8 colors) behind the whole page
 //  - Scenes: Glow Moss, Cloud Forest, Glass Aurora and Rain Glass — full
 //    backdrops behind a dark frosted-glass sheet so entries stay legible
+//  - Camo: Cryo Chrome + Toxic Swirl weapon-camo patterns (one cached tile,
+//    CSS-repeated, so they stay light to render)
 // Paper themes wrap the content in .paper-ink (globals.css), which flips the
 // site's white-on-dark classes to ink-on-paper inside the sheet only.
 
-type JournalBg = "midnight" | "notebook" | "parchment" | "scroll" | "glow_moss" | "cloud_forest" | "glass_aurora" | "rain_glass";
-const IDS: readonly JournalBg[] = ["midnight", "notebook", "parchment", "scroll", "glow_moss", "cloud_forest", "glass_aurora", "rain_glass"];
-const SCENES: readonly JournalBg[] = ["glow_moss", "cloud_forest", "glass_aurora", "rain_glass"];
+type JournalBg = "midnight" | "notebook" | "parchment" | "scroll" | "glow_moss" | "cloud_forest" | "glass_aurora" | "rain_glass" | "camo_cryo" | "camo_toxic";
+const IDS: readonly JournalBg[] = ["midnight", "notebook", "parchment", "scroll", "glow_moss", "cloud_forest", "glass_aurora", "rain_glass", "camo_cryo", "camo_toxic"];
+const SCENES: readonly JournalBg[] = ["glow_moss", "cloud_forest", "glass_aurora", "rain_glass", "camo_cryo", "camo_toxic"];
 
 const OPTIONS: BackdropOption<JournalBg>[] = [
   { id: "midnight", label: "Midnight", swatch: "#0d0f1a" },
@@ -33,6 +36,8 @@ const OPTIONS: BackdropOption<JournalBg>[] = [
   { id: "cloud_forest", label: "Cloud Forest", swatch: "linear-gradient(160deg,#f6b85a,#3c6464 55%,#082224)" },
   { id: "glass_aurora", label: "Glass Aurora", swatch: "linear-gradient(135deg,#22d3ee,#8b5cf6 50%,#fcd34d)" },
   { id: "rain_glass", label: "Rain Glass", swatch: "radial-gradient(circle at 35% 40%,#fbbf24 0 18%,#0a1530 40%,#10b981 80%)" },
+  { id: "camo_cryo", label: "Cryo Chrome Camo", swatch: "repeating-linear-gradient(160deg,#06090f 0 4px,#3b82c4 4px 7px,#0f2741 7px 11px,#e0f4ff 11px 12px)" },
+  { id: "camo_toxic", label: "Toxic Swirl Camo", swatch: "repeating-linear-gradient(160deg,#030604 0 4px,#16a34a 4px 7px,#062a12 7px 11px,#4ade80 11px 12px)" },
 ];
 
 function mulberry32(seed: number) {
@@ -157,6 +162,8 @@ export default function JournalSurface({ children }: { children: React.ReactNode
           {theme === "cloud_forest" && <CloudForestTexture className="opacity-85" />}
           {theme === "glass_aurora" && <GlassAuroraTexture className="opacity-95" />}
           {theme === "rain_glass" && <RainGlassTexture className="opacity-95" />}
+          {theme === "camo_cryo" && <CamoTexture variant="cryo" />}
+          {theme === "camo_toxic" && <CamoTexture variant="toxic" />}
           <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-black/35 to-black/55" />
         </div>
         {chooser}

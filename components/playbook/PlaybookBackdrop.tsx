@@ -14,14 +14,19 @@ import BambooRainTexture from "@/components/visuals/textures/BambooRainTexture";
 import QuestMapTexture from "@/components/visuals/textures/QuestMapTexture";
 import CoralReefTexture from "@/components/visuals/textures/CoralReefTexture";
 import CampusPalmsTexture from "@/components/visuals/textures/CampusPalmsTexture";
+import WarRoomTexture from "@/components/visuals/textures/WarRoomTexture";
+import AlpineLakeTexture from "@/components/visuals/textures/AlpineLakeTexture";
+import BaysideVillaTexture from "@/components/visuals/textures/BaysideVillaTexture";
+import MiamiNightsTexture from "@/components/visuals/textures/MiamiNightsTexture";
 
 // Per-visitor Playbook backdrop (remembered in this browser): the default
 // star field, a moving jellyfish bloom, Fog City, Sunset Palms, Hometown,
 // the dyed scroll, or the four studio sets: Neon Smoke, Penthouse,
 // Bamboo Rain and the Quest Map save point, plus Coral Reef and Campus
-// Palms (a Miami university plaza).
-type PlaybookBg = "stars" | "jellyfish" | "fog_city" | "sunset_palms" | "hometown" | "scroll" | "neon_smoke" | "penthouse" | "bamboo_rain" | "quest_map" | "coral_reef" | "campus";
-const IDS: readonly PlaybookBg[] = ["stars", "jellyfish", "fog_city", "sunset_palms", "hometown", "scroll", "neon_smoke", "penthouse", "bamboo_rain", "quest_map", "coral_reef", "campus"];
+// Palms (a Miami university plaza), War Room (zombies-style command
+// bunker), Alpine Lake, Bayside Villa (Miami pool + palms) and Miami Nights.
+type PlaybookBg = "stars" | "jellyfish" | "fog_city" | "sunset_palms" | "hometown" | "scroll" | "neon_smoke" | "penthouse" | "bamboo_rain" | "quest_map" | "coral_reef" | "campus" | "war_room" | "alpine_lake" | "bayside_villa" | "miami_nights";
+const IDS: readonly PlaybookBg[] = ["stars", "jellyfish", "fog_city", "sunset_palms", "hometown", "scroll", "neon_smoke", "penthouse", "bamboo_rain", "quest_map", "coral_reef", "campus", "war_room", "alpine_lake", "bayside_villa", "miami_nights"];
 
 const OPTIONS: BackdropOption<PlaybookBg>[] = [
   { id: "stars", label: "Star Field", swatch: "radial-gradient(circle,#fde68a,#1e1b4b 70%)" },
@@ -36,6 +41,10 @@ const OPTIONS: BackdropOption<PlaybookBg>[] = [
   { id: "quest_map", label: "Quest Map", swatch: "radial-gradient(circle,#bfdbfe 0 12%,#2563eb 30%,#0f172a 70%)" },
   { id: "coral_reef", label: "Coral Reef", swatch: "radial-gradient(circle at 65% 15%,#fffbe6,#4fa3b0 30%,#0d3b5c 65%,#6d4fd8)" },
   { id: "campus", label: "Campus Palms", swatch: "linear-gradient(180deg,#1e4fa8,#9cc7ea 55%,#e7a83a 56% 70%,#2f6b3c 71%)" },
+  { id: "war_room", label: "War Room", swatch: "radial-gradient(circle at 50% 85%,#ff8a1f 0 14%,#0b0f17 40%),linear-gradient(90deg,#ff4d4d,#0b0f17 30% 70%,#ff4d4d)" },
+  { id: "alpine_lake", label: "Alpine Lake", swatch: "linear-gradient(180deg,#c9dcef,#e9a27a 40%,#3fb3d6 56%,#1b5f86)" },
+  { id: "bayside_villa", label: "Bayside Villa", swatch: "linear-gradient(180deg,#2f86d8,#8cc4ee 45%,#5fe0e6 55%,#19b6c9 75%,#e9dcc3)" },
+  { id: "miami_nights", label: "Miami Nights", swatch: "linear-gradient(180deg,#0a1a4a,#1d3c8f 40%,#ffd27a 55%,#4ade80 60%,#070d22)" },
 ];
 
 export default function PlaybookBackdrop() {
@@ -57,11 +66,15 @@ export default function PlaybookBackdrop() {
           {bg === "quest_map" && <QuestMapTexture className="opacity-90" />}
           {bg === "coral_reef" && <CoralReefTexture className="opacity-90" />}
           {bg === "campus" && <CampusPalmsTexture className="opacity-85" />}
+          {bg === "war_room" && <WarRoomTexture className="opacity-95" />}
+          {bg === "alpine_lake" && <AlpineLakeTexture className="opacity-85" />}
+          {bg === "bayside_villa" && <BaysideVillaTexture className="opacity-85" />}
+          {bg === "miami_nights" && <MiamiNightsTexture className="opacity-90" />}
           {/* keep text legible over the brighter backdrops */}
           {bg !== "scroll" && (
             <div
               className={`absolute inset-0 bg-gradient-to-b ${
-                bg === "campus" ? "from-black/45 via-black/55 to-black/70" : "from-black/20 via-black/35 to-black/55"
+                bg === "campus" || bg === "alpine_lake" || bg === "bayside_villa" ? "from-black/45 via-black/55 to-black/70" : "from-black/20 via-black/35 to-black/55"
               }`}
             />
           )}
