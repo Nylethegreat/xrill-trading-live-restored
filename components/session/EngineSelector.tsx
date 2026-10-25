@@ -4,6 +4,14 @@ import { useState } from "react";
 import Link from "next/link";
 import XrillWizard from "@/components/XrillWizard";
 import XrillFastWizard from "@/components/XrillFastWizard";
+import { usePersistentChoice } from "@/lib/usePersistentChoice";
+import {
+  ENGINE_SKINS,
+  EngineSkinChooser,
+  NotepadPicker,
+  PinboardPicker,
+  type EngineSkin,
+} from "@/components/session/EngineSkins";
 
 type Engine = "swing" | "daytrade" | null;
 
@@ -29,6 +37,9 @@ export default function EngineSelector({
   recommendedOpen?: number;
 }) {
   const [engine, setEngine] = useState<Engine>(initialEngine ?? null);
+  // Per-visitor look for this picker (remembered in this browser): the
+  // neon default, a corkboard with pinned index cards, or a ruled notepad.
+  const [skin, setSkin] = usePersistentChoice<EngineSkin>("xrill-engine-skin", ENGINE_SKINS, "neon");
 
   if (engine === "swing") {
     return <XrillWizard accountBalance={accountBalance} riskPercent={riskPercent} stopPercent={stopPercent} />;
@@ -38,8 +49,28 @@ export default function EngineSelector({
     return <XrillFastWizard accountBalance={accountBalance} riskPercent={riskPercent} stopPercent={stopPercent} />;
   }
 
+  const warningText =
+    openCount >= recommendedOpen && openCount < openLimit
+      ? `You have ${openCount} positions open. A new one would be #${openCount + 1} of ${openLimit}: allowed, but XRILL doesn't recommend more than ${recommendedOpen} at once. A spread counts as one position.`
+      : null;
+
+  if (skin !== "neon") {
+    const Picker = skin === "pinboard" ? PinboardPicker : NotepadPicker;
+    return (
+      <div className="mx-auto max-w-2xl px-4 py-10">
+        <div className="mb-8">
+          <EngineSkinChooser value={skin} onChange={setSkin} />
+        </div>
+        <Picker onSwing={() => setEngine("swing")} onDaytrade={() => setEngine("daytrade")} warning={warningText} />
+      </div>
+    );
+  }
+
   return (
     <div className="mx-auto max-w-2xl px-4 py-16">
+      <div className="mb-8 -mt-6">
+        <EngineSkinChooser value={skin} onChange={setSkin} />
+      </div>
       <h1 className="text-center font-mono text-xl font-bold tracking-widest text-white">CHOOSE YOUR ENGINE</h1>
       <p className="mt-2 text-center text-sm text-white/50">
         Same account, same risk limits — different pace for a different kind of trade.
