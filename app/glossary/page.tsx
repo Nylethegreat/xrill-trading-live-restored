@@ -6,6 +6,8 @@ import RiverGlow from "@/components/visuals/RiverGlow";
 import { STRATEGIES } from "@/lib/data/strategies";
 import { GREEKS } from "@/lib/data/greeks";
 import { TRADING_STYLES } from "@/lib/data/trading-styles";
+import { usePersistentChoice } from "@/lib/usePersistentChoice";
+import GlossaryBook, { GLOSSARY_LOOKS, GlossaryLookChooser, type GlossaryLook } from "@/components/glossary/GlossaryBook";
 
 type Term = {
   term: string;
@@ -394,6 +396,8 @@ export default function GlossaryPage() {
   const [query, setQuery] = useState("");
   const [active, setActive] = useState<string>("All");
   const [openIds, setOpenIds] = useState<Set<string>>(new Set());
+  // Per-visitor look (remembered in this browser): HUD cards or an open book.
+  const [look, setLook] = usePersistentChoice<GlossaryLook>("xrill-glossary-look", GLOSSARY_LOOKS, "hud");
 
   const normalized = query.trim().toLowerCase();
 
@@ -437,6 +441,34 @@ export default function GlossaryPage() {
 
   const pills = ["All", ...CATEGORIES.map((c) => c.name)];
 
+  const status =
+    cards.length === 0
+      ? "No terms match."
+      : `${cards.length} term${cards.length === 1 ? "" : "s"}${active === "All" ? "" : ` in ${active}`}${normalized ? ` matching "${query.trim()}"` : ""}`;
+
+  if (look === "book") {
+    return (
+      <div className="relative mx-auto max-w-6xl px-4 pb-16 pt-8">
+        <GlossaryLookChooser value={look} onChange={setLook} />
+        <GlossaryBook
+          query={query}
+          onQuery={setQuery}
+          pills={pills.map((name) => ({ name, label: name === "All" ? "All terms" : PILL_LABELS[name] ?? name, count: counts[name] ?? 0 }))}
+          active={active}
+          onActive={setActive}
+          entries={cards}
+          status={status}
+          otherSide={OTHER_SIDE}
+          onOtherSide={() => {
+            setQuery("");
+            setActive(OTHER_SIDE);
+          }}
+          accentFor={accentFor}
+        />
+      </div>
+    );
+  }
+
   return (
     <div className="relative mx-auto max-w-6xl px-4 py-12">
       <div className="pointer-events-none absolute inset-x-0 -top-4 h-40 opacity-40">
@@ -444,6 +476,9 @@ export default function GlossaryPage() {
       </div>
       <div className="pointer-events-none absolute -left-24 top-0 hidden h-[880px] w-20 opacity-80 xl:block">
         <RiverGlow />
+      </div>
+      <div className="relative mb-4">
+        <GlossaryLookChooser value={look} onChange={setLook} />
       </div>
       <h1 className="relative font-mono text-xl font-bold tracking-widest text-white">📖 TRADING GLOSSARY</h1>
       <p className="relative mt-1 text-sm text-white/50">
@@ -499,9 +534,7 @@ export default function GlossaryPage() {
       </div>
 
       <p className="relative mt-3 text-xs text-white/40">
-        {cards.length === 0
-          ? "No terms match."
-          : `${cards.length} term${cards.length === 1 ? "" : "s"}${active === "All" ? "" : ` in ${active}`}${normalized ? ` matching "${query.trim()}"` : ""}`}
+        {status}
       </p>
 
       <div className="relative mt-4 grid grid-cols-1 items-start gap-3 sm:grid-cols-2 lg:grid-cols-3">
