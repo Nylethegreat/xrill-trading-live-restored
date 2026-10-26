@@ -42,3 +42,65 @@ function buildPlan(ratePercent: number): WeeklyRatePlan {
 export const WEEKLY_RATE_PLANS: WeeklyRatePlan[] = [100, 75, 50].map(buildPlan);
 
 export const SCALING_MILESTONE_WEEKS = [0, 3, 6, 9, 12, 15, 16] as const;
+
+// ---------------------------------------------------------------------------
+// Realistic variant: red weeks. Nobody wins every week, so the milestone
+// table can model a losing week every `redEvery` weeks (week numbers that
+// are a multiple of redEvery) at `redPercent` (e.g. 25 = a -25% week).
+// redEvery = 0 means "never" -- the original every-week-green model.
+// ---------------------------------------------------------------------------
+export const RED_EVERY_OPTIONS = [
+  { every: 0, label: "Never (ideal)" },
+  { every: 4, label: "1 in 4 weeks" },
+  { every: 3, label: "1 in 3 weeks" },
+  { every: 2, label: "1 in 2 weeks" },
+] as const;
+
+export function isRedWeek(week: number, redEvery: number): boolean {
+  return redEvery > 0 && week > 0 && week % redEvery === 0;
+}
+
+export function balanceWithRedWeeks(
+  week: number,
+  greenPercent: number,
+  redPercent: number,
+  redEvery: number,
+  principal = SCALING_PRINCIPAL
+): number {
+  let bal = principal;
+  for (let w = 1; w <= week; w++) {
+    bal *= isRedWeek(w, redEvery) ? 1 - redPercent / 100 : 1 + greenPercent / 100;
+  }
+  return bal;
+}
+
+// Average weekly growth once red weeks are mixed in (geometric mean of one
+// full green/red cycle), as a percent. Can be negative.
+export function effectiveWeeklyPercent(greenPercent: number, redPercent: number, redEvery: number): number {
+  if (redEvery <= 0) return greenPercent;
+  const cycle = Math.pow(1 + greenPercent / 100, redEvery - 1) * (1 - redPercent / 100);
+  return (Math.pow(cycle, 1 / redEvery) - 1) * 100;
+}
+
+// First whole week the balance reaches `target`, or null if it never does
+// (effective growth <= 0) within `cap` weeks.
+export function weeksToTarget(
+  greenPercent: number,
+  redPercent: number,
+  redEvery: number,
+  target = SCALING_TARGET,
+  principal = SCALING_PRINCIPAL,
+  cap = 520
+): number | null {
+  if (effectiveWeeklyPercent(greenPercent, redPercent, redEvery) <= 0) return null;
+  let bal = principal;
+  for (let w = 1; w <= cap; w++) {
+    bal *= isRedWeek(w, redEvery) ? 1 - redPercent / 100 : 1 + greenPercent / 100;
+    if (bal >= target) return w;
+  }
+  return null;
+}
+
+// Paces shown in the realistic milestone table: the original three plus a
+// steadier 25% pace.
+export const MILESTONE_PACES = [100, 75, 50, 25] as const;

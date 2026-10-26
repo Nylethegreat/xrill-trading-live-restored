@@ -1,11 +1,11 @@
 import Badge from "@/components/Badge";
-import CompoundScalingRoadmap from "@/components/playbook/CompoundScalingRoadmap";
+import CompoundScalingRoadmap, { AdjustingExitsAtPace, ScalingFormula } from "@/components/playbook/CompoundScalingRoadmap";
 import ExecutionCompoundingExamples from "@/components/playbook/ExecutionCompoundingExamples";
 import SuperStar from "@/components/visuals/SuperStar";
 import StarUnlocks from "@/components/playbook/StarUnlocks";
 import BouncingStarsToggle from "@/components/visuals/BouncingStarsToggle";
 import WhizzingBanner from "@/components/visuals/WhizzingBanner";
-import { SCALING_PRINCIPAL, WEEKLY_RATE_PLANS } from "@/lib/data/scaling";
+import { SCALING_PRINCIPAL } from "@/lib/data/scaling";
 import { createClient } from "@/lib/supabase/server";
 import HeaderText from "@/components/HeaderText";
 import RelicIcon from "@/components/visuals/RelicIcon";
@@ -77,7 +77,15 @@ export default async function PlaybookPage() {
       <div className="relative -mx-4 -mt-2 h-32 overflow-hidden sm:h-40">
         <WhizzingBanner className="h-full w-full" />
       </div>
-      <BouncingStarsToggle />
+      {/* Star Unlocks first -- above the star and backdrop settings */}
+      <div className="-mt-6">
+        <Section title="⭐ Star Unlocks" subtitle="Real balance milestones — no shortcuts, just growth">
+          <StarUnlocks balance={balance} />
+        </Section>
+      </div>
+      <div className="mt-6">
+        <BouncingStarsToggle />
+      </div>
       <div className="relative mt-3">
         <PlaybookBackdrop />
       </div>
@@ -88,12 +96,6 @@ export default async function PlaybookPage() {
           subtitle="The Dynamic Risk Tiering Matrix — max risk per trade scales with the weekly pace you're actually chasing."
         >
           <ExecutionCompoundingExamples />
-        </Section>
-      </div>
-
-      <div className="mt-10">
-        <Section title="⭐ Star Unlocks" subtitle="Real balance milestones — no shortcuts, just growth">
-          <StarUnlocks balance={balance} />
         </Section>
       </div>
 
@@ -133,10 +135,8 @@ export default async function PlaybookPage() {
       </p>
 
       <Section
-        title={`🚀 Compound Scaling Roadmap ($${SCALING_PRINCIPAL} → $100K in ${Math.min(
-          ...WEEKLY_RATE_PLANS.map((p) => p.weeks)
-        )}–${Math.max(...WEEKLY_RATE_PLANS.map((p) => p.weeks))} Weeks)`}
-        subtitle="A simplified weekly-return illustration of compounding — separate from the position-sizing roadmap below, which is what the system actually enforces"
+        title={`🚀 Compound Scaling Roadmap ($${SCALING_PRINCIPAL} → $100K)`}
+        subtitle="The ideal vs. the realistic (red weeks included), plus your own weekly track — separate from the position-sizing roadmap below, which is what the system actually enforces"
       >
         <CompoundScalingRoadmap />
       </Section>
@@ -249,6 +249,13 @@ export default async function PlaybookPage() {
           .
         </p>
       </div>
+
+      <Section title="🧮 The Math & The Exits" subtitle="The equation behind the roadmap, and how exits flex with the pace you chase">
+        <div className="space-y-4">
+          <ScalingFormula />
+          <AdjustingExitsAtPace />
+        </div>
+      </Section>
     </div>
   );
 }

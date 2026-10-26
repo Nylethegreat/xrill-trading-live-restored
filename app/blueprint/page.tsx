@@ -4,7 +4,7 @@ import HeaderText from "@/components/HeaderText";
 import SectorLinks from "@/components/SectorLinks";
 import BlueprintEditor, { type SavepointRow } from "@/components/blueprint/BlueprintEditor";
 import VisionBoard from "@/components/playbook/VisionBoard";
-import QuestMapTexture from "@/components/visuals/textures/QuestMapTexture";
+import BlueprintBackdrop from "@/components/blueprint/BlueprintBackdrop";
 import FireworksCelebration from "@/components/visuals/FireworksCelebration";
 import { DEFAULT_BLUEPRINT, normalizeBlueprint } from "@/lib/blueprint";
 import { getVisionItems } from "@/lib/visionBoard";
@@ -32,14 +32,13 @@ export default async function BlueprintPage() {
 
   return (
     <div className="relative mx-auto max-w-6xl px-4 py-10">
-      <div aria-hidden="true" className="pointer-events-none fixed inset-0 -z-20">
-        <QuestMapTexture idPrefix="quest-blueprint" className="opacity-45" />
-        <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-black/50 to-black/75" />
-      </div>
       <HeaderText className="font-mono text-xl font-bold tracking-widest">🧭 MY BLUEPRINT</HeaderText>
       <p className="mt-1 text-sm text-white/50">
         Your plan, your path, your rules, and the pictures that remind you why. Save often; savepoints let you load back to any moment.
       </p>
+      <div className="mt-3">
+        <BlueprintBackdrop />
+      </div>
       <FireworksCelebration balance={balance} className="mt-4" />
       <div className="mt-6">
         <BlueprintEditor initial={blueprint} savepoints={(sps ?? []) as SavepointRow[]} balance={balance} />
