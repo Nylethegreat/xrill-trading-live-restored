@@ -675,6 +675,7 @@ export default function XrillFastWizard({
                 sideLabel: structureLabel(structure, legs) ?? plan.optionType,
                 engine: "daytrade",
                 strategy: thesis.strategy || null,
+                tradingStyle: thesis.tradingStyle || null,
                 thesis: thesis.thesis.trim() || null,
                 invalidation: thesis.invalidation.trim() || null,
                 confidencePre: thesis.confidencePre,
@@ -740,6 +741,7 @@ export default function XrillFastWizard({
               execution: execution as any,
               thesis: {
                 strategy: thesis.strategy || null,
+                tradingStyle: thesis.tradingStyle || null,
                 thesis: thesis.thesis,
                 invalidation: thesis.invalidation,
                 confidencePre: thesis.confidencePre,

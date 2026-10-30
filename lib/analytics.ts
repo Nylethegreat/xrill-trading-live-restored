@@ -10,6 +10,7 @@ export interface SessionOutcomeRow {
   session_date: string | null;
   market_session: string | null;
   setup_type: string | null;
+  trading_style?: string | null;
   time_of_day: string | null;
   ticker: string | null;
   direction: string | null;

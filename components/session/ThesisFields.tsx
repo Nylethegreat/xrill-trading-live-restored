@@ -2,15 +2,17 @@
 
 import { OTHER_STRATEGY, STRATEGIES, STRATEGY_CATEGORIES, getStrategy } from "@/lib/data/strategies";
 import { INVALIDATION_MAX, THESIS_MAX } from "@/lib/thesis";
+import { TRADING_STYLES, getTradingStyle } from "@/lib/data/tradingStyles";
 
 export interface ThesisState {
   strategy: string;
+  tradingStyle: string;
   thesis: string;
   invalidation: string;
   confidencePre: number | null;
 }
 
-export const EMPTY_THESIS: ThesisState = { strategy: "", thesis: "", invalidation: "", confidencePre: null };
+export const EMPTY_THESIS: ThesisState = { strategy: "", tradingStyle: "", thesis: "", invalidation: "", confidencePre: null };
 
 // Literal class strings so Tailwind's JIT picks them up.
 const TONE = {
@@ -33,6 +35,7 @@ export default function ThesisFields({
 }) {
   const t = TONE[tone];
   const picked = getStrategy(value.strategy);
+  const style = getTradingStyle(value.tradingStyle);
 
   return (
     <div className="mb-5 space-y-3 rounded border border-white/10 bg-white/5 p-3">
@@ -61,6 +64,29 @@ export default function ThesisFields({
             <span className={picked.volumeRequired ? "text-caution" : t.text}>
               {picked.volumeRequired ? "Needs volume to confirm." : "Volume is a bonus here, not a requirement."}
             </span>
+          </p>
+        )}
+      </div>
+
+      <div>
+        <label className="mb-1 block text-sm text-white/70">
+          Trading style <span className="text-xs text-white/35">(optional, how long you plan to hold)</span>
+        </label>
+        <select
+          value={value.tradingStyle}
+          onChange={(e) => onChange({ ...value, tradingStyle: e.target.value })}
+          className={`w-full rounded border border-white/20 bg-surface px-3 py-2 text-sm outline-none ${t.focus}`}
+        >
+          <option value="">Pick your holding horizon…</option>
+          {TRADING_STYLES.map((s) => (
+            <option key={s.key} value={s.key}>
+              {s.name} · {s.horizon}
+            </option>
+          ))}
+        </select>
+        {style && (
+          <p className="mt-1 text-xs text-white/45">
+            <span className={t.text}>{style.horizon}.</span> {style.definition}
           </p>
         )}
       </div>

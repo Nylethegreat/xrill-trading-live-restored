@@ -1,5 +1,6 @@
 import { explainGreeks, exitReasonLabel, thesisResultLabel } from "@/lib/thesis";
 import { getStrategy } from "@/lib/data/strategies";
+import { getTradingStyle } from "@/lib/data/tradingStyles";
 
 // Everything about one trade in a single left-to-right swipe: the why,
 // the score, the plan, the contract, the risk, and how sure you were.
@@ -12,6 +13,7 @@ export interface TradeCardData {
   sideLabel: string | null; // "CALL", "PUT", or a spread label
   engine: "standard" | "daytrade" | string | null;
   strategy: string | null;
+  tradingStyle?: string | null; // TRADING_STYLES key
   thesis: string | null;
   invalidation: string | null;
   confidencePre: number | null;
@@ -106,6 +108,11 @@ export default function TradeCardStrip({ data, title }: { data: TradeCardData; t
             {data.setupScore !== null ? `${data.setupScore}/25` : "—"}
           </p>
           <p className="text-xs text-white/60">{data.strategy ?? "No strategy picked"}</p>
+          {getTradingStyle(data.tradingStyle) && (
+            <p className="text-[11px] text-white/45">
+              {getTradingStyle(data.tradingStyle)!.name} · {getTradingStyle(data.tradingStyle)!.horizon}
+            </p>
+          )}
           {data.volumeState && (
             <span
               className={`mt-2 inline-block rounded-full border px-2 py-0.5 text-[10px] ${

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { tradingStyleLabel } from "@/lib/data/tradingStyles";
 import type { OpenPosition } from "@/lib/data/openPositions";
 import { structureLabel } from "@/lib/structures";
 
@@ -126,6 +127,7 @@ export default function OpenPositionCard({ session }: { session: OpenPosition })
         <div className="mt-3 rounded border border-white/10 bg-black/20 px-3 py-2 text-sm">
           <p className="text-[10px] font-semibold uppercase tracking-wide text-white/40">
             Why you&apos;re in{session.setup_type ? ` · ${session.setup_type}` : ""}
+            {tradingStyleLabel(session.trading_style) ? ` · ${tradingStyleLabel(session.trading_style)}` : ""}
           </p>
           {session.thesis && <p className="mt-0.5 text-white/85">&ldquo;{session.thesis}&rdquo;</p>}
           {session.invalidation && (

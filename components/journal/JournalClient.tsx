@@ -9,6 +9,7 @@ import type { ScreenshotRow, TrimRow } from "@/lib/data/xrill-analytics-data";
 import { structureLabel } from "@/lib/structures";
 import { MishapChecklist, ScreenshotStrip, TrimPanel } from "@/components/journal/TradeExtras";
 import TradeCardStrip, { type TradeCardData } from "@/components/session/TradeCardStrip";
+import { tradingStyleLabel } from "@/lib/data/tradingStyles";
 import { EXIT_REASONS, THESIS_RESULTS, type ExitReason, type ThesisResult } from "@/lib/thesis";
 
 function toCard(r: SessionOutcomeRow): TradeCardData {
@@ -17,6 +18,7 @@ function toCard(r: SessionOutcomeRow): TradeCardData {
     sideLabel: structureLabel(r.structure, r.legs) ?? r.direction,
     engine: r.engine,
     strategy: r.setup_type,
+    tradingStyle: r.trading_style ?? null,
     thesis: r.thesis,
     invalidation: r.invalidation,
     confidencePre: r.confidence_pre,
@@ -436,6 +438,7 @@ export default function JournalClient({
                   <div className="mt-3 rounded border border-primary/30 bg-primary/10 p-3 text-sm">
                     <p className="text-[11px] font-semibold uppercase tracking-wide text-primary">
                       Why you're in{r.setup_type ? ` · ${r.setup_type}` : ""}
+                      {tradingStyleLabel(r.trading_style) ? ` · ${tradingStyleLabel(r.trading_style)}` : ""}
                     </p>
                     {r.thesis && <p className="mt-1 text-white/85">&ldquo;{r.thesis}&rdquo;</p>}
                     {r.invalidation && (

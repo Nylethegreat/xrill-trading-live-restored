@@ -5,9 +5,11 @@
 // XRILL Intelligence.
 
 import { isKnownStrategyChoice, strategyNeedsVolume } from "@/lib/data/strategies";
+import { isTradingStyleKey } from "@/lib/data/tradingStyles";
 
 export interface ThesisInput {
   strategy?: string | null; // a STRATEGIES name or OTHER_STRATEGY
+  tradingStyle?: string | null; // a TRADING_STYLES key (holding horizon)
   thesis?: string | null; // what you think happens / how it plays out
   invalidation?: string | null; // "I'm wrong if..."
   confidencePre?: number | null; // 1-10, before entry
@@ -61,6 +63,7 @@ const cleanRating = (v: unknown) =>
 export function cleanThesis(t: ThesisInput | null | undefined) {
   return {
     setup_type: isKnownStrategyChoice(t?.strategy) ? t!.strategy! : null,
+    trading_style: isTradingStyleKey(t?.tradingStyle) ? t!.tradingStyle! : null,
     thesis: cleanText(t?.thesis, THESIS_MAX),
     invalidation: cleanText(t?.invalidation, INVALIDATION_MAX),
     confidence_pre: cleanRating(t?.confidencePre),

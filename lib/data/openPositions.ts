@@ -29,6 +29,7 @@ export interface OpenPosition {
   legs: unknown;
   logged_after: boolean;
   setup_type: string | null; // strategy picked in the engine
+  trading_style: string | null; // holding horizon picked in the engine
   thesis: string | null; // why you're in
   invalidation: string | null; // "I'm wrong if..."
   trimmedContracts: number; // closed early via trims
@@ -53,7 +54,7 @@ export async function getOpenPositionsStatus(userId: string): Promise<OpenPositi
     supabase
       .from("xrill_sessions")
       .select(
-        "id, ticker, direction, trade_score, created_at, entry, stop, target, trade_risk, engine, trade_authorized, contracts, strike, expiration, structure, legs, logged_after, setup_type, thesis, invalidation"
+        "id, ticker, direction, trade_score, created_at, entry, stop, target, trade_risk, engine, trade_authorized, contracts, strike, expiration, structure, legs, logged_after, setup_type, trading_style, thesis, invalidation"
       )
       .eq("user_id", userId)
       // Authorized trades, plus trades logged after the fact (emergency
@@ -98,6 +99,7 @@ export async function getOpenPositionsStatus(userId: string): Promise<OpenPositi
         legs: s.legs,
         logged_after: !!s.logged_after,
         setup_type: s.setup_type ?? null,
+        trading_style: s.trading_style ?? null,
         thesis: s.thesis ?? null,
         invalidation: s.invalidation ?? null,
         trimmedContracts: trimmed.contracts,

@@ -11,7 +11,7 @@ export async function getSessionOutcomeRows(userId: string): Promise<SessionOutc
   const { data, error } = await supabase
     .from("xrill_sessions")
     .select(
-      `id, created_at, session_date, market_session, setup_type, time_of_day,
+      `id, created_at, session_date, market_session, setup_type, trading_style, time_of_day,
        ticker, direction, entry, stop, target, contracts, point_value,
        risk_points, reward_points, trade_risk, trade_reward, rr, max_risk,
        daily_score, trade_gate_score, setup_score, risk_approved,
@@ -39,6 +39,7 @@ export async function getSessionOutcomeRows(userId: string): Promise<SessionOutc
       session_date: row.session_date,
       market_session: row.market_session,
       setup_type: row.setup_type,
+      trading_style: row.trading_style ?? null,
       time_of_day: row.time_of_day,
       ticker: row.ticker,
       direction: row.direction,

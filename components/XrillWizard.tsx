@@ -643,6 +643,7 @@ export default function XrillWizard({
                 sideLabel: structureLabel(structure, legs) ?? plan.optionType,
                 engine: "standard",
                 strategy: thesis.strategy || null,
+                tradingStyle: thesis.tradingStyle || null,
                 thesis: thesis.thesis.trim() || null,
                 invalidation: thesis.invalidation.trim() || null,
                 confidencePre: thesis.confidencePre,
@@ -710,6 +711,7 @@ export default function XrillWizard({
               execution: execution as any,
               thesis: {
                 strategy: thesis.strategy || null,
+                tradingStyle: thesis.tradingStyle || null,
                 thesis: thesis.thesis,
                 invalidation: thesis.invalidation,
                 confidencePre: thesis.confidencePre,
