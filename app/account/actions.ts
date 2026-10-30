@@ -1,5 +1,6 @@
 "use server";
 
+import { MAX_MAX_TRADES, MIN_MAX_TRADES } from "@/lib/tradeCap";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
@@ -105,6 +106,7 @@ export async function saveAccountSettings(formData: FormData) {
     risk_percent: profile.riskPercent,
     stop_loss_percent: profile.stopPercent,
     daily_loss_limit: daily.value,
+    ...tradeCapPayload(formData.get("max_trades_per_day")),
     updated_at: new Date().toISOString(),
   });
 
@@ -269,4 +271,12 @@ async function startTierCheckout(tier: "pro" | "elite", priceId: string | undefi
   if (!result.ok) redirect(`/account?error=${encodeURIComponent(result.message)}`);
   if (!result.url) redirect("/account?error=Could not start checkout.");
   redirect(result.url);
+}
+
+// Only sent when the field was on the form and valid; the database trigger
+// decides whether a raise applies now or tomorrow.
+function tradeCapPayload(raw: FormDataEntryValue | null): { max_trades_per_day?: number } {
+  const n = Number(raw);
+  if (raw === null || !Number.isInteger(n)) return {};
+  return { max_trades_per_day: Math.min(MAX_MAX_TRADES, Math.max(MIN_MAX_TRADES, n)) };
 }

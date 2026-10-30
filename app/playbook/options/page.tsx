@@ -1,5 +1,7 @@
 import GreeksDashboard from "@/components/playbook/GreeksDashboard";
 import HeaderText from "@/components/HeaderText";
+import Link from "next/link";
+import ZeroDteGreeks from "@/components/playbook/ZeroDteGreeks";
 
 export default function OptionsPlaybookPage() {
   return (
@@ -23,6 +25,19 @@ export default function OptionsPlaybookPage() {
 
       <div className="mt-6">
         <GreeksDashboard />
+      </div>
+
+      <div className="mt-10">
+        <h2 className="font-mono text-sm font-bold tracking-widest text-white">0DTE: THE GREEKS ON EXPIRATION DAY</h2>
+        <p className="mt-1 text-sm text-white/50">
+          Same dials, turned all the way up. This is why 0DTE gets its own rules.{" "}
+          <Link href="/playbook/zero-dte" className="text-accent underline">
+            See the 0DTE lane →
+          </Link>
+        </p>
+        <div className="mt-4">
+          <ZeroDteGreeks />
+        </div>
       </div>
     </div>
   );

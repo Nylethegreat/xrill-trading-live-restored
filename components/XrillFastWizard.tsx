@@ -1,5 +1,6 @@
 "use client";
 
+import ZeroDteLane from "@/components/session/ZeroDteLane";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import AllocationWall from "@/components/session/AllocationWall";
@@ -176,10 +177,12 @@ export default function XrillFastWizard({
   accountBalance,
   riskPercent: rawRiskPercent,
   stopPercent = DEFAULT_STOP_PERCENT,
+  zeroDteTaken = 0,
 }: {
   accountBalance: number;
   riskPercent: number;
   stopPercent?: number;
+  zeroDteTaken?: number;
 }) {
   // Clamp once so every row this wizard shows ("Risk per trade 22%")
   // matches what the Risk Manager actually enforces.
@@ -533,6 +536,17 @@ export default function XrillFastWizard({
           <Field label="Contracts">
             <NumberInput value={plan.contracts} onChange={(v) => setPlan({ ...plan, contracts: v })} />
           </Field>
+
+          {structure === "single" && (
+            <ZeroDteLane
+              expiration={plan.expiration}
+              entry={hasEntry ? entry : null}
+              contracts={contracts}
+              zeroDteTaken={zeroDteTaken}
+              onPickToday={(d) => setPlan({ ...plan, expiration: d })}
+              tone="daytrade"
+            />
+          )}
 
           <GreeksFields
             delta={greeks.delta}

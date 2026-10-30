@@ -6,6 +6,8 @@ import { AFTER_FACT_REASONS } from "@/lib/afterFact";
 import { getDailyLossStatus, getTradingDateET } from "@/lib/data/dailyLossLock";
 import { getTwoLossStatus } from "@/lib/data/twoLossLock";
 import { getOpenPositionsStatus } from "@/lib/data/openPositions";
+import { getTradeCapStatus, type TradeCapStatus } from "@/lib/data/tradeCap";
+import { zeroDteBlockReason } from "@/lib/zeroDte";
 import { cleanGreeks, cleanThesis, strategyNeedsVolume, type GreeksInput, type ThesisInput } from "@/lib/thesis";
 import {
   scoreDailyCheckIn,
@@ -109,6 +111,15 @@ export interface SubmitSessionResult {
   sessionId?: number;
 }
 
+// Daily Trade Cap + 0DTE lane, checked server-side by both engines after
+// the loss locks. Returns an error message to block with, or null.
+function capOrZeroDteBlock(cap: TradeCapStatus, expiration: string | null | undefined): string | null {
+  if (cap.locked) {
+    return `Daily Trade Cap: ${cap.taken} of ${cap.cap} trades already taken today — terminal is locked until tomorrow.`;
+  }
+  return zeroDteBlockReason({ expiration, authorizedZeroDteToday: cap.zeroDteAuthorized });
+}
+
 export async function submitXrillSession(
   input: SubmitSessionInput
 ): Promise<SubmitSessionResult> {
@@ -148,6 +159,10 @@ export async function submitXrillSession(
       error: `Concurrent Trade Limit: ${openPositions.count} position${openPositions.count === 1 ? "" : "s"} already open (max ${openPositions.limit}) — journal or close an existing trade in the Journal before opening another.`,
     };
   }
+
+  const tradeCap = await getTradeCapStatus(user.id);
+  const capBlock = capOrZeroDteBlock(tradeCap, cleanContractDetails(null, input.plan.expiration).expiration);
+  if (capBlock) return { success: false, error: capBlock };
 
   const daily = scoreDailyCheckIn(input.daily);
   if (!daily.passed) return { success: false, error: "Daily Check-In failed — session not logged." };
@@ -335,6 +350,10 @@ export async function submitFastSession(
     };
   }
 
+  const tradeCap = await getTradeCapStatus(user.id);
+  const capBlock = capOrZeroDteBlock(tradeCap, cleanContractDetails(null, input.plan.expiration).expiration);
+  if (capBlock) return { success: false, error: capBlock };
+
   const gate = scoreFastTradeGate(input.gate);
   if (!gate.passed) return { success: false, error: "Trade Gate failed — session not logged." };
 
@@ -467,10 +486,11 @@ export async function submitAfterFactSession(input: SubmitAfterFactInput): Promi
   const riskPercent = account?.risk_percent ?? 1;
   const risk = evaluateRisk(plan.tradeRisk!, input.plan.contracts, balance, riskPercent, plan.totalOutlay!, account?.stop_loss_percent ?? undefined);
 
-  const [dailyLoss, twoLoss, openPositions] = await Promise.all([
+  const [dailyLoss, twoLoss, openPositions, tradeCap] = await Promise.all([
     getDailyLossStatus(user.id),
     getTwoLossStatus(user.id),
     getOpenPositionsStatus(user.id),
+    getTradeCapStatus(user.id),
   ]);
 
   const warnings: string[] = [];
@@ -479,6 +499,12 @@ export async function submitAfterFactSession(input: SubmitAfterFactInput): Promi
   if (dailyLoss.locked) warnings.push("Taken while your Daily Loss Limit was already hit.");
   if (twoLoss.locked) warnings.push("Taken during a Two-Loss Lockout.");
   if (openPositions.atLimit) warnings.push(`Over the ${openPositions.limit}-position limit.`);
+  if (tradeCap.locked) warnings.push(`Over your Daily Trade Cap (${tradeCap.taken} of ${tradeCap.cap} already taken today).`);
+  warnings.push(
+    tradeCap.taken + 1 >= tradeCap.cap
+      ? "This counts toward your Daily Trade Cap — the terminal locks for the rest of today."
+      : `This counts toward your Daily Trade Cap (${tradeCap.taken + 1} of ${tradeCap.cap} today).`
+  );
 
   const { data: row, error } = await supabase
     .from("xrill_sessions")

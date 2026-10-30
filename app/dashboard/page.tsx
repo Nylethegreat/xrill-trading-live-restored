@@ -21,6 +21,8 @@ import TwoLossLockMeter from "@/components/TwoLossLockMeter";
 import { getDailyLossStatus } from "@/lib/data/dailyLossLock";
 import { getTwoLossStatus } from "@/lib/data/twoLossLock";
 import { getOpenPositionsStatus } from "@/lib/data/openPositions";
+import { getTradeCapStatus } from "@/lib/data/tradeCap";
+import TradeCapMeter from "@/components/TradeCapMeter";
 import BouncingStarsToggle from "@/components/visuals/BouncingStarsToggle";
 import DashboardThemePicker from "@/components/dashboard/DashboardThemePicker";
 import NeonArcadeTexture from "@/components/visuals/textures/NeonArcadeTexture";
@@ -48,7 +50,7 @@ export default async function DashboardPage() {
   const supabase = createClient();
   const { data: { user } } = await supabase.auth.getUser();
 
-  const [{ data: account }, { data: sessions }, dailyLoss, twoLoss, openPositions, { data: profile }, journalRows] = await Promise.all([
+  const [{ data: account }, { data: sessions }, dailyLoss, twoLoss, openPositions, { data: profile }, journalRows, tradeCap] = await Promise.all([
     supabase.from("accounts").select("balance, risk_percent, daily_loss_limit").eq("user_id", user!.id).maybeSingle(),
     supabase
       .from("xrill_sessions")
@@ -60,6 +62,7 @@ export default async function DashboardPage() {
     getOpenPositionsStatus(user!.id),
     supabase.from("profiles").select("dashboard_theme, display_name, show_name_on_ladder, exp_bar_style, exp_bar_color").eq("user_id", user!.id).maybeSingle(),
     getSessionOutcomeRows(user!.id),
+    getTradeCapStatus(user!.id),
   ]);
 
   const dashboardTheme: DashboardTheme =
@@ -98,7 +101,7 @@ export default async function DashboardPage() {
         <NeonText as="h1" className="font-mono text-xl font-bold tracking-widest text-accent">
           XRILL STATUS
         </NeonText>
-        <RetroHud balance={balance} sessions={allSessions} />
+        <RetroHud balance={balance} sessions={allSessions} tradesTaken={tradeCap.taken} tradeCap={tradeCap.cap} />
       </div>
 
       <div className="mt-3 rounded border border-white/10 bg-white/5 p-4">
@@ -139,6 +142,13 @@ export default async function DashboardPage() {
         <div className="mt-3 space-y-3">
           <DailyLossMeter netPnl={dailyLoss.netPnl} limit={dailyLoss.limit} />
           <TwoLossLockMeter stopOutCount={twoLoss.stopOutCount} threshold={twoLoss.threshold} />
+          <TradeCapMeter
+            taken={tradeCap.taken}
+            cap={tradeCap.cap}
+            skippedEngine={tradeCap.skippedEngine}
+            pendingCap={tradeCap.pendingCap}
+            pendingFrom={tradeCap.pendingFrom}
+          />
         </div>
       </Section>
 

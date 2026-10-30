@@ -79,3 +79,65 @@ export const GREEKS: GreekDial[] = [
 
 export const GREEKS_CORE_IDEA =
   "Never trade an option based solely on the chart of the stock. Every contract is governed by Delta, Gamma, Theta, and Vega. Master the Greeks, and you master risk.";
+
+// 0DTE: what the Greeks do on expiration day, and especially in the last
+// hour. Shown on /playbook/options and /playbook/zero-dte. Numbers in the
+// examples are illustrative, not quotes.
+export interface ZeroDteGreek {
+  symbol: string;
+  name: string;
+  color: string;
+  headline: string;
+  lastHour: string;
+  example: string;
+  rule: string;
+}
+
+export const ZERO_DTE_GREEKS: ZeroDteGreek[] = [
+  {
+    symbol: "Γ",
+    name: "Gamma",
+    color: "secondary",
+    headline: "Gamma is at its peak for near-the-money contracts on expiration day.",
+    lastHour:
+      "Delta can swing from 0.30 to 0.70 (or back to 0.10) on a move of less than a dollar in SPY. That's how a 0DTE contract goes +400% in minutes, and how it goes to almost zero just as fast.",
+    example: "Illustrative: an ATM SPY call at $0.80 with 90 minutes left. SPY pushes $1.50 your way and it can trade $2.00+. Same push against you and it's $0.15.",
+    rule: "Size so a fast reversal is survivable. The ladder exists because gamma gives back gains as quickly as it hands them out.",
+  },
+  {
+    symbol: "Θ",
+    name: "Theta",
+    color: "loss",
+    headline: "On a 0DTE contract, almost all of the premium is time value, and all of it is gone by the close.",
+    lastHour:
+      "Decay doesn't wait until the end of the day, but it gets brutal in the afternoon. If price sits still, an ATM contract can lose most of what's left in the final hour or two.",
+    example: "Illustrative: a $1.20 ATM call at 1:00 PM with SPY flat can be ~$0.60 by 3:00 and ~$0.20 heading into the close.",
+    rule: "A 0DTE trade that isn't working by mid-afternoon is losing to the clock even if it isn't hitting your stop. That's why entries close at 2:30 PM ET.",
+  },
+  {
+    symbol: "Δ",
+    name: "Delta",
+    color: "primary",
+    headline: "Out-of-the-money delta collapses through the day if price doesn't come to your strike.",
+    lastHour:
+      "A 0.20-delta call at 11:00 AM can be 0.05 by 3:00 PM with no move at all. Cheap OTM contracts late in the day are lottery tickets, not trades.",
+    example: "Illustrative: a $0.25 OTM call needs a big, fast move to get paid. Most afternoons it just bleeds to $0.02.",
+    rule: "Pick strikes near the money (~0.20–0.35 delta) at entry. Cheap is only good if it can actually move.",
+  },
+  {
+    symbol: "V",
+    name: "Vega",
+    color: "caution",
+    headline: "Vega is small on 0DTE: there's barely any time left for volatility to act on.",
+    lastHour:
+      "IV still spikes on news (Fed speakers, data at 10:00 AM, headlines), and that can puff up a contract for a few minutes, but direction and gamma dominate the P/L.",
+    example: "A volatility spike can inflate premium briefly. Don't mistake that pop for the move you planned for.",
+    rule: "Don't buy 0DTE right before a scheduled release hoping for IV. Trade the reaction, not the event.",
+  },
+];
+
+export const ZERO_DTE_CLOSE_WARNINGS = [
+  "Bid/ask spreads widen in the last 30 minutes. A contract that shows $0.40 may only fill at $0.30. Exit before the scramble.",
+  "Never hold into the close. A call or put that finishes in the money can be auto-exercised into 100 shares per contract, which a small account can't cover; many brokers will force-close you first at a bad price.",
+  "Flat by 3:45 PM ET. Whatever's left after that is a gamble on the final 15 minutes.",
+];

@@ -6,6 +6,7 @@ import { getTwoLossStatus } from "@/lib/data/twoLossLock";
 import EngineSelector from "@/components/session/EngineSelector";
 import AfterFactLog from "@/components/session/AfterFactLog";
 import { getOpenPositionsStatus } from "@/lib/data/openPositions";
+import { getTradeCapStatus } from "@/lib/data/tradeCap";
 
 // Queries Supabase (via cookies()) on every request - force dynamic
 // rendering so `next build` doesn't waste time attempting (and timing
@@ -45,11 +46,12 @@ export default async function SessionPage({
   const supabase = createClient();
   const { data: { user } } = await supabase.auth.getUser();
 
-  const [{ data: account }, dailyLoss, twoLoss, openPositions] = await Promise.all([
+  const [{ data: account }, dailyLoss, twoLoss, openPositions, tradeCap] = await Promise.all([
     supabase.from("accounts").select("balance, risk_percent, stop_loss_percent").eq("user_id", user!.id).maybeSingle(),
     getDailyLossStatus(user!.id),
     getTwoLossStatus(user!.id),
     getOpenPositionsStatus(user!.id),
+    getTradeCapStatus(user!.id),
   ]);
 
   // Emergency "logged after" path comes before the locks on purpose: the
@@ -92,6 +94,29 @@ export default async function SessionPage({
     );
   }
 
+  if (tradeCap.locked) {
+    return (
+      <LockedOut
+        reason={
+          <>
+            <span className="font-mono text-loss">
+              {tradeCap.taken} of {tradeCap.cap}
+            </span>{" "}
+            trades taken today — the Daily Trade Cap.
+            {tradeCap.skippedEngine > 0 && (
+              <>
+                {" "}
+                {tradeCap.skippedEngine} of them skipped the engine.
+              </>
+            )}{" "}
+            No new session can be started for the rest of today — it resets at midnight Eastern. The best trade left
+            today is the one you don&apos;t take.
+          </>
+        }
+      />
+    );
+  }
+
   const balance = account?.balance ?? 50000;
   const riskPercent = account?.risk_percent ?? 1;
 
@@ -99,6 +124,7 @@ export default async function SessionPage({
 
   return (
     <>
+      <TradeCapBanner taken={tradeCap.taken} cap={tradeCap.cap} skipped={tradeCap.skippedEngine} />
       <EngineSelector
         accountBalance={balance}
         riskPercent={riskPercent}
@@ -107,10 +133,31 @@ export default async function SessionPage({
         openCount={openPositions.count}
         openLimit={openPositions.limit}
         recommendedOpen={openPositions.recommended}
+        zeroDteTaken={tradeCap.zeroDteAuthorized}
       />
       <div className="mx-auto max-w-5xl px-4 pb-10">
         <SectorLinks current="session" />
       </div>
     </>
+  );
+}
+
+// One line above the engine picker so the count is in your face before
+// you start, not only when you hit the wall.
+function TradeCapBanner({ taken, cap, skipped }: { taken: number; cap: number; skipped: number }) {
+  const left = cap - taken;
+  const last = left === 1;
+  return (
+    <div className="mx-auto max-w-2xl px-4 pt-6">
+      <div
+        className={`rounded border px-3 py-2 text-center text-xs ${
+          last ? "border-caution/40 bg-caution/10 text-caution" : "border-white/10 bg-white/5 text-white/60"
+        }`}
+      >
+        🎟️ Trade {taken + 1} of {cap} today
+        {last ? " — your last one. Make it an A+ or don't take it." : ` · ${left} left`}
+        {skipped > 0 && <span className="text-loss"> · {skipped} skipped the engine today</span>}
+      </div>
+    </div>
   );
 }

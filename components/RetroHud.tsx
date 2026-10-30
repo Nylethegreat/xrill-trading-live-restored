@@ -17,7 +17,17 @@ function authorizedStreak(sessions: HudSession[]): number {
   return streak;
 }
 
-export default function RetroHud({ balance, sessions }: { balance: number; sessions: HudSession[] }) {
+export default function RetroHud({
+  balance,
+  sessions,
+  tradesTaken,
+  tradeCap,
+}: {
+  balance: number;
+  sessions: HudSession[];
+  tradesTaken?: number;
+  tradeCap?: number;
+}) {
   const { lvl } = levelInfo(balance);
   const streak = authorizedStreak(sessions);
   const streaking = streak >= 3;
@@ -34,6 +44,17 @@ export default function RetroHud({ balance, sessions }: { balance: number; sessi
       >
         🔥 {streak} STREAK
       </span>
+      {tradeCap !== undefined && tradesTaken !== undefined && (
+        <>
+          <span className="text-white/20">|</span>
+          <span
+            className={`font-bold ${tradesTaken >= tradeCap ? "text-loss" : tradeCap - tradesTaken === 1 ? "text-caution" : "text-white/60"}`}
+            title="Trades taken today / Daily Trade Cap"
+          >
+            🎟️ {tradesTaken}/{tradeCap}
+          </span>
+        </>
+      )}
     </div>
   );
 }

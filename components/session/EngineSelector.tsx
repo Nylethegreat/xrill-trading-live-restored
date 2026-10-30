@@ -27,6 +27,7 @@ export default function EngineSelector({
   openCount = 0,
   openLimit = 3,
   recommendedOpen = 2,
+  zeroDteTaken = 0,
 }: {
   accountBalance: number;
   riskPercent: number;
@@ -35,6 +36,7 @@ export default function EngineSelector({
   openCount?: number;
   openLimit?: number;
   recommendedOpen?: number;
+  zeroDteTaken?: number;
 }) {
   const [engine, setEngine] = useState<Engine>(initialEngine ?? null);
   // Per-visitor look for this picker (remembered in this browser): the
@@ -42,11 +44,11 @@ export default function EngineSelector({
   const [skin, setSkin] = usePersistentChoice<EngineSkin>("xrill-engine-skin", ENGINE_SKINS, "neon");
 
   if (engine === "swing") {
-    return <XrillWizard accountBalance={accountBalance} riskPercent={riskPercent} stopPercent={stopPercent} />;
+    return <XrillWizard accountBalance={accountBalance} riskPercent={riskPercent} stopPercent={stopPercent} zeroDteTaken={zeroDteTaken} />;
   }
 
   if (engine === "daytrade") {
-    return <XrillFastWizard accountBalance={accountBalance} riskPercent={riskPercent} stopPercent={stopPercent} />;
+    return <XrillFastWizard accountBalance={accountBalance} riskPercent={riskPercent} stopPercent={stopPercent} zeroDteTaken={zeroDteTaken} />;
   }
 
   const warningText =

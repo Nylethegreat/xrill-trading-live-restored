@@ -1,4 +1,6 @@
 import Link from "next/link";
+import { effectiveTradeCap, MAX_MAX_TRADES, MIN_MAX_TRADES } from "@/lib/tradeCap";
+import { getTradingDateET } from "@/lib/data/dailyLossLock";
 import { createClient } from "@/lib/supabase/server";
 import { saveAccountSettings, signInFromAccount, signUpFromAccount, createProCheckoutSession, createEliteCheckoutSession } from "./actions";
 import RealtimeAlertsFeed from "@/components/RealtimeAlertsFeed";
@@ -157,7 +159,7 @@ export default async function AccountPage({
 
   const { data: account } = await supabase
     .from("accounts")
-    .select("balance, risk_percent, stop_loss_percent, daily_loss_limit")
+    .select("balance, risk_percent, stop_loss_percent, daily_loss_limit, max_trades_per_day, pending_max_trades, pending_max_trades_from")
     .eq("user_id", user.id)
     .maybeSingle();
 
@@ -362,6 +364,15 @@ export default async function AccountPage({
           initialDailyLossLimit={dailyLossLimit}
         />
 
+        <TradeCapField
+          current={effectiveTradeCap(account, getTradingDateET())}
+          pending={
+            account?.pending_max_trades && account.pending_max_trades_from && account.pending_max_trades_from > getTradingDateET()
+              ? { cap: account.pending_max_trades, from: account.pending_max_trades_from }
+              : null
+          }
+        />
+
         <div className="rounded border border-white/10 bg-white/5 p-3">
           <p className="text-xs font-semibold uppercase tracking-wide text-white/50">How to set your own numbers</p>
           <p className="mt-2 text-xs leading-relaxed text-white/60">
@@ -409,6 +420,36 @@ export default async function AccountPage({
           Save settings
         </button>
       </form>
+    </div>
+  );
+}
+
+// Daily Trade Cap setting. Lowering applies right away; a raise waits
+// until tomorrow (enforced by the guard_trade_cap trigger), so the cap
+// can't be loosened mid-session to fit in one more trade.
+function TradeCapField({ current, pending }: { current: number; pending: { cap: number; from: string } | null }) {
+  return (
+    <div>
+      <label className="block text-sm text-white/70">Max trades per day</label>
+      <input
+        name="max_trades_per_day"
+        type="number"
+        step="1"
+        min={MIN_MAX_TRADES}
+        max={MAX_MAX_TRADES}
+        defaultValue={pending?.cap ?? current}
+        required
+        className="mt-1 w-full rounded border border-white/20 bg-transparent px-3 py-2 outline-none focus:border-accent"
+      />
+      <p className="mt-1 text-xs text-white/40">
+        Real trades only: engine-authorized or logged after the fact. Blocked sessions don&apos;t count. Hit it and the
+        terminal locks until tomorrow. Lowering applies right away; raising starts the next trading day.
+      </p>
+      {pending && (
+        <p className="mt-1 text-xs text-caution">
+          Today&apos;s cap is {current}. It goes up to {pending.cap} on {pending.from}.
+        </p>
+      )}
     </div>
   );
 }

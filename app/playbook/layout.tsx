@@ -7,6 +7,8 @@ import SectorLinks from "@/components/SectorLinks";
 const TABS = [
   { href: "/playbook", label: "Roadmap" },
   { href: "/playbook/options", label: "Options & Greeks" },
+  { href: "/playbook/zero-dte", label: "0DTE Lane" },
+  { href: "/playbook/verticals", label: "Verticals & Chop" },
   { href: "/playbook/exits", label: "Exits" },
   { href: "/playbook/strategies", label: "20 Strategies" },
   { href: "/playbook/prop-firm", label: "Prop Firm" },
