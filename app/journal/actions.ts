@@ -1,5 +1,7 @@
 "use server";
 
+import { announceStreakTiers } from "@/lib/streakShoutouts";
+import { getSessionOutcomeRows } from "@/lib/data/xrill-analytics-data";
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { AFTER_FACT_REASONS } from "@/lib/afterFact";
@@ -106,6 +108,8 @@ export async function saveTradeOutcome(input: SaveOutcomeInput): Promise<SaveOut
   const trimPnl = (trims ?? []).reduce((sum, t) => sum + Number(t.profit_loss ?? 0), 0);
   const totalPnl = Math.round((input.profitLoss + trimPnl) * 100) / 100;
 
+  const before = await getSessionOutcomeRows(user.id);
+
   const { error } = await supabase.from("xrill_outcomes").upsert(
     {
       user_id: user.id,
@@ -132,6 +136,8 @@ export async function saveTradeOutcome(input: SaveOutcomeInput): Promise<SaveOut
   revalidatePath("/journal");
   revalidatePath("/analytics");
   revalidatePath("/dashboard");
+  revalidatePath("/leaderboard");
+  await announceStreakTiers(user.id, before);
 
   return { success: true };
 }
@@ -301,6 +307,7 @@ export async function saveTradeReview(input: {
   } = await supabase.auth.getUser();
   if (!user) return { success: false, error: "Not signed in." };
 
+  const before = await getSessionOutcomeRows(user.id);
   const review = cleanReview(input);
   if (!review.confidence_post || !review.thesis_result || !review.exit_reason) {
     return { success: false, error: "Answer all three to finish the review." };
@@ -319,5 +326,7 @@ export async function saveTradeReview(input: {
   revalidatePath("/journal");
   revalidatePath("/dashboard");
   revalidatePath("/intelligence");
+  revalidatePath("/leaderboard");
+  await announceStreakTiers(user.id, before);
   return { success: true };
 }

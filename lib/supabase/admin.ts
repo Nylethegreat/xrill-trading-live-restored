@@ -5,7 +5,8 @@ const SUPABASE_URL =
 
 // SERVER-ONLY. Bypasses RLS via the service_role key -- never import this
 // from a client component, never prefix the key with NEXT_PUBLIC_, and
-// never send it to the browser. This exists for exactly one caller today:
+// never send it to the browser. Callers: the Discipline Board (lib/data/
+// leaderboard.ts, opted-in members only, aggregates only) and
 // app/api/webhooks/stripe/route.ts, where there's no user session/cookie to
 // authenticate as the user, so it's the only legitimate way to write
 // profiles.tier / stripe_customer_id / stripe_subscription_id after a
