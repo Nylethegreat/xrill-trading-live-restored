@@ -138,3 +138,25 @@ body { background: #07080f; color: #e8eaf5; }
 .paper-ink .text-caution { color: #b45309; }
 .paper-ink .text-daytrade { color: #0e7490; }
 .paper-ink h2 { letter-spacing: 0.08em; }
+
+/* ── Analytics: Command Center HUD ── */
+@keyframes xr-cc-spin { to { transform: rotate(360deg); } }
+.xr-cc-spin { animation: xr-cc-spin 24s linear infinite; transform-box: fill-box; transform-origin: center; }
+.xr-cc-spin-rev { animation: xr-cc-spin 32s linear infinite reverse; transform-box: fill-box; transform-origin: center; }
+@keyframes xr-cc-blink { 0%, 100% { opacity: 0.35; } 50% { opacity: 1; } }
+.xr-cc-blink { animation: xr-cc-blink 2.8s ease-in-out infinite; }
+@keyframes xr-cc-ping { 0% { transform: scale(0.4); opacity: 0.9; } 100% { transform: scale(2.4); opacity: 0; } }
+.xr-cc-ping { animation: xr-cc-ping 3s ease-out infinite; transform-box: fill-box; transform-origin: center; }
+@keyframes xr-cc-dash { to { stroke-dashoffset: -140; } }
+.xr-cc-dash { animation: xr-cc-dash 4s linear infinite; }
+@keyframes xr-cc-bar { 0%, 100% { transform: scaleY(1); } 50% { transform: scaleY(0.55); } }
+.xr-cc-bar { animation: xr-cc-bar 3.6s ease-in-out infinite; transform-box: fill-box; transform-origin: bottom; }
+@keyframes xr-cc-bar-x { 0%, 100% { transform: scaleX(1); } 50% { transform: scaleX(0.7); } }
+.xr-cc-bar-x { animation: xr-cc-bar-x 5s ease-in-out infinite; transform-box: fill-box; transform-origin: left; }
+@keyframes xr-cc-scan { 0% { transform: translateY(0); } 100% { transform: translateY(150px); } }
+.xr-cc-scan { animation: xr-cc-scan 5s linear infinite; }
+@keyframes xr-cc-float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+.xr-cc-float { animation: xr-cc-float 7s ease-in-out infinite; }
+@media (prefers-reduced-motion: reduce) {
+  .xr-cc-spin, .xr-cc-spin-rev, .xr-cc-blink, .xr-cc-ping, .xr-cc-dash, .xr-cc-bar, .xr-cc-bar-x, .xr-cc-scan, .xr-cc-float { animation: none !important; }
+}

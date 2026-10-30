@@ -5,7 +5,7 @@ import AnalyticsClient from "@/components/analytics/AnalyticsClient";
 import PulseChart from "@/components/visuals/PulseChart";
 import HeaderText from "@/components/HeaderText";
 import HappyCheck from "@/components/analytics/HappyCheck";
-import { AuroraBackdropControl, LeavesBackdropControl, OrbsBackdropControl } from "@/components/visuals/BackdropControls";
+import { AuroraBackdropControl, CommandCenterBackdropControl, LeavesBackdropControl, OrbsBackdropControl } from "@/components/visuals/BackdropControls";
 import SectorLinks from "@/components/SectorLinks";
 
 // Queries Supabase (via cookies()) on every request - force dynamic
@@ -32,6 +32,7 @@ export default async function AnalyticsPage() {
             <AuroraBackdropControl />
             <LeavesBackdropControl />
             <OrbsBackdropControl />
+            <CommandCenterBackdropControl />
           </div>
         </div>
         <PulseChart className="hidden h-20 w-48 flex-none sm:block" />

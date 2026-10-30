@@ -7,6 +7,7 @@ import SegmentedToggle from "@/components/visuals/SegmentedToggle";
 import NightDriveTexture from "@/components/visuals/textures/NightDriveTexture";
 import SynthwaveTexture from "@/components/visuals/textures/SynthwaveTexture";
 import AuroraTexture from "@/components/visuals/textures/AuroraTexture";
+import CommandCenterTexture from "@/components/visuals/textures/CommandCenterTexture";
 import { usePersistentChoice } from "@/lib/usePersistentChoice";
 
 const NEURON_OPTIONS = ["off", "slight", "normal"] as const;
@@ -159,6 +160,38 @@ export function AuroraBackdropControl({ className = "" }: { className?: string }
         options={[
           { key: "off", label: "Off" },
           { key: "soft", label: "Soft" },
+          { key: "full", label: "Full" },
+        ]}
+      />
+    </>
+  );
+}
+
+const COMMAND_OPTIONS = ["off", "dim", "full"] as const;
+type CommandChoice = (typeof COMMAND_OPTIONS)[number];
+
+// Analytics page: a holographic trading HUD wall behind the numbers. Sits
+// above the aurora layer, so turning it on replaces the sky. Dim keeps it
+// quiet enough to read the charts over; Full is the whole wall.
+export function CommandCenterBackdropControl({ className = "" }: { className?: string }) {
+  const [choice, setChoice, hydrated] = usePersistentChoice<CommandChoice>("xrill-command-center", COMMAND_OPTIONS, "off");
+  return (
+    <>
+      {hydrated && choice !== "off" && (
+        <div aria-hidden="true" className="pointer-events-none fixed inset-0 -z-20">
+          <CommandCenterTexture idPrefix="cc-analytics" className={choice === "full" ? "opacity-90" : "opacity-45"} />
+          <div className={`absolute inset-0 ${choice === "full" ? "bg-black/20" : "bg-black/45"}`} />
+        </div>
+      )}
+      <SegmentedToggle
+        label="🛰️ Command Center"
+        value={choice}
+        onChange={setChoice}
+        className={className}
+        activeClass="bg-sky-400/20 text-sky-100 [text-shadow:0_0_8px_rgba(125,211,252,0.8)]"
+        options={[
+          { key: "off", label: "Off" },
+          { key: "dim", label: "Dim" },
           { key: "full", label: "Full" },
         ]}
       />
