@@ -35,6 +35,7 @@ export interface SessionOutcomeRow {
   rejection_reason: string | null;
   engine: string | null;
   profit_loss: number | null;
+  closed_at?: string | null; // when the outcome was logged
   followed_plan: boolean | null;
   followed_exit_rules: boolean | null;
   emotion: string | null;

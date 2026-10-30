@@ -18,7 +18,7 @@ export async function getSessionOutcomeRows(userId: string): Promise<SessionOutc
        execution_score, trade_score, trade_authorized, rejection_reason, engine,
        logged_after, after_fact_reasons, structure, legs, strike, expiration,
        thesis, invalidation, confidence_pre, delta, theta, volume_state,
-       xrill_outcomes ( profit_loss, followed_plan, followed_exit_rules,
+       xrill_outcomes ( created_at, profit_loss, followed_plan, followed_exit_rules,
          emotion, lesson, exit_price, holding_minutes, risk_multiple,
          max_favorable_excursion, max_adverse_excursion, mishaps, mishap_note,
          confidence_post, thesis_result, exit_reason )`
@@ -64,6 +64,7 @@ export async function getSessionOutcomeRows(userId: string): Promise<SessionOutc
       rejection_reason: row.rejection_reason,
       engine: row.engine,
       profit_loss: outcome?.profit_loss ?? null,
+      closed_at: outcome?.created_at ?? null,
       followed_plan: outcome?.followed_plan ?? null,
       followed_exit_rules: outcome?.followed_exit_rules ?? null,
       emotion: outcome?.emotion ?? null,

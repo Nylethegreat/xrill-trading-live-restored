@@ -3,7 +3,8 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Badge from "@/components/Badge";
-import { saveTradeOutcome } from "@/app/journal/actions";
+import { saveTradeOutcome, saveTradeReview } from "@/app/journal/actions";
+import { countsForJournalStreak, isReviewed } from "@/lib/disciplineStreaks";
 import type { SessionOutcomeRow } from "@/lib/analytics";
 import type { ScreenshotRow, TrimRow } from "@/lib/data/xrill-analytics-data";
 import { structureLabel } from "@/lib/structures";
@@ -62,7 +63,7 @@ function ReviewFields({
     `rounded-full border px-2.5 py-1 text-xs ${on ? "border-accent bg-accent/15 text-accent" : "border-white/20 text-white/60 hover:border-white/40"}`;
   return (
     <div className="mt-3 space-y-3 rounded border border-white/10 bg-black/20 p-3">
-      <p className="text-xs font-semibold uppercase tracking-wide text-white/50">Thesis check (optional)</p>
+      <p className="text-xs font-semibold uppercase tracking-wide text-white/50">Thesis check <span className="normal-case text-white/35">(optional, but all three keep your Journal Streak alive)</span></p>
       {invalidation && (
         <p className="text-xs text-white/60">
           You said you'd be wrong if: <span className="text-white/85">{invalidation}</span>
@@ -309,6 +310,68 @@ function OutcomeForm({
   );
 }
 
+// Shown on a closed trade whose review is incomplete. Pre-fills whatever
+// was already answered, so finishing it is one or two taps.
+function FinishReview({ row, onSaved }: { row: SessionOutcomeRow; onSaved: () => void }) {
+  const [open, setOpen] = useState(false);
+  const [confidencePost, setConfidencePost] = useState<number | null>(row.confidence_post ?? null);
+  const [thesisResult, setThesisResult] = useState<ThesisResult | null>((row.thesis_result as ThesisResult) ?? null);
+  const [exitReason, setExitReason] = useState<ExitReason | null>((row.exit_reason as ExitReason) ?? null);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const ready = confidencePost !== null && thesisResult !== null && exitReason !== null;
+
+  if (!open) {
+    return (
+      <button
+        type="button"
+        onClick={() => setOpen(true)}
+        className="mt-2 rounded border border-caution/40 bg-caution/10 px-2.5 py-1 text-xs text-caution hover:bg-caution/20"
+      >
+        📓 Finish review — this trade is breaking your Journal Streak
+      </button>
+    );
+  }
+
+  return (
+    <div className="mt-2">
+      <ReviewFields
+        invalidation={row.invalidation}
+        confidencePost={confidencePost}
+        setConfidencePost={setConfidencePost}
+        thesisResult={thesisResult}
+        setThesisResult={setThesisResult}
+        exitReason={exitReason}
+        setExitReason={setExitReason}
+      />
+      {error && <p className="mt-2 text-xs text-blocked">{error}</p>}
+      <div className="mt-2 flex gap-2">
+        <button
+          type="button"
+          disabled={!ready || saving}
+          onClick={async () => {
+            setSaving(true);
+            setError(null);
+            const res = await saveTradeReview({ sessionId: row.session_id, confidencePost, thesisResult, exitReason });
+            setSaving(false);
+            if (!res.success) {
+              setError(res.error ?? "Something went wrong.");
+              return;
+            }
+            onSaved();
+          }}
+          className="rounded bg-accent px-3 py-1.5 text-xs font-bold text-black disabled:opacity-40"
+        >
+          {saving ? "Saving..." : ready ? "Save review" : "Answer all three"}
+        </button>
+        <button type="button" onClick={() => setOpen(false)} className="text-xs text-white/50 underline">
+          Later
+        </button>
+      </div>
+    </div>
+  );
+}
+
 type Filter = "all" | "authorized" | "blocked" | "after";
 
 export default function JournalClient({
@@ -489,6 +552,12 @@ export default function JournalClient({
                           .filter(Boolean)
                           .join(" · ")}
                       </p>
+                    )}
+                    {countsForJournalStreak(r) && !isReviewed(r) && (
+                      <FinishReview
+                        row={r}
+                        onSaved={() => router.refresh()}
+                      />
                     )}
                     {r.emotion && <p className="mt-2 text-white/70">Emotion: {r.emotion}</p>}
                     {r.lesson && <p className="text-white/70">Lesson: {r.lesson}</p>}

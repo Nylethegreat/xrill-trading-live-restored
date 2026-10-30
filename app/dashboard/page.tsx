@@ -12,6 +12,8 @@ import SuperStar from "@/components/visuals/SuperStar";
 import RetroHud from "@/components/RetroHud";
 import OpenPositionsPanel from "@/components/OpenPositionsPanel";
 import MyWinsTicker from "@/components/MyWinsTicker";
+import DisciplineStreaks from "@/components/DisciplineStreaks";
+import { getSessionOutcomeRows } from "@/lib/data/xrill-analytics-data";
 import PowerUpChecklist from "@/components/visuals/PowerUpChecklist";
 import RedDayCard from "@/components/visuals/RedDayCard";
 import DailyLossMeter from "@/components/DailyLossMeter";
@@ -46,7 +48,7 @@ export default async function DashboardPage() {
   const supabase = createClient();
   const { data: { user } } = await supabase.auth.getUser();
 
-  const [{ data: account }, { data: sessions }, dailyLoss, twoLoss, openPositions, { data: profile }] = await Promise.all([
+  const [{ data: account }, { data: sessions }, dailyLoss, twoLoss, openPositions, { data: profile }, journalRows] = await Promise.all([
     supabase.from("accounts").select("balance, risk_percent, daily_loss_limit").eq("user_id", user!.id).maybeSingle(),
     supabase
       .from("xrill_sessions")
@@ -57,6 +59,7 @@ export default async function DashboardPage() {
     getTwoLossStatus(user!.id),
     getOpenPositionsStatus(user!.id),
     supabase.from("profiles").select("dashboard_theme, display_name, show_name_on_ladder, exp_bar_style, exp_bar_color").eq("user_id", user!.id).maybeSingle(),
+    getSessionOutcomeRows(user!.id),
   ]);
 
   const dashboardTheme: DashboardTheme =
@@ -116,6 +119,10 @@ export default async function DashboardPage() {
         limit={openPositions.limit}
         dailyLossLimit={dailyLoss.limit}
       />
+
+      <Section title="Discipline Streaks" subtitle="Habits, not P&L. A stop-out you took on plan still counts.">
+        <DisciplineStreaks rows={journalRows} />
+      </Section>
 
       <div className="relative mt-4">
         <PreTradeChecklist />

@@ -285,3 +285,39 @@ export async function deleteScreenshot(screenshotId: number): Promise<SaveOutcom
   revalidatePath("/journal");
   return { success: true };
 }
+
+// Fill in (or fix) the post-trade review on a trade that's already
+// closed -- the review fields only, never the P/L. This is how an
+// unreviewed trade stops breaking the Journal Streak.
+export async function saveTradeReview(input: {
+  sessionId: number;
+  confidencePost: number | null;
+  thesisResult: string | null;
+  exitReason: string | null;
+}): Promise<SaveOutcomeResult> {
+  const supabase = createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return { success: false, error: "Not signed in." };
+
+  const review = cleanReview(input);
+  if (!review.confidence_post || !review.thesis_result || !review.exit_reason) {
+    return { success: false, error: "Answer all three to finish the review." };
+  }
+
+  const { data, error } = await supabase
+    .from("xrill_outcomes")
+    .update(review)
+    .eq("session_id", input.sessionId)
+    .eq("user_id", user.id)
+    .select("id");
+
+  if (error) return { success: false, error: error.message };
+  if (!data || data.length === 0) return { success: false, error: "Close this trade first, then review it." };
+
+  revalidatePath("/journal");
+  revalidatePath("/dashboard");
+  revalidatePath("/intelligence");
+  return { success: true };
+}
