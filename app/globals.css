@@ -160,3 +160,16 @@ body { background: #07080f; color: #e8eaf5; }
 @media (prefers-reduced-motion: reduce) {
   .xr-cc-spin, .xr-cc-spin-rev, .xr-cc-blink, .xr-cc-ping, .xr-cc-dash, .xr-cc-bar, .xr-cc-bar-x, .xr-cc-scan, .xr-cc-float { animation: none !important; }
 }
+
+/* ── Intelligence: Holo Head ── */
+@keyframes xr-holo-flow { to { stroke-dashoffset: -234; } }
+.xr-holo-flow { animation: xr-holo-flow 3.5s linear infinite; }
+@keyframes xr-holo-node { 0%, 100% { opacity: 0.45; } 50% { opacity: 1; } }
+.xr-holo-node { animation: xr-holo-node 3.2s ease-in-out infinite; }
+@keyframes xr-holo-eye { 0%, 100% { opacity: 0.75; transform: scale(1); } 50% { opacity: 1; transform: scale(1.18); } }
+.xr-holo-eye { animation: xr-holo-eye 4s ease-in-out infinite; transform-box: fill-box; transform-origin: center; }
+@keyframes xr-holo-breathe { 0%, 100% { opacity: 0.75; } 50% { opacity: 1; } }
+.xr-holo-breathe { animation: xr-holo-breathe 6s ease-in-out infinite; }
+@media (prefers-reduced-motion: reduce) {
+  .xr-holo-flow, .xr-holo-node, .xr-holo-eye, .xr-holo-breathe { animation: none !important; }
+}

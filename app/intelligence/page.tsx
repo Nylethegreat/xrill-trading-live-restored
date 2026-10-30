@@ -8,7 +8,7 @@ import { getOpenPositionsStatus } from "@/lib/data/openPositions";
 import Link from "next/link";
 import PulseBrain from "@/components/visuals/PulseBrain";
 import HeaderText from "@/components/HeaderText";
-import { NeuronBackdropControl } from "@/components/visuals/BackdropControls";
+import { HoloHeadBackdropControl, NeuronBackdropControl } from "@/components/visuals/BackdropControls";
 import MindsetCheck from "@/components/intelligence/MindsetCheck";
 import ThesisReviewPanel from "@/components/intelligence/ThesisReviewPanel";
 import { buildThesisReview } from "@/lib/thesisReview";
@@ -107,7 +107,10 @@ export default async function IntelligencePage({ searchParams }: { searchParams?
           <p className="mt-1 text-sm text-white/50">
             Check in on each position you take, plus what your recorded sessions say about your process.
           </p>
-          <NeuronBackdropControl className="mt-3" />
+          <div className="mt-3 flex flex-wrap gap-3">
+            <NeuronBackdropControl />
+            <HoloHeadBackdropControl />
+          </div>
         </div>
         <PulseBrain className="hidden h-24 w-24 flex-none sm:block" />
       </div>

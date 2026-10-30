@@ -8,6 +8,7 @@ import NightDriveTexture from "@/components/visuals/textures/NightDriveTexture";
 import SynthwaveTexture from "@/components/visuals/textures/SynthwaveTexture";
 import AuroraTexture from "@/components/visuals/textures/AuroraTexture";
 import CommandCenterTexture from "@/components/visuals/textures/CommandCenterTexture";
+import HoloHeadTexture from "@/components/visuals/textures/HoloHeadTexture";
 import { usePersistentChoice } from "@/lib/usePersistentChoice";
 
 const NEURON_OPTIONS = ["off", "slight", "normal"] as const;
@@ -189,6 +190,37 @@ export function CommandCenterBackdropControl({ className = "" }: { className?: s
         onChange={setChoice}
         className={className}
         activeClass="bg-sky-400/20 text-sky-100 [text-shadow:0_0_8px_rgba(125,211,252,0.8)]"
+        options={[
+          { key: "off", label: "Off" },
+          { key: "dim", label: "Dim" },
+          { key: "full", label: "Full" },
+        ]}
+      />
+    </>
+  );
+}
+
+const HOLO_OPTIONS = ["off", "dim", "full"] as const;
+type HoloChoice = (typeof HOLO_OPTIONS)[number];
+
+// Intelligence page: a wireframe head on a circuit board. Sits under the
+// neuron layer (-z-20 vs -z-10), so both can run together. Off by default.
+export function HoloHeadBackdropControl({ className = "" }: { className?: string }) {
+  const [choice, setChoice, hydrated] = usePersistentChoice<HoloChoice>("xrill-holo-head", HOLO_OPTIONS, "off");
+  return (
+    <>
+      {hydrated && choice !== "off" && (
+        <div aria-hidden="true" className="pointer-events-none fixed inset-0 -z-20">
+          <HoloHeadTexture idPrefix="holo-intel" className={choice === "full" ? "opacity-90" : "opacity-40"} />
+          <div className={`absolute inset-0 ${choice === "full" ? "bg-black/25" : "bg-black/50"}`} />
+        </div>
+      )}
+      <SegmentedToggle
+        label="🧑‍💻 Holo Head"
+        value={choice}
+        onChange={setChoice}
+        className={className}
+        activeClass="bg-teal-400/20 text-teal-100 [text-shadow:0_0_8px_rgba(94,234,212,0.8)]"
         options={[
           { key: "off", label: "Off" },
           { key: "dim", label: "Dim" },
