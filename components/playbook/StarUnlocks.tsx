@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { playBoop } from "@/lib/sounds";
+import StarBadge from "@/components/playbook/StarBadge";
 
 // Real balance-gated star unlocks -- thresholds Nyle asked for directly
 // ($100k, $250k, $1M), independent of the $250-$5,000 Double-Up Ladder
@@ -15,9 +16,9 @@ interface StarTier {
 }
 
 export const STAR_TIERS: StarTier[] = [
-  { threshold: 100_000, label: "Purple Star", blurb: "Six-figure account." },
-  { threshold: 250_000, label: "Rainbow Star", blurb: "Quarter-million milestone." },
-  { threshold: 1_000_000, label: "Prismatic Star", blurb: "Seven figures. The one everyone's chasing." },
+  { threshold: 100_000, label: "Purple Star Badge", blurb: "Six-figure account." },
+  { threshold: 250_000, label: "Rainbow Star Badge", blurb: "Quarter-million milestone." },
+  { threshold: 1_000_000, label: "Prismatic Star Badge", blurb: "Seven figures. The one everyone's chasing." },
 ];
 
 type StarKind = "purple" | "rainbow" | "prismatic";
@@ -85,7 +86,7 @@ export function BoopStar({ index, balance, size = 44, idSuffix = "" }: { index: 
       className={`rounded-full outline-none focus-visible:ring-2 focus-visible:ring-white/40 ${unlocked ? "drop-shadow-[0_0_10px_rgba(255,255,255,0.5)]" : ""}`}
     >
       <span key={boops} className={`block ${boops > 0 ? "motion-safe:animate-star-boop" : ""}`}>
-        <StarIcon tier={starKind(index)} unlocked={unlocked} size={size} idSuffix={idSuffix} />
+        <StarBadge kind={starKind(index)} unlocked={unlocked} size={size} idSuffix={idSuffix} />
       </span>
     </button>
   );
@@ -97,11 +98,11 @@ export function StarRow({ balance }: { balance: number }) {
   return (
     <div className="flex items-center justify-between gap-3">
       <span className="text-[10px] uppercase tracking-wide text-white/40">
-        Stars <span className="font-mono text-yellow-300/80">{count}/3</span>
+        Badges <span className="font-mono text-yellow-300/80">{count}/3</span>
       </span>
       <div className="flex items-center gap-2">
         {STAR_TIERS.map((t, i) => (
-          <BoopStar key={t.threshold} index={i} balance={balance} size={28} idSuffix="-mini" />
+          <BoopStar key={t.threshold} index={i} balance={balance} size={30} idSuffix="-mini" />
         ))}
       </div>
     </div>
@@ -120,11 +121,11 @@ export default function StarUnlocks({ balance }: { balance: number }) {
               unlocked ? "border-white/20 bg-white/5" : "border-white/10 bg-black/20"
             }`}
           >
-            <BoopStar index={i} balance={balance} />
+            <BoopStar index={i} balance={balance} size={96} />
             <p className={`text-sm font-semibold ${unlocked ? "text-white" : "text-white/40"}`}>{tier.label}</p>
             <p className="text-[11px] text-white/40">{tier.blurb}</p>
             <p className={`text-[10px] font-mono ${unlocked ? "text-accent" : "text-white/30"}`}>
-              {unlocked ? "UNLOCKED · tap me" : `Unlocks at $${tier.threshold.toLocaleString()}`}
+              {unlocked ? "SEWN ON · tap me" : `Pattern only · unlocks at $${tier.threshold.toLocaleString()}`}
             </p>
           </div>
         );

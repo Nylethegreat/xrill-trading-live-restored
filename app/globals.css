@@ -182,3 +182,28 @@ body { background: #07080f; color: #e8eaf5; }
 @media (prefers-reduced-motion: reduce) {
   .xr-net-fire, .xr-net-shimmer { animation: none !important; }
 }
+
+/* ── Relic Codex: spinning relic wheel ── */
+@keyframes xr-relic-orbit { to { transform: rotate(360deg); } }
+.xr-relic-orbit { animation: xr-relic-orbit 80s linear infinite; }
+.xr-relic-upright { animation: xr-relic-orbit 80s linear infinite reverse; }
+.xr-relic-wheel:hover .xr-relic-orbit,
+.xr-relic-wheel:hover .xr-relic-upright,
+.xr-relic-wheel:focus-within .xr-relic-orbit,
+.xr-relic-wheel:focus-within .xr-relic-upright { animation-play-state: paused; }
+@media (prefers-reduced-motion: reduce) {
+  .xr-relic-orbit, .xr-relic-upright { animation: none !important; }
+}
+
+/* ── Journal: Glass Aurora motion + reflection ── */
+@keyframes xr-glass-drift { 0%, 100% { transform: translate(-8%, 0) skewX(-5deg); } 50% { transform: translate(8%, 26px) skewX(5deg); } }
+.xr-glass-drift { animation: xr-glass-drift 18s ease-in-out infinite; transform-box: fill-box; transform-origin: center; }
+.xr-glass-drift-b { animation: xr-glass-drift 24s ease-in-out infinite reverse; transform-box: fill-box; transform-origin: center; }
+.xr-glass-drift-c { animation: xr-glass-drift 30s ease-in-out infinite; animation-delay: -9s; transform-box: fill-box; transform-origin: center; }
+@keyframes xr-glass-ripple { 0%, 100% { transform: translateX(-40px) scaleX(0.85); opacity: 0.35; } 50% { transform: translateX(40px) scaleX(1.15); opacity: 1; } }
+.xr-glass-ripple { animation: xr-glass-ripple 6s ease-in-out infinite; transform-box: fill-box; transform-origin: center; }
+@keyframes xr-glass-sweep { 0% { transform: skewX(-20deg) translateX(0); } 100% { transform: skewX(-20deg) translateX(2800px); } }
+.xr-glass-sweep { animation: xr-glass-sweep 14s linear infinite; }
+@media (prefers-reduced-motion: reduce) {
+  .xr-glass-drift, .xr-glass-drift-b, .xr-glass-drift-c, .xr-glass-ripple, .xr-glass-sweep { animation: none !important; }
+}

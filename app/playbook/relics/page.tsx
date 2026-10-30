@@ -2,6 +2,7 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import HeaderText from "@/components/HeaderText";
 import RelicCodexGrid from "@/components/playbook/RelicCodexGrid";
+import RelicWheel from "@/components/playbook/RelicWheel";
 import FireworksCelebration from "@/components/visuals/FireworksCelebration";
 import { RELICS } from "@/lib/data/relics";
 
@@ -31,6 +32,8 @@ export default async function RelicCodexPage() {
           {unlocked}/{RELICS.length} unlocked
         </span>
       </p>
+
+      <RelicWheel balance={balance} />
 
       <FireworksCelebration balance={balance} className="mt-4" />
 

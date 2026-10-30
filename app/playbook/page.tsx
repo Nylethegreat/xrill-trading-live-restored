@@ -79,7 +79,7 @@ export default async function PlaybookPage() {
       </div>
       {/* Star Unlocks first -- above the star and backdrop settings */}
       <div className="-mt-6">
-        <Section title="⭐ Star Unlocks" subtitle="Real balance milestones — no shortcuts, just growth">
+        <Section title="🎖️ Star Badges" subtitle="Real balance milestones — earned, never bought. Locked badges are just the pattern until you sew them on.">
           <StarUnlocks balance={balance} />
         </Section>
       </div>
