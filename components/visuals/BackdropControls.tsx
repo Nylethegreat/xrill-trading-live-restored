@@ -9,6 +9,7 @@ import SynthwaveTexture from "@/components/visuals/textures/SynthwaveTexture";
 import AuroraTexture from "@/components/visuals/textures/AuroraTexture";
 import CommandCenterTexture from "@/components/visuals/textures/CommandCenterTexture";
 import HoloHeadTexture from "@/components/visuals/textures/HoloHeadTexture";
+import NetBrainTexture from "@/components/visuals/textures/NetBrainTexture";
 import { usePersistentChoice } from "@/lib/usePersistentChoice";
 
 const NEURON_OPTIONS = ["off", "slight", "normal"] as const;
@@ -221,6 +222,38 @@ export function HoloHeadBackdropControl({ className = "" }: { className?: string
         onChange={setChoice}
         className={className}
         activeClass="bg-teal-400/20 text-teal-100 [text-shadow:0_0_8px_rgba(94,234,212,0.8)]"
+        options={[
+          { key: "off", label: "Off" },
+          { key: "dim", label: "Dim" },
+          { key: "full", label: "Full" },
+        ]}
+      />
+    </>
+  );
+}
+
+const NETBRAIN_OPTIONS = ["off", "dim", "full"] as const;
+type NetBrainChoice = (typeof NETBRAIN_OPTIONS)[number];
+
+// Intelligence page: a brain made of a firing node network over blurred
+// code. Same layer as Holo Head; if both are on, the one toggled later in
+// the row draws on top. Off by default.
+export function NetBrainBackdropControl({ className = "" }: { className?: string }) {
+  const [choice, setChoice, hydrated] = usePersistentChoice<NetBrainChoice>("xrill-net-brain", NETBRAIN_OPTIONS, "off");
+  return (
+    <>
+      {hydrated && choice !== "off" && (
+        <div aria-hidden="true" className="pointer-events-none fixed inset-0 -z-20">
+          <NetBrainTexture idPrefix="netbrain-intel" className={choice === "full" ? "opacity-95" : "opacity-45"} />
+          <div className={`absolute inset-0 ${choice === "full" ? "bg-black/15" : "bg-black/45"}`} />
+        </div>
+      )}
+      <SegmentedToggle
+        label="🕸️ Net Brain"
+        value={choice}
+        onChange={setChoice}
+        className={className}
+        activeClass="bg-cyan-400/20 text-cyan-100 [text-shadow:0_0_8px_rgba(103,232,249,0.8)]"
         options={[
           { key: "off", label: "Off" },
           { key: "dim", label: "Dim" },

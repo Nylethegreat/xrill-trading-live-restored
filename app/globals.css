@@ -173,3 +173,12 @@ body { background: #07080f; color: #e8eaf5; }
 @media (prefers-reduced-motion: reduce) {
   .xr-holo-flow, .xr-holo-node, .xr-holo-eye, .xr-holo-breathe { animation: none !important; }
 }
+
+/* ── Intelligence: Net Brain ── */
+@keyframes xr-net-fire { 0%, 70%, 100% { opacity: 0.55; } 80% { opacity: 1; } }
+.xr-net-fire { animation: xr-net-fire 4.6s ease-in-out infinite; }
+@keyframes xr-net-shimmer { 0%, 100% { opacity: 0.45; } 50% { opacity: 0.65; } }
+.xr-net-shimmer { animation: xr-net-shimmer 7s ease-in-out infinite; }
+@media (prefers-reduced-motion: reduce) {
+  .xr-net-fire, .xr-net-shimmer { animation: none !important; }
+}

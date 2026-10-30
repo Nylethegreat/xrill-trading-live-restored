@@ -1,4 +1,5 @@
 import SectorLinks from "@/components/SectorLinks";
+import TraderWheel from "@/components/intelligence/TraderWheel";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { Section, Grid, Stat } from "@/components/Layout";
@@ -8,7 +9,7 @@ import { getOpenPositionsStatus } from "@/lib/data/openPositions";
 import Link from "next/link";
 import PulseBrain from "@/components/visuals/PulseBrain";
 import HeaderText from "@/components/HeaderText";
-import { HoloHeadBackdropControl, NeuronBackdropControl } from "@/components/visuals/BackdropControls";
+import { HoloHeadBackdropControl, NetBrainBackdropControl, NeuronBackdropControl } from "@/components/visuals/BackdropControls";
 import MindsetCheck from "@/components/intelligence/MindsetCheck";
 import ThesisReviewPanel from "@/components/intelligence/ThesisReviewPanel";
 import { buildThesisReview } from "@/lib/thesisReview";
@@ -110,6 +111,7 @@ export default async function IntelligencePage({ searchParams }: { searchParams?
           <div className="mt-3 flex flex-wrap gap-3">
             <NeuronBackdropControl />
             <HoloHeadBackdropControl />
+            <NetBrainBackdropControl />
           </div>
         </div>
         <PulseBrain className="hidden h-24 w-24 flex-none sm:block" />
@@ -119,6 +121,9 @@ export default async function IntelligencePage({ searchParams }: { searchParams?
         subtitle="Body, mind, money, spirit, people, feelings, habits and self — before you put money on the line"
       >
         <MindsetCheck balance={Number(account?.balance ?? 0)} />
+      </Section>
+      <Section title="🎡 The 9 Intelligences of a Trader" subtitle="Tap a slice: what the skill is, what it looks like when it's missing, and where XRILL trains it">
+        <TraderWheel />
       </Section>
       <Section title="🤖 XRILL Coach" subtitle="Position check-in — before and after every trade">
         <p className="mb-3 text-xs text-white/50">
